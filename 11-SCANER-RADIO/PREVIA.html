@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scanner de Rádio UHF</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-3v3{stroke:#f0a03a}.w-gnd{stroke:#b9c2c7}.w-spi{stroke:#4fa3ff}.w-scl{stroke:#c58cff}.w-sda{stroke:#ffd84a}.w-sig{stroke:#ff7ad9}.w-bat{stroke:#5fd17a}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.screens{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.scr{text-align:center}
+.scr .frame{display:inline-block;background:#000;padding:8px;border-radius:6px;border:1px solid #2c3337}
+.scr svg{display:block}
+.scr p{color:var(--muted);font-size:13px;margin-top:6px;max-width:300px}
+/* SVG */
+.part{fill:#3b4147;stroke:#7f8a90;stroke-width:.35}
+.part2{fill:#2e3439;stroke:#7f8a90;stroke-width:.35}
+.metal{fill:#5a6268;stroke:#9aa4aa;stroke-width:.25}
+.dark{fill:#08090a;stroke:#5a6268;stroke-width:.2}
+.pcbb{fill:#1d3f73;stroke:#4c78b8;stroke-width:.25}
+.pcbd{fill:#1a1d20;stroke:#59636a;stroke-width:.25}
+.batt{fill:#3a3120;stroke:#e2b04a;stroke-width:.25}
+.ghost{fill:none;stroke:#7f8a90;stroke-width:.3;stroke-dasharray:1.2 .8}
+.dim{stroke:#e2b04a;stroke-width:.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}
+.ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}
+.lead{stroke:#8a959b;stroke-width:.25;fill:none}
+.dt{fill:#e2b04a;font:600 3.2px Consolas,monospace;text-anchor:middle}
+.lb{fill:#cfd6da;font:3.2px "Segoe UI",system-ui,sans-serif}
+.sm{font-size:2.5px}
+.mut{fill:#8a959b}
+.o{fill:#bfe9ff;font-family:Consolas,"Courier New",monospace}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.4" markerHeight="2.4" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+    <g id="gsym"><path d="M0,-10 V0 M-9,0 H9 M-6,4 H6 M-3,8 H3" fill="none" stroke="#b9c2c7" stroke-width="2.4" stroke-linecap="round"/></g>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PROJETO 11</div>
+    <h1>Scanner de Rádio UHF</h1>
+    <p class="sub">Somente recepção: varre 400–464 MHz, mostra quais frequências estão em uso por perto e vibra quando aparece um canal novo. Cabe num porta-rádio do colete. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <div class="note red" style="margin-top:18px"><b>Somente recepção.</b> O firmware só mede a força do sinal (RSSI) e não tem nenhuma função de transmissão. Transmitir sem licença ou bloquear sinais (jammer) é proibido pela Anatel. Escutar o canal do outro time pode ser proibido pela regra de alguns campos: combine com a organização antes de usar.</div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>62 × 112 × 34</b><span>caixa (mm), tamanho de um Baofeng</span></div>
+      <div class="tile"><b>400–464 MHz</b><span>passos de 25 kHz (2561 frequências)</span></div>
+      <div class="tile"><b>≈ 3 s</b><span>por varredura UHF; ≈ 0,05 s no modo PMR446</span></div>
+      <div class="tile"><b>≈ 20 h+</b><span>com uma 18650 (estimativa, tela apagando sozinha)</span></div>
+      <div class="tile"><b>vibração</b><span>alerta silencioso, nada de bipe</span></div>
+      <div class="tile"><b>R$ 192–242</b><span>custo de produção (sem frete)</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>O aparelho</h2>
+    <div class="fig">
+      <svg viewBox="0 0 282.99 394" data-mm="282.99" data-zoom="3.32" class="vistas3d">
+        <style>.vistas3d .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}.vistas3d .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">FRENTE</text>
+        <image href="3D/img/vistas_topo.png" x="12" y="9" width="62.99" height="172"/>
+        <line x1="12" y1="181" x2="12" y2="188.5" class="ext"/><line x1="74.99" y1="181" x2="74.99" y2="188.5" class="ext"/>
+        <line x1="12" y1="187" x2="74.99" y2="187" class="dim"/><text x="43.5" y="192.2" class="dt">63</text>
+        <line x1="4.5" y1="69" x2="12" y2="69" class="ext"/><line x1="4.5" y1="181" x2="12" y2="181" class="ext"/>
+        <line x1="6" y1="69" x2="6" y2="181" class="dim"/><text x="4.2" y="125" class="dt" transform="rotate(-90 4.2 125)">112</text>
+        <text x="98.99" y="5" class="lb">LATERAL DIREITA (USB-C e chave)</text>
+        <image href="3D/img/vistas_direita.png" x="98.99" y="9" width="172" height="49"/>
+        <line x1="98.99" y1="58" x2="98.99" y2="65.5" class="ext"/><line x1="210.99" y1="58" x2="210.99" y2="65.5" class="ext"/>
+        <line x1="98.99" y1="64" x2="210.99" y2="64" class="dim"/><text x="154.99" y="69.2" class="dt">112</text>
+        <line x1="91.49" y1="11" x2="98.99" y2="11" class="ext"/><line x1="91.49" y1="58" x2="98.99" y2="58" class="ext"/>
+        <line x1="92.99" y1="11" x2="92.99" y2="58" class="dim"/><text x="91.19" y="34.5" class="dt" transform="rotate(-90 91.19 34.5)">47</text>
+        <text x="12" y="205" class="lb">TOPO (antena)</text>
+        <image href="3D/img/vistas_tras.png" x="12" y="209" width="62.99" height="49"/>
+        <line x1="12" y1="258" x2="12" y2="265.5" class="ext"/><line x1="74.99" y1="258" x2="74.99" y2="265.5" class="ext"/>
+        <line x1="12" y1="264" x2="74.99" y2="264" class="dim"/><text x="43.5" y="269.2" class="dt">63</text>
+        <line x1="4.5" y1="211" x2="12" y2="211" class="ext"/><line x1="4.5" y1="258" x2="12" y2="258" class="ext"/>
+        <line x1="6" y1="211" x2="6" y2="258" class="dim"/><text x="4.2" y="234.5" class="dt" transform="rotate(-90 4.2 234.5)">47</text>
+        <text x="98.99" y="205" class="lb">INTERIOR (sem a tampa da frente)</text>
+        <image href="3D/img/vistas_topo_SEM_TAMPAtrue.png" x="98.99" y="209" width="62.99" height="172"/>
+        <text x="118.48" y="327.9" class="nm">módulo 18650</text>
+        <text x="145.73" y="332.4" class="nm">ESP32</text>
+        <text x="146.98" y="284.9" class="nm">CC1101</text>
+        <text x="145.98" y="369.9" class="nm">motor</text>
+        <line x1="98.99" y1="381" x2="98.99" y2="388.5" class="ext"/><line x1="161.98" y1="381" x2="161.98" y2="388.5" class="ext"/>
+        <line x1="98.99" y1="387" x2="161.98" y2="387" class="dim"/><text x="130.49" y="392.2" class="dt">63</text>
+        <line x1="91.49" y1="269" x2="98.99" y2="269" class="ext"/><line x1="91.49" y1="381" x2="98.99" y2="381" class="ext"/>
+        <line x1="92.99" y1="269" x2="92.99" y2="381" class="dim"/><text x="91.19" y="325" class="dt" transform="rotate(-90 91.19 325)">112</text>
+      </svg>
+      <div class="cap">Formato de rádio, para ir num porta-rádio do colete ou preso por um clipe MOLLE impresso. A tela e o botão ficam na frente, o liga/desliga e o USB-C de carga ficam na lateral direita, e a antena sai por cima. O motor de vibração é colado por dentro da tampa de trás, que encosta no corpo, para você sentir o alerta sem som. A placa de carga com a 18650 ocupa a metade esquerda; o CC1101 fica em cima, embaixo da antena, e o ESP32 no meio. O OLED fica preso na tampa da frente, por cima do ESP32.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>Telas</h2>
+    <p class="hint">OLED 0,96″ de 128 × 64 pixels. No modo "tamanho real" aparece a área visível real: 21,7 × 10,9 mm.</p>
+    <div class="fig">
+      <div class="screens" id="screens"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Como funciona</h2>
+    <div class="tw"><table>
+      <tr><th>Situação</th><th>Resultado</th></tr>
+      <tr><td>Ao ligar</td><td>A 1ª varredura só mede o ruído do local. A partir da 2ª, uma frequência conta como "ativa" quando o pico fica 15 dB acima do ruído</td></tr>
+      <tr><td>Canal novo, ou parado há mais de 60 s que voltou</td><td>Vibra: de 0,08 s (sinal fraco, −100 dBm) até 0,6 s (sinal forte, −40 dBm, rádio perto) e acende a tela na página de status</td></tr>
+      <tr><td>Sua frequência (ex.: 455,455 MHz ± 50 kHz)</td><td>Ignorada: não entra no ranking e não vibra. Dá para pôr várias (squad, organização)</td></tr>
+      <tr><td>Clique curto</td><td>Próxima página: status → ranking 1 → ranking 2… (com a tela apagada, só acende)</td></tr>
+      <tr><td>Segurar 2–5 s e soltar</td><td>Zera a partida</td></tr>
+      <tr><td>Segurar 5 s+ e soltar</td><td>Troca entre UHF completo (≈ 3 s por varredura) e PMR446 rápido (16 canais, ≈ 0,05 s)</td></tr>
+      <tr><td>30 s sem mexer</td><td>Tela apaga para economizar; o scanner continua varrendo e vibrando</td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">Um rádio aparece em 2 ou 3 passos vizinhos (a banda de recepção do CC1101 é de 58 kHz). O programa olha 5 leituras seguidas e só registra o pico, então cada rádio vira uma linha só no ranking.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas deste projeto, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. As tampas aparecem viradas para cima, como ficam no uso. Arquivos em <b>3D/stl</b>; quantidades, suportes e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do projeto em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Corpo preto chanfrado com painéis hexagonais na lateral; tampa da frente coyote com nervuras em V apontando para a antena e o emblema; clipe MOLLE preto.</div>
+  </section>
+  <section>
+    <h2><span class="n">05</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>ESP32 DevKit V1 (30 pinos)</td><td class="mm">51 × 28</td><td>Cérebro; Wi-Fi e Bluetooth ficam desligados</td></tr>
+      <tr><td>Módulo CC1101 433 MHz com SMA + antena</td><td class="mm">≈ 32 × 16</td><td>Receptor: mede o RSSI de 387 a 464 MHz</td></tr>
+      <tr><td>OLED 0,96″ SSD1306 I2C (0x3C)</td><td class="mm">27 × 27</td><td>Tela de status e ranking</td></tr>
+      <tr><td>Motor vibracall 1027 3 V</td><td class="mm">Ø 10 × 2,7</td><td>Alerta silencioso</td></tr>
+      <tr><td>BC547 + resistor 1 kΩ + diodo 1N4148</td><td class="mm">TO-92</td><td>Driver do motor (o GPIO não aguenta a corrente do motor)</td></tr>
+      <tr><td>2 resistores 100 kΩ (opcional)</td><td class="mm">¼ W</td><td>Divisor para medir a bateria no GPIO34</td></tr>
+      <tr><td>Botão tátil 6×6</td><td class="mm">6 × 6</td><td>Páginas, zerar e modo</td></tr>
+      <tr><td>Módulo 18650 com carregador e saída 5 V (boost)</td><td class="mm">≈ 98 × 29 × 21</td><td>Suporte, carga USB e 5 V para o ESP32, tudo numa placa</td></tr>
+      <tr><td>Bateria 18650 3,7 V ~2600 mAh</td><td class="mm">Ø 18 × 65</td><td>Alimentação</td></tr>
+      <tr><td>Caixa, tampas e clipe MOLLE (impressos)</td><td class="mm">62 × 112 × 34</td><td>PETG</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Ligação elétrica</h2>
+    <p class="hint">Esquema de ligação, sem escala. Bolinhas amarelas são pinos; pontos maiores são emendas. As etiquetas "3V3" e os símbolos de terra indicam o mesmo fio (3V3 e GND do ESP32), sem desenhar a volta inteira.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 600">
+        <!-- módulo 18650 -->
+        <rect x="20" y="80" width="140" height="120" rx="8" class="blk"/>
+        <text x="90" y="72" class="ttl c">Módulo 18650</text>
+        <text x="80" y="128" class="pt c" style="font-size:10px;fill:#8a959b">carga USB-C</text>
+        <text x="80" y="144" class="pt c" style="font-size:10px;fill:#8a959b">saída 5 V</text>
+        <g class="pt e"><text x="152" y="114">5V</text><text x="152" y="144">GND</text><text x="152" y="174">B+</text></g>
+        <!-- divisor -->
+        <rect x="205" y="224" width="34" height="12" rx="2" fill="#c9a26a" stroke="#7a5b35"/>
+        <text x="222" y="218" class="pt c" style="font-size:10px">100k</text>
+        <rect x="274" y="246" width="12" height="34" rx="2" fill="#c9a26a" stroke="#7a5b35"/>
+        <text x="296" y="268" class="pt" style="font-size:10px">100k</text>
+        <!-- ESP32 -->
+        <rect x="330" y="60" width="170" height="460" rx="8" class="brd"/>
+        <text x="415" y="380" class="ttl c">ESP32</text><text x="415" y="398" class="ttl c">DevKit V1</text>
+        <g class="pt"><text x="338" y="114">VIN</text><text x="338" y="144">GND</text><text x="338" y="234">GPIO34</text><text x="338" y="344">3V3</text></g>
+        <g class="pt e"><text x="492" y="114">GPIO18</text><text x="492" y="139">GPIO19</text><text x="492" y="164">GPIO23</text><text x="492" y="189">GPIO5</text><text x="492" y="214">GPIO2</text>
+        <text x="492" y="294">GPIO21</text><text x="492" y="319">GPIO22</text><text x="492" y="444">GPIO4</text><text x="492" y="474">GPIO15</text></g>
+        <!-- CC1101 -->
+        <rect x="640" y="85" width="150" height="185" rx="8" class="brd"/>
+        <text x="715" y="78" class="ttl c">CC1101 433 MHz</text>
+        <g class="pt"><text x="650" y="114">SCK</text><text x="650" y="139">MISO</text><text x="650" y="164">MOSI</text><text x="650" y="189">CSN</text><text x="650" y="214">GDO0</text><text x="650" y="239">VCC</text><text x="650" y="262">GND</text></g>
+        <rect x="790" y="160" width="20" height="16" class="blk"/><rect x="810" y="120" width="10" height="96" rx="5" fill="#14181b" stroke="#59636a"/>
+        <text x="845" y="172" class="pt" style="font-size:10px;fill:#8a959b">antena</text>
+        <!-- OLED -->
+        <rect x="640" y="278" width="150" height="96" rx="8" class="blk"/>
+        <text x="760" y="330" class="ttl c" style="font-size:12px">OLED</text>
+        <g class="pt"><text x="650" y="294">SDA</text><text x="650" y="319">SCL</text><text x="650" y="344">VCC</text><text x="650" y="367">GND</text></g>
+        <!-- botão -->
+        <rect x="560" y="425" width="80" height="30" rx="6" class="blk"/>
+        <text x="600" y="444" class="pt c" style="font-size:11px">botão</text>
+        <!-- resistor base -->
+        <rect x="545" y="464" width="34" height="12" rx="2" fill="#c9a26a" stroke="#7a5b35"/>
+        <text x="562" y="492" class="pt c" style="font-size:10px">1k</text>
+        <!-- BC547 -->
+        <circle cx="720" cy="470" r="22" fill="#1d2226" stroke="#59636a" stroke-width="1.5"/>
+        <path d="M702,470 H710 M710,456 V484 M710,462 L732,450 M710,478 L732,490" fill="none" stroke="#cfd6da" stroke-width="2"/>
+        <path d="M725,486 L732,490 L727,483" fill="none" stroke="#cfd6da" stroke-width="2"/>
+        <text x="720" y="512" class="pt c" style="font-size:10px">BC547</text>
+        <text x="742" y="446" class="pt" style="font-size:9px;fill:#8a959b">C</text><text x="694" y="462" class="pt" style="font-size:9px;fill:#8a959b">B</text><text x="742" y="500" class="pt" style="font-size:9px;fill:#8a959b">E</text>
+        <!-- motor -->
+        <rect x="780" y="395" width="80" height="50" rx="6" class="blk"/>
+        <text x="820" y="424" class="pt c" style="font-size:11px">motor</text>
+        <text x="808" y="408" class="pt" style="font-size:10px">+</text><text x="808" y="441" class="pt" style="font-size:10px">−</text>
+        <!-- diodo -->
+        <polygon points="878,432 892,432 885,418" fill="#cfd6da"/>
+        <line x1="877" y1="417" x2="893" y2="417" stroke="#cfd6da" stroke-width="2.4"/>
+        <text x="872" y="470" class="pt e" style="font-size:9px;fill:#8a959b">1N4148</text>
+
+        <!-- energia -->
+        <path class="wr w-pwr" d="M160,110 H330"/>
+        <path class="wr w-gnd" d="M160,140 H330"/>
+        <path class="wr w-bat" d="M160,170 H190 V230 H205 M239,230 H330"/>
+        <path class="wr w-bat" d="M280,230 V246"/>
+        <path class="wr w-gnd" d="M280,280 V292"/>
+        <use href="#gsym" x="280" y="302"/>
+        <!-- 3V3 -->
+        <path class="wr w-3v3" d="M330,340 H300"/>
+        <g><rect x="262" y="332" width="38" height="16" rx="3" fill="#2a2010" stroke="#f0a03a"/><text x="281" y="344" class="pt c" style="font-size:10px;fill:#f0a03a">3V3</text></g>
+        <path class="wr w-3v3" d="M640,235 H612"/>
+        <g><rect x="574" y="227" width="38" height="16" rx="3" fill="#2a2010" stroke="#f0a03a"/><text x="593" y="239" class="pt c" style="font-size:10px;fill:#f0a03a">3V3</text></g>
+        <path class="wr w-3v3" d="M640,340 H612"/>
+        <g><rect x="574" y="332" width="38" height="16" rx="3" fill="#2a2010" stroke="#f0a03a"/><text x="593" y="344" class="pt c" style="font-size:10px;fill:#f0a03a">3V3</text></g>
+        <path class="wr w-3v3" d="M820,395 V384 H885 V417"/>
+        <g><rect x="801" y="362" width="38" height="16" rx="3" fill="#2a2010" stroke="#f0a03a"/><text x="820" y="374" class="pt c" style="font-size:10px;fill:#f0a03a">3V3</text></g>
+        <path class="wr w-3v3" d="M820,378 V384"/>
+        <!-- GND locais -->
+        <path class="wr w-gnd" d="M640,258 H618 V272"/><use href="#gsym" x="618" y="282"/>
+        <path class="wr w-gnd" d="M640,363 H560 V378"/><use href="#gsym" x="560" y="388"/>
+        <path class="wr w-gnd" d="M640,440 H655 V455"/><use href="#gsym" x="655" y="465"/>
+        <path class="wr w-gnd" d="M732,490 V540"/><use href="#gsym" x="732" y="550"/>
+        <!-- SPI -->
+        <path class="wr w-spi" d="M500,110 H640 M500,135 H640 M500,160 H640 M500,185 H640"/>
+        <path class="wr w-sig" d="M500,210 H640" style="stroke-dasharray:6 4"/>
+        <!-- I2C -->
+        <path class="wr w-sda" d="M500,290 H640"/>
+        <path class="wr w-scl" d="M500,315 H640"/>
+        <!-- botão e motor -->
+        <path class="wr w-sig" d="M500,440 H560"/>
+        <path class="wr w-sig" d="M500,470 H545 M579,470 H702"/>
+        <path class="wr w-sig" d="M732,450 V445 H820" style="stroke:#9aa4aa"/>
+        <path class="wr" d="M820,445 V452 H885 V432" style="stroke:#9aa4aa"/>
+        <!-- emendas -->
+        <g fill="#5fd17a"><circle cx="280" cy="230" r="5"/></g>
+        <g fill="#f0a03a"><circle cx="820" cy="384" r="5"/></g>
+        <!-- pinos -->
+        <g class="pin">
+          <circle cx="160" cy="110" r="4"/><circle cx="160" cy="140" r="4"/><circle cx="160" cy="170" r="4"/>
+          <circle cx="330" cy="110" r="4"/><circle cx="330" cy="140" r="4"/><circle cx="330" cy="230" r="4"/><circle cx="330" cy="340" r="4"/>
+          <circle cx="500" cy="110" r="4"/><circle cx="500" cy="135" r="4"/><circle cx="500" cy="160" r="4"/><circle cx="500" cy="185" r="4"/><circle cx="500" cy="210" r="4"/>
+          <circle cx="500" cy="290" r="4"/><circle cx="500" cy="315" r="4"/><circle cx="500" cy="440" r="4"/><circle cx="500" cy="470" r="4"/>
+          <circle cx="640" cy="110" r="4"/><circle cx="640" cy="135" r="4"/><circle cx="640" cy="160" r="4"/><circle cx="640" cy="185" r="4"/><circle cx="640" cy="210" r="4"/><circle cx="640" cy="235" r="4"/><circle cx="640" cy="258" r="4"/>
+          <circle cx="640" cy="290" r="4"/><circle cx="640" cy="315" r="4"/><circle cx="640" cy="340" r="4"/><circle cx="640" cy="363" r="4"/>
+          <circle cx="560" cy="440" r="4"/><circle cx="640" cy="440" r="4"/>
+          <circle cx="820" cy="395" r="4"/><circle cx="820" cy="445" r="4"/>
+        </g>
+        <!-- legenda -->
+        <g class="pt" style="font-size:11px">
+          <line x1="20" y1="585" x2="44" y2="585" class="wr w-pwr"/><text x="50" y="589">5 V</text>
+          <line x1="90" y1="585" x2="114" y2="585" class="wr w-3v3"/><text x="120" y="589">3,3 V</text>
+          <line x1="175" y1="585" x2="199" y2="585" class="wr w-gnd"/><text x="205" y="589">GND</text>
+          <line x1="255" y1="585" x2="279" y2="585" class="wr w-spi"/><text x="285" y="589">SPI do CC1101</text>
+          <line x1="405" y1="585" x2="429" y2="585" class="wr w-sda"/><line x1="433" y1="585" x2="457" y2="585" class="wr w-scl"/><text x="463" y="589">I2C</text>
+          <line x1="505" y1="585" x2="529" y2="585" class="wr w-sig"/><text x="535" y="589">sinais</text>
+          <line x1="595" y1="585" x2="619" y2="585" class="wr w-bat"/><text x="625" y="589">medição da bateria (opcional)</text>
+        </g>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Módulo 18650 saída 5V / GND</td><td>ESP32 <b>VIN</b> / GND</td><td>O regulador do ESP32 faz os 3,3 V</td></tr>
+      <tr><td>ESP32 3V3</td><td>CC1101 VCC, OLED VCC, motor +</td><td><b>Nunca</b> ligue o CC1101 em 5 V</td></tr>
+      <tr><td>GPIO18 / 19 / 23 / 5</td><td>CC1101 SCK / MISO (SO) / MOSI (SI) / CSN</td><td>SPI</td></tr>
+      <tr><td>GPIO2</td><td>CC1101 GDO0</td><td>Opcional: o RSSI é lido pelo SPI</td></tr>
+      <tr><td>GPIO21 / 22</td><td>OLED SDA / SCL</td><td>Endereço 0x3C</td></tr>
+      <tr><td>GPIO15 → resistor 1 kΩ</td><td>BC547 base</td><td>Emissor no GND, coletor no motor −</td></tr>
+      <tr><td>1N4148</td><td>Em paralelo com o motor</td><td>Faixa (catodo) no lado do 3V3. Protege o transistor do pico de tensão do motor</td></tr>
+      <tr><td>GPIO4</td><td>Botão → GND</td><td>Pull-up interno</td></tr>
+      <tr><td><i>Opcional:</i> bateria + → 100 kΩ → GPIO34 → 100 kΩ → GND</td><td>Divisor</td><td>Mostra a % da bateria na tela</td></tr>
+    </table></div>
+    <div class="note"><b>Arduino Nano (plano B):</b> CC1101 em D13/D12/D11/D10 (SCK/MISO/MOSI/CSN) e GDO0 no D2, OLED em A4/A5, motor no D5 e botão no D4. O Nano é 5 V e o CC1101 não aguenta: use um regulador AMS1117-3.3 para alimentar o módulo e divisores (1 kΩ + 2 kΩ) no SCK, MOSI e CSN. Detalhes no README.</div>
+    <div class="note red"><b>Atenção:</b> para gravar pelo USB, desligue a chave da bateria antes.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Teste na protoboard:</b> ESP32, CC1101, OLED e botão com jumpers, só pelo USB. Grave o código (<code>SCANER_RADIO/SCANER_RADIO.ino</code>, instruções no README) e transmita com seu rádio a uns 5 m numa frequência que não esteja na lista <code>MINHAS_FREQS_KHZ</code>. Ela precisa aparecer no ranking.</li>
+      <li><b>Motor:</b> monte o BC547, o resistor de 1 kΩ e o diodo num pedacinho de placa perfurada, ou solde no ar com termorretrátil. Confira a ordem C-B-E e a faixa do diodo virada para o 3V3.</li>
+      <li><b>Imprima</b> seguindo o <code>3D/LEIA-ME.txt</code> (PETG, 5 paredes, 40% giroide): corpo, tampa da frente com janela do OLED e furo do botão, tampa de trás e clipe MOLLE.</li>
+      <li><b>Tampa da frente:</b> OLED preso com 4 parafusos M2 e botão 6×6 com capa impressa.</li>
+      <li><b>Corpo:</b> módulo 18650 na metade esquerda, com o USB-C e a chave alinhados aos furos da lateral direita. CC1101 em cima, com o conector SMA passando pelo furo do topo e preso pela porca. ESP32 no meio, em espaçadores impressos.</li>
+      <li><b>Motor:</b> cole o adesivo do motor por dentro da tampa de trás, no centro.</li>
+      <li><b>Feche</b> com 4 parafusos M3 × 10, rosqueie a antena e confira a primeira varredura (a tela mostra "medindo ruido...").</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Custo de produção</h2>
+    <p class="hint">Preços pesquisados em out/2026 no Mercado Livre e em lojas nacionais, sem frete. Só produtos novos: os links do Mercado Livre já abrem com o filtro "Novo". Peças impressas não entram.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>ESP32 DevKit V1 30 pinos</td><td><a href="https://lista.mercadolivre.com.br/esp32-devkit-v1-30-pinos_ITEM*CONDITION_2230284">Mercado Livre</a> · <a href="https://lista.mercadolivre.com.br/esp32-devkit-v1_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 36,05</td><td class="r">R$ 42,90</td></tr>
+      <tr><td><b>Conjunto:</b> módulo CC1101 433 MHz + antena SMA</td><td><a href="https://lista.mercadolivre.com.br/modulo-cc1101-433mhz-antena_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 38,90</td><td class="r">R$ 48,00</td></tr>
+      <tr><td>OLED 0,96″ SSD1306 I2C (o kit com 2 sai R$ 49,90)</td><td><a href="https://www.mercadolivre.com.br/modulo-display-oled-096-i2c-ssd1306-arduino-pic/p/MLB29398698">Mercado Livre</a></td><td class="r">R$ 28,11</td><td class="r">R$ 29,90</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 motores vibracall 1027 3 V</td><td><a href="https://lista.mercadolivre.com.br/micro-motor-vibracall_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 39,90</td><td class="r">R$ 51,02</td></tr>
+      <tr><td><b>Conjunto:</b> módulo 18650 com suporte, carregador e saída 5 V (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/modulo-carregador-18650-saida-5v_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 2 baterias 18650 2600 mAh (1 de reserva)</td><td><a href="https://www.mercadolivre.com.br/kit-2-baterias-de-litio-recarregavel-modelo-18650-2600mah-37v-elgin/p/MLB26869470">Mercado Livre</a></td><td class="r">R$ 26,00</td><td class="r">R$ 32,00</td></tr>
+      <tr><td>BC547, 1N4148, resistores 1k e 100k (kits; estimativa). Se você comprou o kit iniciante da bomba, os resistores já vêm nele</td><td><a href="https://lista.mercadolivre.com.br/kit-transistor-bc547_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 5,00</td><td class="r">R$ 10,00</td></tr>
+      <tr><td>Botão tátil 6×6 (kit 5)</td><td><a href="https://www.eletrogate.com/push-button-chave-tactil-6x6x5mm">Eletrogate</a></td><td class="r">R$ 2,90</td><td class="r">R$ 2,90</td></tr>
+      <tr class="tot"><td>Total (peças impressas não entram)</td><td>sem frete</td><td class="r">≈ R$ 192</td><td class="r">≈ R$ 242</td></tr>
+      <tr><td><i>Opcional:</i> antena 433 MHz 5 dBi SMA macho (melhoria 1)</td><td><a href="https://lista.mercadolivre.com.br/antena-433mhz-sma_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 23,89</td><td class="r">R$ 32,99</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">09</span>Melhorias propostas</h2>
+    <div class="tw"><table>
+      <tr><th>Melhoria</th><th>Situação</th><th>Ganho</th></tr>
+      <tr><td>Modo PMR446 rápido (16 canais)</td><td>Já no código: segure o botão 5 s</td><td>Varredura em ≈ 0,05 s; pega até câmbio curto nos canais mais usados por rádios de airsoft</td></tr>
+      <tr><td>Economia de bateria</td><td>Já no código</td><td>Wi-Fi e Bluetooth desligados, CPU a 80 MHz, tela que apaga em 30 s e brilho baixo</td></tr>
+      <tr><td>Várias frequências próprias</td><td>Já no código (<code>MINHAS_FREQS_KHZ</code>)</td><td>Ignora squad, organização e canal de emergência ao mesmo tempo</td></tr>
+      <tr><td>Antena 433 MHz maior (5 dBi ou 1/4 de onda, ~17 cm)</td><td>Só trocar</td><td>Detecta rádios mais longe; a antena de mola que vem no módulo é curta</td></tr>
+      <tr><td>Antena direcional (Yagi 433 MHz pequena)</td><td>Hardware extra</td><td>Girando o corpo e olhando o RSSI, dá para saber de que lado está o rádio</td></tr>
+      <tr><td>Registro em cartão SD</td><td>Futuro</td><td>Grava cada detecção com horário para analisar depois da partida</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>Pontos de atenção</h2>
+    <div class="note">O módulo CC1101 "433 MHz" tem os filtros e o casamento de antena ajustados para 433 MHz. Ele funciona de 400 a 464 MHz, mas fica um pouco menos sensível longe de 433 MHz (perto de 460 MHz, por exemplo).</div>
+    <div class="note">Na varredura completa (2561 frequências em ≈ 3 s), um câmbio de menos de 1 s pode passar entre duas varreduras. Quem fala mais aparece mais vezes no ranking. Se o campo usa PMR446, prefira o modo rápido.</div>
+    <div class="note">Seu próprio rádio transmitindo a 1 m do scanner pode "vazar" para frequências vizinhas. Se isso acontecer, aumente <code>TOLERANCIA_MINHA_KHZ</code> ou <code>LIMIAR_DB</code>.</div>
+    <div class="note red">Use só recepção. Não aperte o PTT no canal que o scanner encontrou: transmitir no canal do outro time é interferência, proibida pela Anatel e pelas regras dos campos. Escutar o outro time também precisa estar liberado pela organização.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg', KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function el(tag,attrs,txt){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
+  // telas: cada linha = [x, y, texto, tamanho]
+  var telas=[
+    {cap:'Status: faixa, ruído, tempo de varredura e último canal novo', l:[
+      [0,7,'UHF 400-464',1],[98,7,'78%',1],[0,17,'Ruido -104 dBm',1],[0,27,'Varr. 3.1s #42',1],[0,37,'Ativas agora: 2',1],[0,49,'NOVO 455.475',1],[0,59,'-62dBm  ha 12s',1]]},
+    {cap:'Ranking: * = transmitindo agora, x = quantas varreduras, pico em dBm e há quanto tempo', l:[
+      [0,7,'RANKING 1/2',1],[80,7,'x  pico',1],
+      [0,17,'*455.475',1],[50,17,'x12',1],[78,17,'-62',1],[104,17,'8s',1],
+      [0,26,' 446.006',1],[50,26,'x7',1],[78,26,'-78',1],[104,26,'2m',1],
+      [0,35,' 462.550',1],[50,35,'x4',1],[78,35,'-88',1],[104,35,'5m',1],
+      [0,44,'*446.081',1],[50,44,'x3',1],[78,44,'-70',1],[104,44,'0s',1],
+      [0,53,' 433.920',1],[50,53,'x2',1],[78,53,'-95',1],[104,53,'9m',1]]},
+    {cap:'Segurando o botão 2 s: soltar zera a partida', l:[
+      [0,22,'SOLTE:',2],[0,40,'ZERA',2],[0,58,'PARTIDA',2]]}
+  ], box=$('#screens');
+  telas.forEach(function(t){
+    var d=document.createElement('div'); d.className='scr';
+    var f=document.createElement('div'); f.className='frame';
+    var s=el('svg',{viewBox:'0 0 128 64','data-mm':'21.7','data-zoom':'12'});
+    s.appendChild(el('rect',{width:128,height:64,fill:'#000'}));
+    t.l.forEach(function(a){ s.appendChild(el('text',{x:a[0],y:a[1],class:'o','font-size':a[3]==2?16:8.6},a[2].replace(/ /g,' '))); });
+    f.appendChild(s); d.appendChild(f);
+    var p=document.createElement('p'); p.textContent=t.cap; d.appendChild(p); box.appendChild(d);
+  });
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

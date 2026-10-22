@@ -1,0 +1,57 @@
+==========================================================
+ 13 - CYBERDECK BLACK BIRD · PEÇAS 3D (maleta inteira impressa)
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+ Maleta fechada: 410 x 310 x 135 mm, em 35 peças. A maior
+ tem 205 x 155 e cabe na mesa de 220 x 220 da K1C.
+ Nome das peças: f = frente, t = trás, e = esquerda, d = direita.
+
+ CONFIGURAÇÃO (Creality K1C, PETG, resistente a BB a 10 m+)
+   Camada 0,24 mm nas peças grandes (0,2 nas pequenas)
+   5 paredes · 5 camadas em cima e embaixo · 30-40% giroide
+   Bico 240 °C · mesa 75-80 °C · aba (brim) de 5 mm nos quartos
+   da base e da tampa, porque peça grande de PETG entorta.
+   Filamento: uns 2,5 a 3 kg no total.
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: base_*, cantoneira_tela, dobradiças, travas, alca, emenda, coluna,
+          capa_missil_base, suporte_tm1637, manete_base, trilho_neon
+          COYOTE: tampa_*, painel_*, manete_alavanca
+   VERMELHO: capa_missil_tampa (cor de alerta, única exceção)
+   Cantos chanfrados de 15 mm; tampa com emblema e nervuras em V.
+
+ PEÇA                QTD  SUPORTE  OBSERVAÇÃO
+ base_fe/fd/te/td    1 cada  não   4 quartos do corpo (~14 h cada)
+ tampa_fe/fd/te/td   1 cada  não   4 quartos da TAMPA da maleta
+ painel_fe/fd/te/td  1 cada  não   4 quartos do painel: rasgo da manete,
+                                   barra de glitch vazada e nomes dos
+                                   comandos gravados (estêncil)
+ cantoneira_tela      4   não      prendem os 4 cantos do monitor 15,6"
+                                   (1 M3 x 25 cada nos pinos da tampa)
+ capa_missil_base     3   não      base das 3 chaves míssil
+ capa_missil_tampa    3   não      capa basculante (PETG vermelho)
+ suporte_tm1637       1   não      segura o display da partida por baixo
+                                   do painel (2 M3 + 4 M2 na placa)
+ manete_base          1   não      aba na mesa; eixo M3 x 30 + porca e
+                                   microchave KW11 (2 M2) no fim de MIL
+ manete_alavanca      1   não      em pé, eixo na mesa (COYOTE)
+ trilho_neon          2   não      seguram a fita WS2812 embaixo da
+                                   barra de glitch (2 M3 cada)
+ dobradica_base       2   não      dobradiça (parte da base)
+ dobradica_tampa      2   não      dobradiça (parte da tampa)
+ trava_lingueta       2   não      fecho da frente
+ trava_batente        2   não      onde o fecho prende
+ alca                 1   não      alça da frente
+ emenda               4   não      unem os quartos do painel
+ coluna               2   não      apoiam o meio do painel
+
+ MONTAGEM DOS QUARTOS: as nervuras de dentro se encostam e
+ recebem parafusos M3 x 16 + porca. Passe um filete de cola
+ (cianoacrilato ou epóxi) na emenda antes de apertar.
+
+ FERRAGENS (tudo M3 Allen, aprox.): 60 parafusos M3 x 16 + porcas (nervuras)
+ · 30 M3 x 10 (painel, moldura, dobradiças, alça, travas) ·
+ 2 M3 x 50 (pinos das dobradiças) · espuma em placa, cortada na medida.
+
+ Depois de imprimir cada peça, me diga ou some no ESTOQUE.js.

@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bomba Search & Destroy</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+a{color:var(--accent)}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-5v{stroke:#f0a03a}.w-gnd{stroke:#b9c2c7}.w-row{stroke:#4fa3ff}.w-col{stroke:#5fd17a}.w-scl{stroke:#c58cff}.w-sda{stroke:#ffd84a}.w-sig{stroke:#ff7ad9}
+.w-g1{stroke:#e5533f;stroke-dasharray:7 4}.w-g2{stroke:#4f8dff;stroke-dasharray:7 4}.w-g3{stroke:#ffd84a;stroke-dasharray:7 4}.w-g4{stroke:#43c463;stroke-dasharray:7 4}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.screens{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.scr{text-align:center}
+.scr .frame{display:inline-block;background:#0b1a3a;padding:8px;border-radius:6px;border:1px solid #2c3337}
+.scr svg{display:block}
+.scr p{color:var(--muted);font-size:13px;margin-top:6px;max-width:300px}
+/* SVG */
+.part{fill:#3b4147;stroke:#7f8a90;stroke-width:.35}
+.part2{fill:#2e3439;stroke:#7f8a90;stroke-width:.35}
+.metal{fill:#5a6268;stroke:#9aa4aa;stroke-width:.25}
+.dark{fill:#08090a;stroke:#5a6268;stroke-width:.2}
+.pcbb{fill:#1d3f73;stroke:#4c78b8;stroke-width:.25}
+.pcbg{fill:#1f4d34;stroke:#5fae7a;stroke-width:.25}
+.batt{fill:#3a3120;stroke:#e2b04a;stroke-width:.25}
+.ghost{fill:none;stroke:#7f8a90;stroke-width:.3;stroke-dasharray:1.2 .8}
+.key{fill:#cfd6da;stroke:#7f8a90;stroke-width:.2}
+.keyt{font:700 4px Consolas,monospace;fill:#14181b;text-anchor:middle}
+.dim{stroke:#e2b04a;stroke-width:.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}
+.ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}
+.lead{stroke:#8a959b;stroke-width:.25;fill:none}
+.dt{fill:#e2b04a;font:600 3.4px Consolas,monospace;text-anchor:middle}
+.lb{fill:#cfd6da;font:3.4px "Segoe UI",system-ui,sans-serif}
+.sm{font-size:2.6px}
+.mut{fill:#8a959b}
+.lcdbg{fill:#1d4fd8}
+.lcdt{fill:#e8f0ff;font-family:Consolas,"Courier New",monospace;font-weight:700}
+.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.15}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.4" markerHeight="2.4" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | GAMES · PROJETO 01</div>
+    <h1>Bomba Search &amp; Destroy</h1>
+    <p class="sub">Bomba de jogo com 3 modos de desarme (senha, segurar botão e fios), sirene de 110 dB e tela LCD. Arduino Uno do kit iniciante, caixa impressa em 3D. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>210 × 150 × 85</b><span>caixa impressa (mm), cabe numa mesa de 220 mm</span></div>
+      <div class="tile"><b>3 modos</b><span>senha · segurar botão · fios</span></div>
+      <div class="tile"><b>110 dB</b><span>sirene piezo na explosão (bipe no buzzer na contagem)</span></div>
+      <div class="tile"><b>≈ 20 h</b><span>com 6 pilhas AA (estimativa, tela acesa)</span></div>
+      <div class="tile"><b>≈ 1,1 kg</b><span>peso estimado com pilhas</span></div>
+      <div class="tile"><b>R$ 318–380</b><span>comprando em conjuntos; as sobras servem para a maleta hacker</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Modos de jogo</h2>
+    <div class="tw"><table>
+      <tr><th>Tecla</th><th>Modo</th><th>Armar (ataque)</th><th>Desarmar (defesa)</th><th>Erro</th></tr>
+      <tr><td class="mm">A</td><td><b>CÓDIGO</b></td><td>Digita a senha de armar e aperta <code>#</code></td><td>Digita a senha de desarmar e aperta <code>#</code>. A senha pode estar em cartões de inteligência espalhados pelo campo</td><td>Senha errada tira tempo (penalidade) e conta 1 erro</td></tr>
+      <tr><td class="mm">B</td><td><b>SEGURAR</b></td><td>Segura o botão grande por X s (barra de progresso)</td><td>Segura o botão por Y s. Soltou, perde o progresso e o tempo continua correndo</td><td>Não tem: o risco é levar tiro segurando o botão</td></tr>
+      <tr><td class="mm">C</td><td><b>FIOS</b></td><td>Com os 4 fios encaixados, segura o botão por X s</td><td>Puxa o fio certo entre 4 (vermelho, azul, amarelo, verde). O fio certo é sorteado a cada rodada ou fixado na configuração para virar pista</td><td>Fio errado tira tempo e conta 1 erro</td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">Em todos os modos: a contagem bipa a cada 1 s, a cada 0,5 s nos últimos 30 s e a cada 0,25 s nos últimos 10 s. Nos últimos 30 s cada bipe também dá um toque curto na sirene, para o campo inteiro ouvir. Opcional: "armar até" (tempo da rodada); se o ataque não plantar a tempo, a defesa vence.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>A bomba</h2>
+    <p class="hint">Painel de cima (tampa da caixa). O teclado de membrana é adesivo e cola direto no painel impresso; o LCD fica embaixo de uma moldura.</p>
+    <div class="fig">
+      <svg viewBox="0 0 282 194.99" data-mm="282" data-zoom="3.33" class="vistas3d">
+        <style>.vistas3d .lb{font:6.8px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 6.8px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:0.5;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:0.3;opacity:.55}.vistas3d .nm{font:600 5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:1.4px;stroke-linejoin:round}</style>
+        <text x="24" y="10" class="lb">VISTA DE CIMA (painel)</text>
+        <image href="3D/img/cima_topo.png" x="24" y="18" width="234" height="150.99"/>
+        <text x="103" y="50.8" class="nm">LCD 16×2</text>
+        <text x="102.3" y="115.3" class="nm">teclado 4×4</text>
+        <text x="218" y="50.8" class="nm">botão arcade</text>
+        <text x="188" y="101.8" class="nm">bornes (fios)</text>
+        <text x="173" y="42.8" class="nm">LED</text>
+        <line x1="24" y1="168.99" x2="24" y2="183.99" class="ext"/><line x1="258" y1="168.99" x2="258" y2="183.99" class="ext"/>
+        <line x1="24" y1="180.99" x2="258" y2="180.99" class="dim"/><text x="141" y="191.39" class="dt">234</text>
+        <line x1="9" y1="18" x2="24" y2="18" class="ext"/><line x1="9" y1="168.99" x2="24" y2="168.99" class="ext"/>
+        <line x1="12" y1="18" x2="12" y2="168.99" class="dim"/><text x="8.4" y="93.5" class="dt" transform="rotate(-90 8.4 93.5)">151</text>
+      </svg>
+    </div>
+    <div class="fig">
+      <svg viewBox="0 0 480.99 138" data-mm="480.99" data-zoom="1.95" class="vistas3d">
+        <style>.vistas3d .lb{font:6.8px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 6.8px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:0.5;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:0.3;opacity:.55}.vistas3d .nm{font:600 5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:1.4px;stroke-linejoin:round}</style>
+        <text x="24" y="10" class="lb">LATERAL DIREITA (chave do suporte de pilhas)</text>
+        <image href="3D/img/lados_direita.png" x="24" y="18" width="150.99" height="94"/>
+        <line x1="24" y1="112" x2="24" y2="127" class="ext"/><line x1="174.99" y1="112" x2="174.99" y2="127" class="ext"/>
+        <line x1="24" y1="124" x2="174.99" y2="124" class="dim"/><text x="99.5" y="134.4" class="dt">151</text>
+        <line x1="9" y1="24" x2="24" y2="24" class="ext"/><line x1="9" y1="112" x2="24" y2="112" class="ext"/>
+        <line x1="12" y1="24" x2="12" y2="112" class="dim"/><text x="8.4" y="68" class="dt" transform="rotate(-90 8.4 68)">88</text>
+        <text x="222.99" y="10" class="lb">FRENTE (grade da sirene)</text>
+        <image href="3D/img/lados_frente.png" x="222.99" y="18" width="234" height="94"/>
+        <line x1="222.99" y1="112" x2="222.99" y2="127" class="ext"/><line x1="456.99" y1="112" x2="456.99" y2="127" class="ext"/>
+        <line x1="222.99" y1="124" x2="456.99" y2="124" class="dim"/><text x="339.99" y="134.4" class="dt">234</text>
+        <line x1="207.99" y1="24" x2="222.99" y2="24" class="ext"/><line x1="207.99" y1="112" x2="222.99" y2="112" class="ext"/>
+        <line x1="210.99" y1="24" x2="210.99" y2="112" class="dim"/><text x="207.39" y="68" class="dt" transform="rotate(-90 207.39 68)">88</text>
+      </svg>
+      <div class="cap">A chave liga/desliga é a do próprio suporte de pilhas: o suporte fica em pé, encostado na parede direita, com a chave alinhada a uma janela. Para trocar as pilhas, solte os 4 parafusos do painel e tire o suporte do clipe impresso. A sirene fica presa na parede da frente, atrás de uma grade impressa, e o USB do Uno fica num furo da lateral esquerda, para regravar o programa sem abrir a caixa. O suporte fica na metade de trás da parede direita, longe do botão arcade e dos bornes, que descem uns 25–30 mm do painel.</div>
+    </div>
+    <div class="fig">
+      <svg viewBox="0 0 282 194.99" data-mm="282" data-zoom="3.33" class="vistas3d">
+        <style>.vistas3d .lb{font:6.8px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 6.8px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:0.5;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:0.3;opacity:.55}.vistas3d .nm{font:600 5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:1.4px;stroke-linejoin:round}</style>
+        <text x="24" y="10" class="lb">INTERIOR (sem o painel)</text>
+        <image href="3D/img/interior_topo_SEM_PAINELtrue.png" x="24" y="18" width="234" height="150.99"/>
+        <text x="91.3" y="57.5" class="nm">Arduino Uno</text>
+        <text x="245" y="109.8" class="nm">pilhas 6×AA</text>
+        <text x="153" y="154.8" class="nm">sirene</text>
+        <text x="151" y="71.3" class="nm">relé</text>
+        <line x1="24" y1="168.99" x2="24" y2="183.99" class="ext"/><line x1="258" y1="168.99" x2="258" y2="183.99" class="ext"/>
+        <line x1="24" y1="180.99" x2="258" y2="180.99" class="dim"/><text x="141" y="191.39" class="dt">234</text>
+        <line x1="9" y1="18" x2="24" y2="18" class="ext"/><line x1="9" y1="168.99" x2="24" y2="168.99" class="ext"/>
+        <line x1="12" y1="18" x2="12" y2="168.99" class="dim"/><text x="8.4" y="93.5" class="dt" transform="rotate(-90 8.4 93.5)">151</text>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Telas</h2>
+    <p class="hint">LCD 16×2 de fundo azul. No modo "tamanho real" aparece a área visível real do display: 64,5 × 16 mm.</p>
+    <div class="fig">
+      <div class="screens" id="screens"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Configuração (tecla D)</h2>
+    <p class="hint">Fica salva na memória do Arduino (EEPROM): desligou e ligou, continua igual. Em cada tela: digite o número, <code>*</code> apaga, <code>#</code> confirma; confirmar vazio mantém o valor atual.</p>
+    <div class="tw"><table>
+      <tr><th>Tela</th><th>Padrão</th><th>O que é</th></tr>
+      <tr><td>Bomba (segundos)</td><td class="mm">300</td><td>Tempo até explodir depois de armada (10 a 5999 s)</td></tr>
+      <tr><td>Armar até (min)</td><td class="mm">0</td><td>Tempo para o ataque plantar. 0 = sem limite</td></tr>
+      <tr><td>Segurar armar / desarmar</td><td class="mm">5 / 10 s</td><td>Tempo segurando o botão (modos SEGURAR e FIOS)</td></tr>
+      <tr><td>Senha ARMAR / DESARM</td><td class="mm">1234 / 4321</td><td>4 a 8 dígitos. A tecla <code>A</code> gera uma senha aleatória de 4 dígitos</td></tr>
+      <tr><td>Fio certo</td><td class="mm">0</td><td>0 = sorteia a cada rodada; 1–4 = fixo (1 vermelho, 2 azul, 3 amarelo, 4 verde)</td></tr>
+      <tr><td>Penalidade</td><td class="mm">60 s</td><td>Tempo tirado a cada senha ou fio errado</td></tr>
+      <tr><td>Erros p/ explodir</td><td class="mm">3</td><td>0 = sem limite</td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">No fim da rodada: <code>#</code> começa outra com a mesma configuração e <code>*</code> volta ao menu. Antes de armar, <code>*</code> (com a senha vazia) também volta ao menu. Depois de armada, não tem como voltar ao menu pelo teclado, só desarmando ou desligando.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas deste projeto, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. As tampas aparecem viradas para cima, como ficam no uso. Arquivos em <b>3D/stl</b>; quantidades, suportes e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do projeto em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Caixa preta com cantos chanfrados e painéis hexagonais dos dois lados da grade da sirene; painel coyote com borda chanfrada e o emblema; alça, moldura do LCD e passa-fios em preto.</div>
+  </section>
+  <section>
+    <h2><span class="n">06</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>Arduino Uno R3 (do kit iniciante)</td><td class="mm">68,6 × 53,4</td><td>Cérebro: lê o teclado, o botão e os fios, controla a tela e o som</td></tr>
+      <tr><td>Display LCD 16×2 com módulo I2C soldado</td><td class="mm">80 × 36 × 11</td><td>Mostra tempo, senha e resultado. Só 4 fios graças ao I2C</td></tr>
+      <tr><td>Teclado matricial de membrana 4×4</td><td class="mm">69 × 77 × 1</td><td>Digitar senhas e navegar no menu. Adesivo atrás</td></tr>
+      <tr><td>Botão arcade 30 mm</td><td class="mm">furo Ø 30</td><td>Armar/desarmar segurando</td></tr>
+      <tr><td>4 bornes banana 4 mm + 4 pinos banana</td><td class="mm">furo Ø 6–8</td><td>Os "fios" da bomba: pino puxado = fio cortado. Não gasta fio</td></tr>
+      <tr><td>Sirene piezo 12 V 110 dB</td><td class="mm">≈ 60 × 40 (confira)</td><td>Toque ao armar, últimos 30 s e explosão. Funciona com os 9 V das pilhas, um pouco mais baixa</td></tr>
+      <tr><td>Módulo relé 1 canal 5 V (do kit)</td><td class="mm">50 × 26</td><td>O Arduino liga a sirene por ele</td></tr>
+      <tr><td>Buzzer ativo 5 V (do kit)</td><td class="mm">Ø 12</td><td>Bipe da contagem e das teclas</td></tr>
+      <tr><td>LED vermelho 3 mm + resistor 220–560 Ω</td><td class="mm">Ø 3</td><td>Pisca junto com o bipe</td></tr>
+      <tr><td>Suporte 6 pilhas AA com chave e tampa</td><td class="mm">96 × 72 × 19</td><td>Alimentação de 9 V (ou 7,2 V com recarregáveis) e chave liga/desliga</td></tr>
+      <tr><td>Caixa, painel, moldura do LCD, grade da sirene, alça, clipe do suporte (impressos)</td><td class="mm">210 × 150 × 85</td><td>PETG ou PLA, impresso em partes</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Ligação elétrica</h2>
+    <p class="hint">Esquema de ligação, sem escala. Cada bolinha amarela é um pino ou terminal onde vai um fio; os pontos maiores marcam onde dois fios se unem. As etiquetas "5V" e "GND" indicam o mesmo fio do Arduino, sem desenhar a volta inteira.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 640">
+        <!-- pilhas -->
+        <rect x="20" y="80" width="120" height="90" rx="8" class="blk"/>
+        <text x="80" y="118" class="ttl c">6 × AA</text>
+        <text x="80" y="136" class="pt c" style="font-size:10px;fill:#8a959b">9 V · com chave</text>
+        <text x="132" y="114" class="pt e">+</text><text x="132" y="152" class="pt e">−</text>
+        <!-- LCD -->
+        <rect x="180" y="185" width="100" height="100" rx="8" class="blk"/>
+        <text x="230" y="178" class="ttl c">LCD 16×2 I2C</text>
+        <text x="272" y="199" class="pt e">VCC</text><text x="272" y="224" class="pt e">SDA</text><text x="272" y="249" class="pt e">SCL</text><text x="188" y="274" class="pt">GND</text>
+        <!-- bornes -->
+        <text x="262" y="306" class="ttl c">Bornes banana</text>
+        <g class="pt e" style="font-size:11px"><text x="262" y="324">1 verm.</text><text x="262" y="349">2 azul</text><text x="262" y="374">3 amar.</text><text x="262" y="399">4 verde</text></g>
+        <g fill="#5a6268" stroke="#9aa4aa"><circle cx="300" cy="320" r="7"/><circle cx="300" cy="345" r="7"/><circle cx="300" cy="370" r="7"/><circle cx="300" cy="395" r="7"/></g>
+        <!-- Uno -->
+        <rect x="360" y="70" width="180" height="470" rx="8" class="brd"/>
+        <text x="450" y="290" class="ttl c">Arduino</text><text x="450" y="308" class="ttl c">Uno R3</text>
+        <g class="pt"><text x="368" y="114">VIN</text><text x="368" y="144">GND</text><text x="368" y="174">5V</text><text x="368" y="224">A4 SDA</text><text x="368" y="249">A5 SCL</text>
+        <text x="368" y="324">A0</text><text x="368" y="349">A1</text><text x="368" y="374">A2</text><text x="368" y="399">A3</text></g>
+        <g class="pt e"><text x="532" y="114">D2</text><text x="532" y="139">D3</text><text x="532" y="164">D4</text><text x="532" y="189">D5</text><text x="532" y="214">D6</text><text x="532" y="239">D7</text><text x="532" y="264">D8</text><text x="532" y="289">D9</text>
+        <text x="532" y="324">D10</text><text x="532" y="364">D11</text><text x="532" y="454">D12</text><text x="532" y="494">D13</text></g>
+        <!-- teclado -->
+        <rect x="640" y="85" width="130" height="215" rx="8" class="blk"/>
+        <text x="705" y="78" class="ttl c">Teclado 4×4</text>
+        <g class="pt"><text x="650" y="114">8 · C4</text><text x="650" y="139">7 · C3</text><text x="650" y="164">6 · C2</text><text x="650" y="189">5 · C1</text><text x="650" y="214">4 · L4</text><text x="650" y="239">3 · L3</text><text x="650" y="264">2 · L2</text><text x="650" y="289">1 · L1</text></g>
+        <!-- buzzer -->
+        <rect x="640" y="305" width="130" height="40" rx="6" class="blk"/>
+        <text x="760" y="330" class="pt e">buzzer ativo</text>
+        <text x="650" y="319" class="pt" style="font-size:10px">+</text><text x="650" y="341" class="pt" style="font-size:10px">−</text>
+        <!-- relé -->
+        <rect x="640" y="350" width="130" height="75" rx="6" class="brd"/>
+        <text x="705" y="420" class="ttl c" style="font-size:12px">relé 1 canal</text>
+        <g class="pt" style="font-size:11px"><text x="650" y="364">IN</text><text x="650" y="389">VCC</text><text x="650" y="414">GND</text></g>
+        <g class="pt e" style="font-size:11px"><text x="762" y="374">COM</text><text x="762" y="399">NO</text></g>
+        <!-- botão -->
+        <rect x="640" y="440" width="100" height="30" rx="6" class="blk"/>
+        <text x="690" y="460" class="pt c" style="font-size:11px">botão arcade</text>
+        <!-- LED -->
+        <rect x="640" y="480" width="60" height="40" rx="6" class="blk"/>
+        <text x="690" y="504" class="pt" style="font-size:11px">LED</text>
+        <text x="648" y="494" class="pt" style="font-size:10px">A</text><text x="648" y="514" class="pt" style="font-size:10px">K</text>
+        <rect x="575" y="484" width="32" height="12" rx="2" fill="#c9a26a" stroke="#7a5b35"/>
+        <text x="591" y="478" class="pt c" style="font-size:10px">220–560 Ω</text>
+        <!-- sirene -->
+        <rect x="800" y="440" width="85" height="60" rx="6" class="blk"/>
+        <text x="842" y="468" class="ttl c" style="font-size:12px">sirene</text>
+        <text x="842" y="484" class="pt c" style="font-size:10px;fill:#8a959b">110 dB</text>
+        <text x="822" y="455" class="pt" style="font-size:10px">+</text><text x="866" y="495" class="pt" style="font-size:10px">−</text>
+
+        <!-- fios: alimentação -->
+        <path class="wr w-pwr" d="M140,110 H360"/>
+        <path class="wr w-pwr" d="M185,110 V45 H850 V370 H770"/>
+        <path class="wr w-pwr" d="M770,395 H820 V440"/>
+        <path class="wr w-gnd" d="M140,140 H360"/>
+        <path class="wr w-gnd" d="M165,140 V600 H870 V500"/>
+        <path class="wr w-gnd" d="M180,270 H165"/>
+        <!-- 5V -->
+        <path class="wr w-5v" d="M360,170 H320 V195 H280"/>
+        <path class="wr w-5v" d="M640,385 H615"/>
+        <g><rect x="585" y="377" width="30" height="16" rx="3" fill="#2a2010" stroke="#f0a03a"/><text x="600" y="389" class="pt c" style="font-size:10px;fill:#f0a03a">5V</text></g>
+        <!-- I2C -->
+        <path class="wr w-sda" d="M280,220 H360"/>
+        <path class="wr w-scl" d="M280,245 H360"/>
+        <!-- teclado -->
+        <path class="wr w-col" d="M540,110 H640 M540,135 H640 M540,160 H640 M540,185 H640"/>
+        <path class="wr w-row" d="M540,210 H640 M540,235 H640 M540,260 H640 M540,285 H640"/>
+        <!-- sinais -->
+        <path class="wr w-sig" d="M540,315 H640"/>
+        <path class="wr w-sig" d="M540,360 H640"/>
+        <path class="wr w-sig" d="M540,450 H640"/>
+        <path class="wr w-sig" d="M540,490 H575 M607,490 H640"/>
+        <!-- GND dos módulos da direita -->
+        <path class="wr w-gnd" d="M640,337 H622 V600"/>
+        <path class="wr w-gnd" d="M640,410 H622"/>
+        <path class="wr w-gnd" d="M640,510 H622"/>
+        <path class="wr w-gnd" d="M740,455 H755 V600"/>
+        <!-- bornes -> A0..A3 -->
+        <path class="wr w-sig" d="M307,320 H360 M307,345 H360 M307,370 H360 M307,395 H360"/>
+        <!-- fios do jogo: pino banana -> GND -->
+        <path class="wr w-g1" d="M293,320 H270 V600"/>
+        <path class="wr w-g2" d="M293,345 H277 V600"/>
+        <path class="wr w-g3" d="M293,370 H284 V600"/>
+        <path class="wr w-g4" d="M293,395 H291 V600"/>
+        <!-- emendas -->
+        <g fill="#e5533f"><circle cx="185" cy="110" r="5"/></g>
+        <g fill="#b9c2c7"><circle cx="165" cy="140" r="5"/><circle cx="165" cy="270" r="5"/><circle cx="622" cy="410" r="5"/><circle cx="622" cy="510" r="5"/><circle cx="622" cy="600" r="5"/><circle cx="755" cy="600" r="5"/><circle cx="270" cy="600" r="4"/><circle cx="277" cy="600" r="4"/><circle cx="284" cy="600" r="4"/><circle cx="291" cy="600" r="4"/></g>
+        <!-- pinos -->
+        <g class="pin">
+          <circle cx="140" cy="110" r="4"/><circle cx="140" cy="140" r="4"/>
+          <circle cx="280" cy="195" r="4"/><circle cx="280" cy="220" r="4"/><circle cx="280" cy="245" r="4"/><circle cx="180" cy="270" r="4"/>
+          <circle cx="360" cy="110" r="4"/><circle cx="360" cy="140" r="4"/><circle cx="360" cy="170" r="4"/><circle cx="360" cy="220" r="4"/><circle cx="360" cy="245" r="4"/>
+          <circle cx="360" cy="320" r="4"/><circle cx="360" cy="345" r="4"/><circle cx="360" cy="370" r="4"/><circle cx="360" cy="395" r="4"/>
+          <circle cx="540" cy="110" r="4"/><circle cx="540" cy="135" r="4"/><circle cx="540" cy="160" r="4"/><circle cx="540" cy="185" r="4"/><circle cx="540" cy="210" r="4"/><circle cx="540" cy="235" r="4"/><circle cx="540" cy="260" r="4"/><circle cx="540" cy="285" r="4"/>
+          <circle cx="540" cy="315" r="4"/><circle cx="540" cy="360" r="4"/><circle cx="540" cy="450" r="4"/><circle cx="540" cy="490" r="4"/>
+          <circle cx="640" cy="110" r="4"/><circle cx="640" cy="135" r="4"/><circle cx="640" cy="160" r="4"/><circle cx="640" cy="185" r="4"/><circle cx="640" cy="210" r="4"/><circle cx="640" cy="235" r="4"/><circle cx="640" cy="260" r="4"/><circle cx="640" cy="285" r="4"/>
+          <circle cx="640" cy="315" r="4"/><circle cx="640" cy="337" r="4"/><circle cx="640" cy="360" r="4"/><circle cx="640" cy="385" r="4"/><circle cx="640" cy="410" r="4"/>
+          <circle cx="770" cy="370" r="4"/><circle cx="770" cy="395" r="4"/>
+          <circle cx="640" cy="450" r="4"/><circle cx="740" cy="455" r="4"/><circle cx="640" cy="490" r="4"/><circle cx="640" cy="510" r="4"/>
+          <circle cx="820" cy="440" r="4"/><circle cx="870" cy="500" r="4"/>
+        </g>
+        <!-- legenda -->
+        <g class="pt" style="font-size:11px">
+          <line x1="20" y1="625" x2="44" y2="625" class="wr w-pwr"/><text x="50" y="629">9 V pilhas</text>
+          <line x1="130" y1="625" x2="154" y2="625" class="wr w-5v"/><text x="160" y="629">5 V</text>
+          <line x1="200" y1="625" x2="224" y2="625" class="wr w-gnd"/><text x="230" y="629">GND</text>
+          <line x1="280" y1="625" x2="304" y2="625" class="wr w-row"/><line x1="308" y1="625" x2="332" y2="625" class="wr w-col"/><text x="338" y="629">teclado (linhas/colunas)</text>
+          <line x1="515" y1="625" x2="539" y2="625" class="wr w-sda"/><line x1="543" y1="625" x2="567" y2="625" class="wr w-scl"/><text x="573" y="629">I2C</text>
+          <line x1="610" y1="625" x2="634" y2="625" class="wr w-sig"/><text x="640" y="629">sinais</text>
+          <line x1="700" y1="625" x2="724" y2="625" class="wr w-g1"/><text x="730" y="629">fios do jogo (removíveis)</text>
+        </g>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Pilhas + (fio vermelho do suporte)</td><td>Uno <b>VIN</b> e relé <b>COM</b></td><td>A chave do suporte já corta tudo</td></tr>
+      <tr><td>Pilhas −</td><td>Uno <b>GND</b> (barramento de GND)</td><td>Todo GND do projeto vai junto</td></tr>
+      <tr><td>Relé <b>NO</b></td><td>Sirene + (fio vermelho)</td><td>Sirene − no GND. NO = "normalmente aberto": só toca quando o relé fecha</td></tr>
+      <tr><td>Uno 5V</td><td>LCD VCC + relé VCC</td><td></td></tr>
+      <tr><td>Uno A4 / A5</td><td>LCD SDA / SCL</td><td>Endereço 0x27 (se a tela ficar em branco, troque para 0x3F no código)</td></tr>
+      <tr><td>Teclado pinos 1–4 (linhas)</td><td>D9, D8, D7, D6</td><td>Pino 1 é o da ponta esquerda, olhando o teclado de frente</td></tr>
+      <tr><td>Teclado pinos 5–8 (colunas)</td><td>D5, D4, D3, D2</td><td>Se as teclas saírem trocadas, inverta a ordem no código</td></tr>
+      <tr><td>D10</td><td>Buzzer ativo +</td><td>Buzzer − no GND</td></tr>
+      <tr><td>D11</td><td>Relé IN</td><td>A maioria liga com nível baixo; o código já trata isso (<code>RELE_ATIVO_EM_LOW</code>)</td></tr>
+      <tr><td>D12</td><td>Botão arcade (um terminal)</td><td>Outro terminal no GND. Usa o pull-up interno, sem resistor</td></tr>
+      <tr><td>D13</td><td>Resistor 220–560 Ω → LED (perna longa)</td><td>Perna curta no GND</td></tr>
+      <tr><td>A0, A1, A2, A3</td><td>Bornes 1 (vermelho), 2 (azul), 3 (amarelo), 4 (verde)</td><td>Usa o pull-up interno: pino encaixado = 0, puxado = 1</td></tr>
+      <tr><td>Fio do jogo (cabo colorido com pino banana)</td><td>GND, por dentro da caixa</td><td>Uma ponta soldada no GND interno, passa pelo passa-fios, a outra tem o pino banana</td></tr>
+    </table></div>
+    <div class="note red"><b>Atenção:</b> para gravar o programa pelo USB, desligue a chave das pilhas. Não ligue a sirene direto num pino do Arduino: ela puxa mais corrente do que o pino aguenta, por isso passa pelo relé.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Instalando o programa</h2>
+    <ol class="steps">
+      <li><b>Arduino IDE:</b> instale a versão 2.x (arduino.cc). Em <i>Ferramentas → Placa</i>, escolha <b>Arduino Uno</b>.</li>
+      <li><b>Bibliotecas:</b> em <i>Ferramentas → Gerenciar bibliotecas</i>, instale <b>LiquidCrystal I2C</b> (Frank de Brabander) e <b>Keypad</b> (Mark Stanley, Alexander Brevig).</li>
+      <li><b>Abra</b> <code>BOMBA_SD/BOMBA_SD.ino</code> (a pasta precisa ter o mesmo nome do arquivo) e clique em <i>Carregar</i>.</li>
+      <li><b>Ajustes rápidos no topo do código:</b> tempo da sirene na explosão (<code>SIRENE_EXPLOSAO_SEG</code>), toques de sirene no fim da contagem (<code>SIRENE_ULTIMOS_SEG</code>) e nomes das cores dos fios (<code>COR_FIO</code>). O resto se configura pelo teclado.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">09</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Teste na protoboard antes de imprimir.</b> Ligue LCD, teclado, buzzer, LED e botão no Uno com os jumpers do kit, alimentando só pelo USB. Grave o código e jogue uma rodada de cada modo. Para testar os fios, use jumpers do A0–A3 até o GND.</li>
+      <li><b>Imprima</b> seguindo o <code>3D/LEIA-ME.txt</code> (PETG, 5 paredes, 40% giroide, resistente a BB): caixa em 2 metades se a mesa for pequena, painel de 3 mm, moldura do LCD, grade da sirene, alça, clipe do suporte de pilhas e 4 passa-fios. Coloque porcas M3 embutidas nos 4 cantos da caixa.</li>
+      <li><b>Painel:</b> fixe o LCD por baixo da moldura (4 parafusos M3), cole o teclado de membrana passando o rabicho por uma fenda, encaixe o botão arcade (Ø 30), o LED (furo de 3 mm com cola quente) e aperte os 4 bornes banana com as porcas.</li>
+      <li><b>Fios do jogo:</b> 4 cabos de ~25 cm nas cores vermelho, azul, amarelo e verde. Uma ponta recebe o pino banana; a outra passa pelo passa-fios e é soldada num barramento de GND por dentro. Dê um nó dentro da caixa para o cabo não sair quando puxarem.</li>
+      <li><b>Sirene e relé:</b> parafuse a sirene atrás da grade da parede da frente. Ligue pilhas + no COM do relé e o NO na sirene +.</li>
+      <li><b>Uno</b> em 4 espaçadores impressos no fundo, com o USB alinhado ao furo da lateral. O relé e o buzzer vão ao lado, com fita dupla face.</li>
+      <li><b>Suporte de pilhas</b> em pé no clipe da parede direita, com a chave na janela.</li>
+      <li><b>Ligações:</b> siga a tabela da seção 07. Use fios com conector Dupont fêmea nos pinos do Uno (do kit) e termorretrátil nas emendas. Deixe folga para abrir o painel sem arrancar nada.</li>
+      <li><b>Feche</b> o painel com 4 parafusos M3. Ligue, confira a configuração (tecla D) e faça uma rodada de teste de cada modo.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>Custo de produção</h2>
+    <p class="hint">Preços pesquisados em out/2026 no Mercado Livre e em lojas nacionais, sem frete. Só produtos novos: os links do Mercado Livre já abrem com o filtro "Novo". A prioridade foi comprar em <b>conjuntos</b>: o kit iniciante já traz Uno, cabo, protoboard, jumpers, LEDs, resistores, buzzer e relé, e as sobras (botões, relés, jumpers, LEDs) servem para a maleta hacker. As peças impressas não entram no custo.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td><b>Conjunto:</b> kit Arduino Uno R3 iniciante (Uno, cabo USB, protoboard, jumpers, LEDs, resistores, buzzer ativo e passivo, relé 1 canal). O menor valor é o kit de 90 peças (sem relé) + 1 relé avulso (≈ R$ 12)</td><td><a href="https://lista.mercadolivre.com.br/kit-arduino-uno-r3-iniciante_ITEM*CONDITION_2230284">Mercado Livre (180 pçs + relé)</a></td><td class="r">R$ 115,49</td><td class="r">R$ 119,00</td></tr>
+      <tr><td><b>Conjunto:</b> display LCD 16×2 + módulo I2C já soldado</td><td><a href="https://lista.mercadolivre.com.br/display-lcd-16x2-modulo-i2c_ITEM*CONDITION_2230284">Mercado Livre</a> · <a href="https://www.mercadolivre.com.br/display-lcd-16x2-1602-fundo-azul-modulo-i2c-soldado-arduino/p/MLB29525771">Mercado Livre</a></td><td class="r">R$ 22,36</td><td class="r">R$ 33,90</td></tr>
+      <tr><td>Teclado matricial de membrana 4×4 (o kit com 5 sai R$ 39,53, se quiser reserva)</td><td><a href="https://lista.mercadolivre.com.br/teclado-matricial-membrana-4x4_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 14,00</td><td class="r">R$ 14,00</td></tr>
+      <tr><td>Sirene piezo 12 V 110 dB</td><td><a href="https://lista.mercadolivre.com.br/sirene-piezo-12v_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 23,35</td><td class="r">R$ 28,90</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 botões arcade 30 mm (1 na bomba, 1 no speedloader 07, 8 de reserva)</td><td><a href="https://lista.mercadolivre.com.br/kit-10-botoes-arcade-30mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 45,00</td><td class="r">R$ 59,00</td></tr>
+      <tr><td><b>Conjunto:</b> 4 bornes fêmea + 4 pinos banana 4 mm</td><td><a href="https://lista.mercadolivre.com.br/borne-para-pino-banana-4mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 27,90</td><td class="r">R$ 27,90</td></tr>
+      <tr><td>Suporte 6 pilhas AA com chave e tampa</td><td><a href="https://lista.mercadolivre.com.br/suporte-6-pilhas-aa-com-chave_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 19,77</td><td class="r">R$ 26,97</td></tr>
+      <tr><td>Pilhas AA (6 un.; dispensável se já tiver recarregáveis) (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/pilha-aa_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 20,00</td><td class="r">R$ 30,00</td></tr>
+      <tr><td>Cabinho flexível 0,5 mm² em 4 cores, para os fios do jogo (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/cabinho-flexivel-0-5mm-kit-cores_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td>Kit parafusos e porcas M3 (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/kit-parafusos-m3_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 15,00</td><td class="r">R$ 15,00</td></tr>
+      <tr class="tot"><td>Total (peças impressas não entram)</td><td>sem frete</td><td class="r">≈ R$ 318</td><td class="r">≈ R$ 380</td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">Valor que fica de fato na bomba (sem os 9 botões arcade que sobram para outros projetos): cerca de R$ 40 a menos, ≈ R$ 278–327.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">11</span>Pontos de atenção</h2>
+    <div class="note">Confira o conteúdo do kit no anúncio antes de comprar: se não vier o <b>relé 1 canal</b> ou o <b>buzzer ativo</b>, compre avulso (R$ 5–12 cada). O LCD e o teclado quase nunca vêm nos kits baratos, por isso estão separados na tabela.</div>
+    <div class="note">A sirene é de 12 V, mas funciona com os 9 V das pilhas, um pouco mais baixa. Se quiser o volume total, troque o suporte de 6 por um de 8 pilhas AA (12 V); o Uno aceita até 12 V no VIN sem problema.</div>
+    <div class="note">Meça a sirene com paquímetro quando chegar, antes de modelar a grade e os furos: os modelos de 110 dB variam de tamanho.</div>
+    <div class="note">Pilhas recarregáveis (1,2 V × 6 = 7,2 V) funcionam, mas ficam no limite do regulador do Uno quando estão quase vazias. Se a tela começar a piscar ou o Uno reiniciar quando a sirene toca, é hora de trocar as pilhas.</div>
+    <div class="note">Na rodada com fio fixo (configuração "Fio certo" = 1–4), dá para esconder a cor certa em cartões de inteligência pelo campo, assim a defesa precisa buscar a informação antes de desarmar.</div>
+    <div class="note red">É uma bomba de jogo: não faça a caixa parecer um explosivo real fora do campo (fios expostos, "C4" escrito etc.). Transporte desligada e dentro de uma bolsa, e avise a organização do campo antes de usar.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg', KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function el(tag,attrs,txt){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
+  // teclas do teclado 4x4
+  var keys=[['1','2','3','A'],['4','5','6','B'],['7','8','9','C'],['*','0','#','D']], g=$('#keys');
+  for(var r=0;g&&r<4;r++)for(var c=0;c<4;c++){
+    var x=44+c*16.2, y=75+r*18;
+    g.appendChild(el('rect',{x:x,y:y,width:13,height:14,rx:1.5,class:'key',style:c==3?'fill:#d9534f':''}));
+    g.appendChild(el('text',{x:x+6.5,y:y+8.6,class:'keyt'},keys[r][c]));
+  }
+  // grade da sirene
+  var gr=$('#grill');
+  for(var i=0;gr&&i<5;i++)for(var j=0;j<5;j++){
+    var cx=13+i*9, cy=20+j*9; if(Math.hypot(cx-31,cy-38)<21) gr.appendChild(el('circle',{cx:cx,cy:cy,r:2.6}));
+  }
+  // telas LCD
+  var telas=[
+    ['PRONTA CODIGO','Senha: 12','Antes de armar (modo CÓDIGO)'],
+    ['ARMADA E1 03:12','Senha: 43','Armada: tempo, erros e senha digitada',0],
+    ['ARMADA E0 00:08','███████████-----','Segurando o botão para desarmar (barra de progresso)'],
+    ['ARMADA E1 01:40','FIO ERRADO -60s','Fio errado: tira 60 s e conta 1 erro'],
+    ['*** EXPLODIU ***','ATAQUE VENCEU','Explosão: sirene por 15 s, LED aceso',1],
+    ['DESARMADA  00:37','DEFESA VENCEU','Desarmada com 37 s sobrando']
+  ], box=$('#screens');
+  telas.forEach(function(t){
+    var d=document.createElement('div'); d.className='scr';
+    var f=document.createElement('div'); f.className='frame';
+    var s=el('svg',{viewBox:'0 0 64.5 16','data-mm':'64.5','data-zoom':'4.4'});
+    s.appendChild(el('rect',{width:64.5,height:16,class:'lcdbg'}));
+    var a=el('text',{x:1.2,y:6.6,class:'lcdt','font-size':'5.6',textLength:'62',lengthAdjust:'spacingAndGlyphs'},t[0].padEnd(16,' '));
+    var b=el('text',{x:1.2,y:14,class:'lcdt','font-size':'5.6',textLength:'62',lengthAdjust:'spacingAndGlyphs'},t[1].padEnd(16,' '));
+    a.setAttribute('xml:space','preserve'); b.setAttribute('xml:space','preserve');
+    if(t[3]===1){a.setAttribute('class','lcdt blink')}
+    s.appendChild(a); s.appendChild(b); f.appendChild(s); d.appendChild(f);
+    var p=document.createElement('p'); p.textContent=t[2]; d.appendChild(p); box.appendChild(d);
+  });
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

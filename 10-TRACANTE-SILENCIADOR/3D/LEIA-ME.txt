@@ -1,0 +1,48 @@
+==========================================================
+ 10 - TRAÇANTE DENTRO DO SILENCIADOR · PEÇAS 3D
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+ montagem.scad = tudo montado (só para ver e para os desenhos).
+
+ ANTES DE IMPRIMIR: MEÇA O SEU SILENCIADOR
+   Tire as duas tampas e a espuma de dentro e meça com paquímetro:
+   - SIL_DI = diâmetro de DENTRO do tubo (usei 32 mm)
+   - SIL_LI = comprimento livre por dentro (usei 150 mm)
+   Mude os dois no começo do pecas.scad. O cartucho tem L = 130 mm:
+   deixe 5 a 20 mm a menos que SIL_LI. Se sobrar folga no comprimento,
+   ponha um anel de espuma ou de borracha atrás, para ele não andar.
+   Se o diâmetro de dentro for menor que 31 mm as placas não cabem:
+   me diga a medida que eu reorganizo.
+
+ CONFIGURAÇÃO (Creality K1C, PETG)
+   Camada 0,2 mm · 4 paredes · 4 camadas em cima e embaixo
+   Preenchimento 40% giroide · bico 240 °C · mesa 75-80 °C
+   (fica protegido dentro do tubo de metal: não precisa das 5
+   paredes das peças que levam BB)
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: chassi, presilha_c3, presilha_lipo, presilha_tp
+   COYOTE: frente (com o emblema e o nome BLACK BIRD, a única marca
+           do projeto; é a parte que aparece quando você abre a
+           frente do silenciador)
+
+ PEÇA             QTD  SUPORTE  OBSERVAÇÃO
+ chassi            1   não      EM PÉ, apoiado no disco de trás. O anel
+                                da frente tem cone de 45° (sem suporte).
+                                ~2 h 30
+ frente            1   não      de cara na mesa
+ presilha_c3       1   não      face lisa na mesa
+ presilha_lipo     1   não      face lisa na mesa
+ presilha_tp       1   não      segura a borda de trás do TP4056
+
+ FERRAGENS:
+   2 M3 x 10  frente → anel do chassi (padrão M3 do projeto)
+   5 M2 x 6   presilhas e plaquinha de sinal: C3 (2), LiPo (2),
+              TP4056 (1). A plaquinha de sinal (perfurada 26 x 16,
+              furada com 2 mm) vai com mais 2 M2 x 6 embaixo.
+   Os LEDs de 5 mm entram justos nos ressaltos (furo 5,1). Nada de
+   cola quente: se algum ficar solto, enrole 1 volta de fita kapton
+   no corpo do LED.
+
+ Depois de imprimir cada peça, me diga ou some no ESTOQUE.js.

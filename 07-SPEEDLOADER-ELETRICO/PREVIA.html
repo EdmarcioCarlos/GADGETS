@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Speedloader Elétrico</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-sig{stroke:#ff7ad9}.w-ana{stroke:#5fd17a}.w-sda{stroke:#ffd84a}.w-scl{stroke:#c58cff}.w-mot{stroke:#4fa3ff}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+.screens{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.scr{text-align:center}
+.scr .frame{display:inline-block;background:#000;padding:8px;border-radius:6px;border:1px solid #2c3337}
+.scr svg{display:block}
+.scr p{color:var(--muted);font-size:13px;margin-top:6px;max-width:260px}
+.part{fill:#3b4147;stroke:#7f8a90;stroke-width:.35}
+.part2{fill:#2e3439;stroke:#7f8a90;stroke-width:.35}
+.metal{fill:#5a6268;stroke:#9aa4aa;stroke-width:.25}
+.dark{fill:#08090a;stroke:#5a6268;stroke-width:.2}
+.pcbb{fill:#1d3f73;stroke:#4c78b8;stroke-width:.25}
+.ghost{fill:none;stroke:#7f8a90;stroke-width:.3;stroke-dasharray:1.2 .8}
+.dim{stroke:#e2b04a;stroke-width:.3;fill:none;marker-start:url(#arr);marker-end:url(#arr)}
+.ext{stroke:#e2b04a;stroke-width:.2;opacity:.55}
+.lead{stroke:#8a959b;stroke-width:.3;fill:none}
+.dt{fill:#e2b04a;font:600 4px Consolas,monospace;text-anchor:middle}
+.lb{fill:#cfd6da;font:4px "Segoe UI",system-ui,sans-serif}
+.sm{font-size:3.2px}
+.mut{fill:#8a959b}
+.o{fill:#bfe9ff;font-family:Consolas,"Courier New",monospace}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PROJETO 07 · INTERMEDIÁRIO</div>
+    <h1>Speedloader Elétrico</h1>
+    <p class="sub">Enche o carregador sozinho: você encaixa o carregador M4 no bico, aperta o gatilho e ele para na quantidade certa (120 para mid-cap). Um sensor infravermelho conta cada BB e o motor dá ré sozinho se travar. Reaproveita os kits do cronógrafo (04). Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>90 × 70 × 235</b><span>corpo + reservatório (mm)</span></div>
+      <div class="tile"><b>≈ 1000 BBs</b><span>no reservatório</span></div>
+      <div class="tile"><b>≈ 10 BB/s</b><span>roda de 8 bolsos a ~80 rpm (estimativa)</span></div>
+      <div class="tile"><b>120 em ~12 s</b><span>mid-cap M4, para sozinho</span></div>
+      <div class="tile"><b>R$ 88–143</b><span>reaproveitando os kits do 04; do zero, R$ 314–442</span></div>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Por que intermediário:</b> a eletrônica é simples (motor, sensor, botões), mas a parte mecânica pede ajuste fino: a folga da roda, a altura do bico e a velocidade do motor precisam ser testadas com BBs de verdade. É uma boa sequência depois do cronógrafo, porque usa o mesmo sensor de barreira infravermelha.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="tw"><table>
+      <tr><th>Ação</th><th>Resultado</th></tr>
+      <tr><td>Botões <b>−</b> e <b>+</b></td><td>Escolhem a quantidade: 30 · 50 · 120 · 150 · 300 · CONTÍNUO. Fica salva para a próxima vez</td></tr>
+      <tr><td><b>Gatilho</b> (botão arcade na lateral)</td><td>Começa a carregar e para sozinho na quantidade. Apertar no meio pausa; apertar de novo continua</td></tr>
+      <tr><td>Modo CONTÍNUO</td><td>Carrega enquanto o gatilho estiver apertado (para hi-cap ou para encher devagar)</td></tr>
+      <tr><td>BB parou de passar (travou)</td><td>Primeiro a roda <b>agita</b> (vai e volta curto), depois dá ré por 0,3 s e tenta de novo. Depois de 3 tentativas, para e mostra "CHEIO OU TRAVOU"</td></tr>
+      <tr><td>Carregador quase cheio</td><td>Nos últimos 20% da quantidade o motor vai a 100% de força, porque a mola do carregador empurra de volta</td></tr>
+      <tr><td>Ao ligar</td><td>Mostra o <b>total de BBs</b> já carregadas e chacoalha a roda 3 vezes para soltar BBs presas. Ligar segurando <b>−</b> chacoalha enquanto segurar (anti-travamento estendido)</td></tr>
+      <tr><td><b>Partida rápida</b></td><td>Com ele dormindo, segure o gatilho: acorda e já começa a carregar a última quantidade usada</td></tr>
+      <tr><td>Durante a carga</td><td>Tela mostra BBs carregadas, velocidade (BB/s) e tempo. No CONTÍNUO, soltar e apertar de novo continua a mesma contagem; ela zera sozinha depois de 1 min parado</td></tr>
+      <tr><td>Segurar − e + juntos</td><td>Ré manual enquanto segurar, para soltar uma BB presa</td></tr>
+      <tr><td>3 min sem uso</td><td>Apaga e dorme; o gatilho acorda</td></tr>
+    </table></div>
+    <div class="note">Carregador cheio também faz a roda travar (a mola não deixa entrar mais BB). Por isso a mensagem é "CHEIO OU TRAVOU": olhe a contagem para saber qual foi.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>O aparelho</h2>
+    <div class="fig">
+      <svg viewBox="0 0 343.49 285.49" data-mm="343.49" data-zoom="2.74" class="vistas3d">
+        <style>.vistas3d .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}.vistas3d .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">FRENTE (tela e botões)</text>
+        <image href="3D/img/vistas_frente.png" x="12" y="9" width="98" height="263.49"/>
+        <line x1="12" y1="272.49" x2="12" y2="279.99" class="ext"/><line x1="103.99" y1="272.49" x2="103.99" y2="279.99" class="ext"/>
+        <line x1="12" y1="278.49" x2="103.99" y2="278.49" class="dim"/><text x="58" y="283.69" class="dt">92</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="272.49" x2="12" y2="272.49" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="272.49" class="dim"/><text x="4.2" y="140.75" class="dt" transform="rotate(-90 4.2 140.75)">263</text>
+        <text x="134" y="5" class="lb">LATERAL DIREITA (gatilho)</text>
+        <image href="3D/img/vistas_direita.png" x="134" y="9" width="75.49" height="263.49"/>
+        <line x1="136.51" y1="272.49" x2="136.51" y2="279.99" class="ext"/><line x1="209.49" y1="272.49" x2="209.49" y2="279.99" class="ext"/>
+        <line x1="136.51" y1="278.49" x2="209.49" y2="278.49" class="dim"/><text x="173" y="283.69" class="dt">73</text>
+        <line x1="126.5" y1="9" x2="136.51" y2="9" class="ext"/><line x1="126.5" y1="272.49" x2="136.51" y2="272.49" class="ext"/>
+        <line x1="128" y1="9" x2="128" y2="272.49" class="dim"/><text x="126.2" y="140.75" class="dt" transform="rotate(-90 126.2 140.75)">263</text>
+        <text x="233.49" y="5" class="lb">CORTE (roda, motor, tubo e baia)</text>
+        <image href="3D/img/vistas_tras_CORTEtrue.png" x="233.49" y="9" width="98" height="263.49"/>
+        <text x="301.49" y="171.4" class="nm">roda</text>
+        <text x="280.49" y="171.4" class="nm">motor N20</text>
+        <text x="301.49" y="146.4" class="nm">trava (lábio)</text>
+        <text x="301.49" y="208.4" class="nm">tubo + sensor IR</text>
+        <text x="288.49" y="233.4" class="nm">suporte 18650</text>
+        <text x="271.49" y="238.4" class="nm">C3 · L9110S</text>
+        <text x="286.49" y="76.4" class="nm">reservatório</text>
+        <text x="301.49" y="260.4" class="nm">bico M4</text>
+        <line x1="239.5" y1="272.49" x2="239.5" y2="279.99" class="ext"/><line x1="331.49" y1="272.49" x2="331.49" y2="279.99" class="ext"/>
+        <line x1="239.5" y1="278.49" x2="331.49" y2="278.49" class="dim"/><text x="285.5" y="283.69" class="dt">92</text>
+        <line x1="225.99" y1="9" x2="239.5" y2="9" class="ext"/><line x1="225.99" y1="272.49" x2="239.5" y2="272.49" class="ext"/>
+        <line x1="227.49" y1="9" x2="227.49" y2="272.49" class="dim"/><text x="225.69" y="140.75" class="dt" transform="rotate(-90 225.69 140.75)">263</text>
+      </svg>
+      <div class="cap">O reservatório tem fundo cônico que leva as BBs até a entrada da roda. A roda de 8 bolsos, girada pelo motor N20, pega uma BB por vez em cima e empurra para dentro do tubo embaixo. Cada BB empurra a fila do tubo, que entra no carregador pelo bico M4. No meio do tubo, um LED infravermelho e um fototransistor contam cada BB que passa. O gatilho (botão arcade de 30 mm) fica na lateral direita; a tela, os botões − e + na frente; o liga/desliga e o USB-C na lateral esquerda.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Telas</h2>
+    <div class="fig"><div class="screens" id="screens"></div></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas deste projeto, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. As tampas aparecem viradas para cima, como ficam no uso. Arquivos em <b>3D/stl</b>; quantidades, suportes e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do projeto em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Corpo preto chanfrado com anel protetor em volta do gatilho, molduras nos botões − e + e painel hexagonal atrás; reservatório octogonal coyote (com o emblema e o nome BLACK BIRD, a única marca do projeto) e funil terminando numa fenda ao longo da roda; bico coyote com ponta de 4 dedos que seguram as BBs; roda, travas com lábio flexível anti-pinçamento e tampas pretas.</div>
+  </section>
+  <section>
+    <h2><span class="n">05</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>ESP32-C3 SuperMini (do kit de 5 do cronógrafo)</td><td class="mm">22,5 × 18</td><td>Controla o motor, conta as BBs e desenha a tela</td></tr>
+      <tr><td>Motor N20 6 V com redução <b>100 rpm</b></td><td class="mm">12 × 10 × 34</td><td>Gira a roda. A versão de 100 rpm tem mais força que a de 300 rpm</td></tr>
+      <tr><td>Módulo ponte H L9110S</td><td class="mm">≈ 28 × 21</td><td>Liga o motor para frente e para trás (ré para destravar)</td></tr>
+      <tr><td>Par LED IR + fototransistor + LM393 + trimpot (do kit do cronógrafo)</td><td class="mm">Ø 5</td><td>Conta cada BB no tubo</td></tr>
+      <tr><td>OLED 0,91″ 128×32 I2C</td><td class="mm">38 × 12</td><td>Contagem e estado</td></tr>
+      <tr><td>Botão arcade 30 mm (sobra do kit da bomba)</td><td class="mm">furo Ø 30</td><td>Gatilho</td></tr>
+      <tr><td>2 botões 6×6 + chave SS12D00</td><td class="mm">—</td><td>− , + e liga/desliga</td></tr>
+      <tr><td>Módulo carregador 18650 com saída 5 V + suporte 18650 + bateria 18650</td><td class="mm">≈ 30 × 25 · suporte 77 × 21</td><td>Alimenta o motor e a placa (5 V). O suporte deita no fundo da baia, encostado na parede da frente</td></tr>
+      <tr><td>Peças impressas (pasta <code>3D</code>)</td><td class="mm">—</td><td>corpo, tampa de baixo, reservatório e tampa, roda, 2 meias travas da roda, bico M4, 2 capas dos botões</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Ligação elétrica</h2>
+    <p class="hint">Sem escala. Todos os GND juntos. O sensor IR é o mesmo circuito de uma barreira do cronógrafo (04).</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 400">
+        <rect x="20" y="40" width="160" height="90" rx="8" class="blk"/><text x="100" y="32" class="ttl c">Módulo 18650</text><text x="100" y="80" class="pt c" style="font-size:11px">saída 5 V</text><text x="100" y="100" class="pt c" style="font-size:10px;fill:#8a959b">(carga USB-C)</text>
+        <rect x="210" y="60" width="70" height="36" rx="6" class="blk"/><text x="245" y="83" class="pt c" style="font-size:11px">chave</text>
+        <rect x="350" y="40" width="170" height="320" rx="8" class="brd"/><text x="435" y="200" class="ttl c">ESP32-C3</text><text x="435" y="218" class="ttl c">SuperMini</text>
+        <g class="pt"><text x="358" y="84">5V</text><text x="358" y="124">GND</text><text x="358" y="164">3V3</text><text x="358" y="274">GPIO10</text><text x="358" y="314">GPIO3</text></g>
+        <g class="pt e"><text x="512" y="74">GPIO6</text><text x="512" y="99">GPIO7</text><text x="512" y="164">GPIO8 SDA</text><text x="512" y="189">GPIO9 SCL</text><text x="512" y="244">GPIO4</text><text x="512" y="274">GPIO5</text><text x="512" y="304">GPIO0</text></g>
+        <rect x="610" y="40" width="150" height="80" rx="8" class="brd"/><text x="685" y="32" class="ttl c">L9110S</text><g class="pt" style="font-size:11px"><text x="618" y="74">A-1A</text><text x="618" y="99">A-1B</text></g><text x="752" y="90" class="pt e" style="font-size:11px">MOTOR A</text>
+        <rect x="800" y="55" width="80" height="50" rx="8" class="blk"/><text x="840" y="85" class="pt c" style="font-size:11px">N20</text>
+        <rect x="610" y="140" width="150" height="60" rx="8" class="blk"/><text x="685" y="176" class="pt c" style="font-size:11px">OLED 0,91″</text>
+        <rect x="610" y="225" width="150" height="30" rx="6" class="blk"/><text x="685" y="245" class="pt c" style="font-size:11px">gatilho (arcade)</text>
+        <rect x="610" y="260" width="150" height="25" rx="6" class="blk"/><text x="685" y="277" class="pt c" style="font-size:11px">botão −</text>
+        <rect x="610" y="290" width="150" height="25" rx="6" class="blk"/><text x="685" y="307" class="pt c" style="font-size:11px">botão +</text>
+        <rect x="40" y="240" width="250" height="110" rx="8" class="blk"/><text x="165" y="232" class="ttl c">Sensor do tubo</text>
+        <g class="pt" style="font-size:11px"><text x="52" y="268">LED IR ← 100 Ω ← GPIO10</text><text x="52" y="292">foto (C) → 10k → 3V3 e LM393 IN−</text><text x="52" y="316">trimpot 10k → LM393 IN+</text><text x="52" y="340">LM393 OUT → GPIO3</text></g>
+        <path class="wr w-pwr" d="M180,80 H210 M280,80 H350"/><path class="wr w-pwr" d="M300,80 V20 H685 V40"/>
+        <path class="wr w-mot" d="M520,70 H610 M520,95 H610"/><path class="wr w-mot" d="M760,80 H800"/>
+        <path class="wr w-sda" d="M520,160 H610"/><path class="wr w-scl" d="M520,185 H610"/>
+        <path class="wr w-sig" d="M520,240 H610 M520,270 H610 M520,300 H610"/>
+        <path class="wr w-ana" d="M290,270 H350 M290,310 H350"/>
+        <g class="pin"><circle cx="180" cy="80" r="4"/><circle cx="350" cy="80" r="4"/><circle cx="520" cy="70" r="4"/><circle cx="520" cy="95" r="4"/><circle cx="610" cy="70" r="4"/><circle cx="610" cy="95" r="4"/><circle cx="520" cy="160" r="4"/><circle cx="520" cy="185" r="4"/><circle cx="520" cy="240" r="4"/><circle cx="520" cy="270" r="4"/><circle cx="520" cy="300" r="4"/><circle cx="350" cy="270" r="4"/><circle cx="350" cy="310" r="4"/></g>
+        <text x="20" y="390" class="pt" style="font-size:11px;fill:#8a959b">O 5 V do módulo alimenta a placa (pino 5V) e o L9110S (VCC). Botões entre o GPIO e o GND, com pull-up interno. OLED no 3V3.</text>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Imprima primeiro a roda e o corpo</b> (PETG, 0,2 mm, 5 paredes). A roda precisa girar livre na câmara com uma BB em cada bolso: se prender, lixe a câmara ou diminua o <code>RODA_R</code> no <code>pecas.scad</code>.</li>
+      <li><b>Mecanismo:</b> desça a roda pelo rasgo de cima até o meio da câmara. Entre com o motor N20 por baixo do bloco, empurre 10 mm para a esquerda até o eixo encaixar no furo em D da roda e prenda o motor com a trava_motor (2 parafusos M3 × 10 por baixo do bloco). Encaixe as 2 meias travas no rasgo, uma de cada lado da fenda de entrada (o lábio flexível fica virado para a fenda), e parafuse o reservatório por cima com 2 parafusos M3 × 12, que também seguram as travas.</li>
+      <li><b>Teste o mecanismo antes da eletrônica:</b> motor N20 ligado direto em 5 V, reservatório com 100 BBs, e veja as BBs descendo pelo tubo.</li>
+      <li><b>Sensor:</b> LED IR de um lado do tubo e fototransistor do outro (furos de 5 mm), ligados ao LM393 com o trimpot. Ajuste o trimpot até a contagem bater com 50 BBs contadas na mão.</li>
+      <li><b>Eletrônica embaixo:</b> suporte 18650 deitado no fundo, encostado na parede da frente; C3, L9110S, LM393 e o módulo carregador por cima dele, na baia de baixo; OLED e botões na frente; gatilho na lateral direita.</li>
+      <li><b>Código:</b> grave <code>SPEEDLOADER/SPEEDLOADER.ino</code> (bibliotecas Adafruit SSD1306 e GFX). Se a contagem não funcionar, troque <code>IR_NIVEL_BB</code> de LOW para HIGH.</li>
+      <li><b>Bico:</b> encaixe o bico M4 na coluna embaixo. A ponta tem 4 dedos que seguram as BBs quando não há carregador; se estiver duro demais para passar, lixe um pouco por dentro.</li>
+      <li><b>Amaciamento (ideia do Nano Speedloader):</b> (1) sem carregador, com umas 50 BBs, rode no CONTÍNUO e escute: estalos altos = roda torta ou lábio desalinhado (lixe de leve); (2) teste a contagem: coloque exatamente 20 BBs, rode no CONTÍNUO até esvaziar e confira o número na tela, 3 vezes; (3) passe umas 2000 BBs num mid-cap, enchendo e esvaziando, e veja se a contagem de cada carga é parecida. É normal o motor forçar mais no fim de cada carga.</li>
+      <li><b>Problemas comuns:</b> a roda gira mas as BBs não descem → troque <code>INVERTER_MOTOR</code> para <code>true</code>; nada acontece no gatilho → confira os fios do botão no GPIO4 e GND; contagem errada → ajuste o trimpot do LM393.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Custo de produção</h2>
+    <p class="hint">Preços pesquisados em out/2026 no Mercado Livre, sem frete. Só produtos novos: os links do Mercado Livre já abrem com o filtro "Novo". Peças impressas não entram. "Kits do 04" = cronógrafo; "kit da bomba" = 01.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>Motor N20 6 V com redução 100 rpm (o kit com 2 sai R$ 62–107)</td><td><a href="https://lista.mercadolivre.com.br/motor-n20-6v_ITEM*CONDITION_2230284">Mercado Livre</a> · <a href="https://lista.mercadolivre.com.br/motor-n20-6v-reducao_ITEM*CONDITION_2230284">exemplo</a></td><td>—</td><td class="r">R$ 39,00</td><td class="r">R$ 54,00</td></tr>
+      <tr><td>Módulo ponte H L9110S (o kit com 2 sai R$ 23,80)</td><td><a href="https://lista.mercadolivre.com.br/l9110s_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 13,97</td><td class="r">R$ 27,03</td></tr>
+      <tr><td>OLED 0,91″ 128×32 I2C</td><td><a href="https://lista.mercadolivre.com.br/display-oled-0.91_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 14,90</td><td class="r">R$ 26,90</td></tr>
+      <tr><td>Módulo carregador 18650 com saída 5 V (plaquinha, estimativa)</td><td><a href="https://lista.mercadolivre.com.br/modulo-carregador-18650-saida-5v_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td>Suporte 18650 com fios (estimativa)</td><td><a href="https://eletronicos.mercadolivre.com.br/suporte-bateria-18650-3.7v_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 5,00</td><td class="r">R$ 10,00</td></tr>
+      <tr><td>ESP32-C3, par IR, LM393, trimpot, botões 6×6, chave, 18650</td><td>kits do 04</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr><td>Botão arcade 30 mm, resistores</td><td>sobras do kit da bomba (01)</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="reuse"><td colspan="3">Total reaproveitando os kits do 01 e do 04</td><td class="r">≈ R$ 88</td><td class="r">≈ R$ 143</td></tr>
+      <tr class="tot"><td colspan="3">Total do zero (comprando também os kits de C3, IR, LM393, 18650, arcade, botões e chaves)</td><td class="r">≈ R$ 314</td><td class="r">≈ R$ 442</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">09</span>O que aproveitamos do Nano Speedloader</h2>
+    <p class="hint">Analisei o guia de montagem e o guia do usuário do <b>Nano Speedloader</b> (ProtoForge), os dois PDFs que estão nesta pasta. Ele também usa ESP32 programado na IDE do Arduino, então as ideias encaixam bem no nosso.</p>
+    <div class="tw"><table>
+      <tr><th>Ideia do Nano</th><th>No nosso projeto</th></tr>
+      <tr><td><b>Roda agitadora</b> acima da roda de alimentação, para as BBs não embolarem</td><td><b>Adotado de outro jeito:</b> a entrada virou uma fenda de 16 mm ao longo da borda da roda, então a própria roda mexe as BBs que estão em cima dela. Além disso, o código agita a roda antes de dar ré quando trava. Sem engrenagem extra, mais simples de montar.</td></tr>
+      <tr><td><b>Botão anti-pinçamento com mola</b>: evita BB presa entre a roda e a parede</td><td><b>Adotado:</b> as travas da roda têm um <b>lábio flexível</b> impresso (uma fenda solta a ponta), que cede em vez de quebrar a BB ou a roda. Não precisa da mola de caneta.</td></tr>
+      <tr><td><b>Cano com saída estreitada</b>, para as BBs não caírem sem carregador</td><td><b>Adotado:</b> a ponta do bico estreita para 5,7 mm e tem 4 dedos flexíveis.</td></tr>
+      <tr><td>Chacoalhar ao ligar + segurar uma seta para chacoalhar mais</td><td><b>Adotado</b> no código (segurar <b>−</b> ao ligar).</td></tr>
+      <tr><td>Partida pelo gatilho com o aparelho desligado</td><td><b>Adotado</b> (partida rápida).</td></tr>
+      <tr><td>Contagem e tempo zeram depois de 1 min; tela com BB/s e duração</td><td><b>Adotado.</b></td></tr>
+      <tr><td>Contador global que não zera</td><td><b>Adotado:</b> aparece ao ligar.</td></tr>
+      <tr><td>Motor força mais com o carregador quase cheio</td><td><b>Adotado:</b> força total nos últimos 20%.</td></tr>
+      <tr><td>Direção do motor ajustável (problema comum)</td><td><b>Adotado:</b> <code>INVERTER_MOTOR</code> no código.</td></tr>
+      <tr><td>Amaciamento e teste de contagem</td><td><b>Adotado</b> na montagem passo a passo.</td></tr>
+      <tr><td>Impressão: roda e mecanismo com camada fina (0,1 mm), 4+ paredes, 50% de preenchimento, "passar a ferro" (ironing)</td><td><b>Adotado</b> no LEIA-ME da pasta 3D.</td></tr>
+      <tr><td>Contagem por <b>microswitch</b> empurrado por cada BB</td><td><b>Não adotado:</b> o nosso sensor infravermelho não gasta (o microswitch tem uma peça que desgasta) e usa as peças que já sobram do cronógrafo.</td></tr>
+      <tr><td>Servo convertido em motor + bateria LiPo 2S 7,4 V + regulador + driver DRV8833</td><td><b>Não adotado:</b> o motor N20 com redução, a 18650 com módulo de 5 V e o L9110S fazem o mesmo trabalho com peças mais baratas e com menos solda. Se o N20 ficar fraco no fim da carga, a troca recomendada é o N20 de <b>50 rpm</b> (mais força).</td></tr>
+      <tr><td>Placa TTGO com tela colorida, 19 presets com ícones, 6 idiomas, atualização por Wi-Fi</td><td><b>Não adotado agora:</b> seria muito mais código e uma placa mais cara. A OLED com 6 quantidades atende ao jogo.</td></tr>
+      <tr><td>Tampa com tubo de descarga e rosca para garrafa de 3300 BBs</td><td><b>Fica para depois</b>, como melhoria opcional.</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>Pontos de atenção</h2>
+    <div class="note">Use só BBs boas e secas: BB rachada ou suja é a principal causa de travamento em qualquer speedloader.</div>
+    <div class="note">O bico é para carregador M4 (mid-cap e low-cap). Hi-cap tem entrada por cima e usa outro bico; o modo CONTÍNUO serve para ele.</div>
+    <div class="note">BBs <b>transparentes ou tracer</b> podem não cortar bem o feixe infravermelho. Se a contagem falhar com elas, ajuste o trimpot ou use BB branca/preta opaca.</div>
+    <div class="note">Velocidade: o Nano Speedloader avisa que acima de ~25 BB/s as peças impressas começam a quebrar. O nosso fica em ~10 BB/s, com folga.</div>
+    <div class="note ok">É o primeiro protótipo mecânico: imprima a roda em 2 ou 3 tamanhos (mude <code>RODA_R</code> em 0,2 mm) e fique com a que passar as BBs sem prender.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg', KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function el(tag,attrs,txt){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
+  var telas=[
+    {cap:'Pronto, 120 escolhido', l:[[0,15,'0/120',2],[104,8,'82%',1],[0,30,'PRONTO - GATILHO',1]]},
+    {cap:'Carregando', l:[[0,15,'87/120',2],[104,8,'81%',1],[0,30,'CARREGANDO...',1]]},
+    {cap:'Parou: carregador cheio ou BB presa', l:[[0,15,'118/120',2],[104,8,'81%',1],[0,30,'CHEIO OU TRAVOU',1]]}
+  ], box=$('#screens');
+  telas.forEach(function(t){
+    var d=document.createElement('div'); d.className='scr';
+    var f=document.createElement('div'); f.className='frame';
+    var s=el('svg',{viewBox:'0 0 128 32','data-mm':'22.4','data-zoom':'12'});
+    s.appendChild(el('rect',{width:128,height:32,fill:'#000'}));
+    t.l.forEach(function(a){ s.appendChild(el('text',{x:a[0],y:a[1],class:'o','font-size':a[3]==2?16:8,'font-weight':a[3]==2?700:400},a[2].replace(/ /g,' '))); });
+    f.appendChild(s); d.appendChild(f);
+    var p=document.createElement('p'); p.textContent=t.cap; d.appendChild(p); box.appendChild(d);
+  });
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

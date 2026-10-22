@@ -1,0 +1,287 @@
+==========================================================
+ IDEIAS DE PROJETOS ARDUINO - AIRSOFT
+ Perfil: BLACK BIRD | DMR
+ "Silêncio antes do caos."
+==========================================================
+
+ Lista em ORDEM DE DIFICULDADE: do mais fácil (faça primeiro)
+ para o mais difícil. O número de cada projeto é o mesmo da
+ pasta dele (ex.: projeto 04 = pasta 04-CRONOGRAFO).
+
+ Níveis:  (*) iniciante   (**) intermediário   (***) avançado
+
+ >> PAINEL-ESTOQUE.html : o que você já pode montar e o que falta
+ >> ESTOQUE.js          : o que você tem (ou me diga no chat o que
+                          chegou e eu atualizo)
+ >> PREVIA-GERAL-LUNETA.html : projetos 03 e 12 juntos na luneta
+ >> PREVIA-AEG/PREVIA.html   : todos os gadgets no Rossi MK16 (450 fps,
+                               silenciador)
+
+==========================================================
+ NÍVEL 1 - INICIANTE (*)
+==========================================================
+
+01. BOMBA SEARCH & DESTROY
+   >> 01-BOMBA-SEARCH-DESTROY/PREVIA.html · código BOMBA_SD.ino
+   Bomba de jogo com 3 modos de desarme (senha, segurar o botão,
+   puxar o fio certo), bipe acelerando e sirene de 110 dB.
+   Por que começar por ela: Arduino Uno do kit iniciante, tudo na
+   protoboard, quase sem solda, pilhas AA e código pronto.
+
+02. POWERBANK DOS TABLETS (1 por tablet)
+   >> 02-POWERBANK-TABLETS/PREVIA.html (sem código: só ligação elétrica)
+   Caixa tática presa no poste/árvore embaixo do tablet da missão,
+   com 3 baterias 18650 num CARTUCHO que troca inteiro (≈ 20 s) e
+   2 saídas USB: tablet + rádio do amplificador (05). ≈ 5 h só com
+   ele; somando a bateria do tablet, 8 h ou mais.
+   Por que aqui: não tem placa programável nem código; a placa de
+   power bank faz tudo. Só imprimir, soldar 4 fios e montar.
+03. NÍVEL ELETRÔNICO ANTI-CANT
+   >> 03-NIVEL-ANTI-CANT/PREVIA.html
+   MPU6050 no trilho e 3 LEDs na lateral da luneta: verde =
+   nivelado, vermelho = inclinado. Primeiro projeto com solda e
+   bateria de lítio (TP4056).
+
+==========================================================
+ NÍVEL 2 - INTERMEDIÁRIO (**)
+==========================================================
+
+04. CRONÓGRAFO COM ANÁLISE DE CONSISTÊNCIA
+   >> 04-CRONOGRAFO/PREVIA.html
+   Túnel com 2 barreiras infravermelhas a 100 mm: m/s, fps,
+   joules, média, desvio padrão e variação da série.
+   É o 1º projeto com ESP32-C3: aqui entram os kits (C3, OLED,
+   TP4056, botões, chaves) que os próximos reaproveitam.
+
+05. AMPLIFICADOR DE REDE DOS TABLETS (LA CATEDRAL BATTLEFIELD)
+   >> 05-AMPLIFICADOR-REDE/PREVIA.html · código AMPLIFICADOR_REDE.ino
+   Caixinha com ESP32-C3 e antena ao lado de cada tablet: cria a rede
+   Wi-Fi do tablet e repassa as mensagens do jogo para os outros
+   pontos pelo rádio de LONGO ALCANCE (ESP-NOW LR). Rádio sem tablet
+   vira repetidor sozinho. Página de diagnóstico no celular.
+   Precisa do APK novo do Battlefield (manda em pedaços).
+   Por que aqui: montagem fácil, mas tem código, APK e teste de
+   alcance no campo. Usa o kit de ESP32-C3 do cronógrafo (04).
+06. ANPEQ: LASER VERDE COM AJUSTE (sem lanterna)
+   >> 06-ANPEQ-LASER/PREVIA.html (sem código: só ligação elétrica)
+   Caixa estilo PEQ no trilho de cima, na frente do guarda-mão, com
+   laser verde de 12 mm num berço que gira numa bola. Duas torres
+   com CLIQUE, como as da luneta (cima/baixo e esquerda/direita),
+   para pôr o ponto do laser no mesmo ponto de impacto da luneta.
+   1 clique ≈ 2,8 cm a 50 m. Liga pelo seu acionador de M-LOK (P2)
+   ou pela chave CONTÍNUO atrás; pilha 16340 com carga USB-C.
+   Por que aqui: a eletrônica é mínima, mas as torres e o pivô são
+   mecânica de precisão (impressão fina e montagem cuidadosa).
+
+07. SPEEDLOADER ELÉTRICO
+   >> 07-SPEEDLOADER-ELETRICO/PREVIA.html · código SPEEDLOADER.ino
+   Reservatório de ~1000 BBs, roda de 8 bolsos girada por motor
+   N20 e bico para carregador M4. Conta cada BB com o mesmo
+   sensor infravermelho do cronógrafo, para sozinho na quantidade
+   (30/50/120/150/300) e dá ré se travar. Ideias do Nano
+   Speedloader (PDFs na pasta).
+   Por que aqui: eletrônica fácil e reaproveita os kits do 04,
+   mas a mecânica (roda e bico) pede testes e ajustes de impressão.
+
+08. GRANADA DE SOM E LUZ REUTILIZÁVEL
+   >> 08-GRANADA-SOM-LUZ/PREVIA.html · código GRANADA.ino
+   Corpo octogonal impresso (Ø 58 × 116 mm) com pino de puxar:
+   o ímã na ponta do pino segura um sensor magnético; puxou, conta
+   3 s (ou 5 s, ou 0 s no modo "mina", com fio de tropeço) e dispara
+   o estrobo de 4 LEDs de 1 W e a sirene de 110 dB. Recarrega pelo
+   USB-C e volta a armar recolocando o pino.
+   Por que aqui: eletrônica simples (temporizador, MOSFETs e um
+   elevador de tensão), o desafio é o corpo aguentar ser jogado.
+   ATENÇÃO: confirmar as regras do campo.
+
+09. ALVO ACIONADOR DE LÂMPADA (jogos noturnos)
+   >> 09-ALVO-ACIONADOR/PREVIA.html · REQUISITOS.md · ALVO.ino · ACIONADOR.ino
+   Alvo no poste (bateria, piezo atrás da placa): acertou, manda um
+   aviso sem fio e o ACIONADOR (caixa fechada na tomada de 127 V, com
+   relé) acende o refletor do campo por 30 s a 3 min. Depois o alvo
+   fica 5 min sem efeito. Pareamento: cada lâmpada só obedece ao seu
+   alvo (até 4). LED vermelho + fita fotoluminescente para achar o
+   alvo no escuro.
+   Por que aqui: eletrônica parecida com a da granada (temporizador,
+   sono profundo), mas o acionador mexe com a rede de 127 V.
+
+10. TRAÇANTE DENTRO DO SILENCIADOR
+   >> 10-TRACANTE-SILENCIADOR/PREVIA.html · código TRACANTE.ino
+   Cartucho impresso que entra no tubo do SEU silenciador, no lugar
+   da espuma: quando a BB passa pela barreira infravermelha (a mesma
+   do cronógrafo), 6 LEDs UV piscam e a BB fosforescente sai
+   brilhando. À noite você vê onde a BB foi e corrige o tiro. Casa
+   com a visão noturna (14). Acorda sozinho no tiro (sensor de
+   vibração) e carrega pelo USB-C tirando a tampa da frente.
+   Por que aqui: o sensor é o do cronógrafo (04), mas o pulso de UV
+   tem de sair no tempo certo e tudo precisa caber num tubo de 32 mm.
+
+11. SCANNER DE RÁDIO UHF (somente recepção)
+   >> 11-SCANER-RADIO/PREVIA.html · README.md · SCANER_RADIO.ino
+   ESP32 + CC1101 varrem 400-464 MHz, ranking das frequências e
+   vibração quando aparece canal novo. Não transmite nada.
+
+12. TELÊMETRO COM ZONA DE ENGAJAMENTO
+   >> 12-TELEMETRO-ZONA-ENGAJAMENTO/PREVIA.html
+   Laser 905 nm mede até 100 m+ e avisa alvo perto demais; capuz
+   com grade anti-BB impressa protege as lentes.
+
+==========================================================
+ NÍVEL 3 - AVANÇADO (***)
+==========================================================
+
+13. CYBERDECK BLACK BIRD (militar + DedSec)
+   >> 13-CYBERDECK/PREVIA.html · README.md · PARTIDA.ino · pi/
+   Computador de campo numa maleta impressa: Raspberry Pi 4, tela
+   7", mini teclado e um menu de missões com glitch neon DedSec para
+   os seus jogos em Python (os 5 de hackeamento entram aqui). Liga
+   com SEQUÊNCIA DE PARTIDA DE CAÇA: BAT → MASTER ARM → APU → ENG 1
+   → ENG 2 → manete em MIL → START (uma ESP32-C3 confere e liga o Pi
+   pelo relé) e desliga com a sequência inversa, sem corromper o
+   cartão. Simulador da partida na prévia.
+
+14. VISÃO NOTURNA CLIP-ON (1x, na frente da luneta)
+   >> 14-VISAO-NOTURNA/PREVIA.html · código VISAO_NOTURNA.ino
+   Igual a um magnificador de holo, só que de visão noturna e SEM
+   zoom (o zoom continua sendo o da luneta): ESP32-CAM com câmera
+   sem filtro IR + 4 LEDs 850 nm (invisíveis) + tela 1,3" + lente
+   de 45 mm que joga a tela para o infinito. Compacta (76 × 46 × 47,
+   LiPo chata). Vira para o lado esquerdo numa dobradiça com trava
+   de pino (puxa o botão, gira, solta). Para ver a 80 m (DMR):
+   lanterna IR 850 nm MONTADA (caixa no M-LOK direito, 18650,
+   LED 3 W e lente de 5°); os LEDs do aparelho só iluminam 15–25 m.
+   Por que por último: óptica (foco, 1x e "zero") pede ajuste fino
+   e é o primeiro projeto com câmera.
+
+----------------------------------------------------------
+ KITS QUE SERVEM PARA VÁRIOS PROJETOS
+----------------------------------------------------------
+
+ Kit Arduino Uno iniciante ... 01 (sobras: LEDs, resistores,
+                               buzzer, BC547, jumpers p/ todos)
+ Kit 10 botões arcade ........ 01 + 07 (8 sobram)
+ Kit 5 ESP32-C3 SuperMini .... 1º kit: 03 + 04 + 07 + 08 + 10
+                               2º kit: 12 (+ os rádios do 05, se
+                               usar a SuperMini comum)
+ Kit 2 OLED 0,96" ............ 04 + 11
+ Kit 10 TP4056 USB-C ......... 03, 04, 06, 08, 10, 12, 14 (lanterna)
+ Kit 10 chaves MTS-102 ....... 06 + 13 (3)
+ Kit 100 botões 6x6 .......... 03, 04, 07, 11, 14
+ Kit 10 chaves SS12D00 ....... 03, 04, 07, 14
+ Kit 10 pares IR + LM393 ..... 04 + 07 + 10
+ MOSFET IRLZ44N .............. 08 (2), 10, 14
+ Kit 10 motores vibracall .... 11
+ Kit 2 baterias 18650 ........ 04 + 07 · 2º kit: 11 + 14 (lanterna)
+                               powerbank 02: 3 por cartucho
+ Kit 10 suportes 18650 ....... 02 (3 por cartucho) + 04, 07, 14
+ Kit 5 pares XT30 ............ 02 (1 por cartucho)
+ Rolo de cabo 4 vias ......... 03
+ Rolo de velcro 25 mm ........ 02 (≈ 1,7 m por powerbank) + 05 (60 cm)
+ Rolo de fita kapton ......... 03, 12, 14
+
+----------------------------------------------------------
+ CAMINHO SUGERIDO
+----------------------------------------------------------
+
+ 1º Bomba (01) → 2º Powerbank (02) → 3º Anti-cant (03)
+ → 4º Cronógrafo (04) → 5º Amplificador de rede (05)
+ → 6º ANPEQ (06) → 7º Speedloader (07) → 8º Granada (08)
+ → 9º Alvo acionador (09) → 10º Traçante (10)
+ → 11º Telêmetro (12)
+ → Visão noturna (14) por último.
+ Scanner (11) e Cyberdeck (13) quando quiser, são independentes.
+
+==========================================================
+ IDEIAS NOVAS (ainda NÃO são projetos: só para pensar)
+==========================================================
+ Feitas a partir das suas respostas (out/2026): você joga milsim e
+ domingo, ORGANIZA os jogos, o time usa Baofeng, e as dores do
+ DMR são COMUNICAR sem se expor e ACERTAR (vento, queda e hop-up).
+ Orçamento de R$ 100–300 cada. Quando escolher uma, eu crio a
+ pasta, a prévia, as peças 3D e o código, e encaixo na ordem.
+
+ --- COMUNICAÇÃO (com os Baofeng que o time já usa) ---
+
+ A. RÁDIO QUE FALA POR VOCÊ  (**)  ≈ R$ 120–180
+    Botão no guarda-mão ligado no Baofeng pelo cabo do fone (K1).
+    Apertou: o telêmetro (12) mede e o rádio transmite sozinho, com
+    voz gravada, "Contato, oitenta e cinco metros". Outros botões
+    mandam frases prontas: "recarregando", "mudando de posição",
+    "preciso de cobertura". Você não fala nada (fica em silêncio,
+    camuflado) e não tira o olho da luneta. Placa ESP32-C3 + tocador
+    de MP3 (DFPlayer) + um transistor que aperta o PTT.
+
+ B. CENTRAL DE RÁDIO DO JOGO  (**)  ≈ R$ 150–250
+    Para você, organizador: um Baofeng ligado numa caixa com ESP32
+    e um decodificador de tons (MT8870). O jogador digita um código
+    no teclado do próprio Baofeng (todo Baofeng manda tons DTMF) ao
+    capturar um ponto ou achar uma pista, e a central responde no
+    rádio de todo mundo: "Ponto Bravo capturado pelo time azul".
+    Conta pontos e tempo sozinha. Sem juiz correndo pelo campo.
+
+ --- PRECISÃO (vento, queda e hop-up) ---
+
+ C. ALVO ELETRÔNICO DE AGRUPAMENTO  (**)  ≈ R$ 150–250
+    Placa de alvo com 4 sensores de vibração (piezo) nos cantos: o
+    ESP32 calcula onde cada BB bateu pelo tempo que o som leva até
+    cada canto, e o celular mostra o agrupamento ao vivo a 30, 50 ou
+    70 m, sem você andar até o alvo. Fase 2: atirando em várias
+    distâncias, ele monta a sua TABELA DE QUEDA e manda direto para
+    o telêmetro (12) pelo Wi-Fi. Rende ótimos vídeos.
+
+ D. MEDIDOR DE VENTO DO DMR  (*)  ≈ R$ 80–150
+    Copinho de vento impresso (anemômetro) que cabe no bolso do
+    colete ou no bipé, com sensor magnético. Mostra o vento e já
+    diz a correção em "BBs para o lado" na distância que o telêmetro
+    mediu, usando o que o alvo eletrônico (C) aprendeu com o seu
+    rifle. A BB de airsoft desvia muito com vento: é a maior causa
+    de erro acima de 50 m.
+
+ E. ANALISADOR DE AEG (BANCADA)  (**)  ≈ R$ 120–200
+    O AEG ligado por um adaptador entre a bateria e a réplica: mede
+    a tensão, a corrente do motor e a cadência de cada tiro, junto
+    com o fps do cronógrafo (04). Mostra se a bateria está caindo,
+    se a mola/gearbox está cansada e se o fps varia (fps variando =
+    BB caindo em lugares diferentes). Ótimo para regular o hop-up
+    com números e para conferir réplica de amigo.
+
+ F. CRONÓGRAFO NO TRAÇANTE  (*)  ≈ R$ 20–40 a mais
+    Expansão do traçante (10): um segundo sensor dentro da ponteira
+    mede a velocidade de CADA tiro durante o jogo. Avisa quando o
+    fps cai (bateria fraca = BB caindo mais) e guarda a média do dia.
+
+ --- MISSÕES E INTEL (para você organizar) ---
+
+ G. RÁDIO ESPIÃO (TRANSMISSOR DE INTEL)  (**)  ≈ R$ 120–200
+    Caixa escondida no campo com um Baofeng do organizador: de tempos
+    em tempos ele transmite, em potência baixa, uma mensagem gravada
+    e codificada (números, código Morse ou uma voz de "agente") num
+    canal secreto. O time que achar o canal (com o scanner 11 ou
+    girando o próprio rádio) e decifrar descobre onde está o
+    objetivo. Missão de inteligência de verdade.
+
+ H. DOCUMENTOS SECRETOS COM NFC  (*)  ≈ R$ 80–150
+    Etiquetas NFC baratas (adesivos) coladas em "documentos" e
+    escondidas no campo. Um leitor de mão impresso (ESP32 + leitor
+    PN532 + telinha) mostra a pista ao encostar e registra qual time
+    achou e a hora. Dá para fazer missões em cadeia: uma pista leva
+    à próxima, e a última dá o código do cofre (I).
+
+ I. COFRE DE INTEL  (**)  ≈ R$ 120–200
+    Caixa impressa com trava por servo e teclado: só abre com o
+    código montado pelas pistas (G, H). Dentro, o "documento" ou o
+    objetivo físico. Conta as tentativas erradas e pode tocar sirene
+    depois de 3 erros. Reaproveita o teclado e a sirene da bomba (01).
+
+ J. MALOTE RASTREADO (ESCOLTA DE CARGA)  (***)  ≈ R$ 200–300
+    Malote/objetivo com GPS e rádio LoRa que manda a posição ao
+    organizador a cada 30 s. O time precisa levar a carga de A até B;
+    você vê o trajeto ao vivo e sabe quem está com ela. Ideal para
+    milsim de várias horas.
+
+ K. PAINEL DO ORGANIZADOR  (***)  ≈ R$ 150–300
+    Uma central (ESP32 com Wi-Fi + LoRa) e uma página no celular ou
+    no notebook que mostra tudo ao vivo: bomba armada (01), missão do
+    cyberdeck (13), cofre aberto (I), pistas achadas (H), malote em
+    movimento (J), pontos do rádio (B), com tempos e placar. Liga
+    todos os projetos de jogo num lugar só.

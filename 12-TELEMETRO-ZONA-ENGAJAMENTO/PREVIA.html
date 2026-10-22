@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Telêmetro Zona de Engajamento</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+ol{margin:.4em 0;padding-left:22px}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+a{color:var(--accent)}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-3v3{stroke:#f0a03a}.w-gnd{stroke:#b9c2c7}.w-tx{stroke:#4fa3ff}.w-rx{stroke:#5fd17a}.w-scl{stroke:#c58cff}.w-sda{stroke:#ffd84a}.w-int{stroke:#ff7ad9}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.screens{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.scr{text-align:center}
+.scr .frame{display:inline-block;background:#000;padding:8px;border-radius:6px;border:1px solid #2c3337}
+.scr svg{display:block}
+.scr p{color:var(--muted);font-size:13px;margin-top:6px}
+/* SVG */
+.part{fill:#3b4147;stroke:#7f8a90;stroke-width:.35}
+.part2{fill:#2e3439;stroke:#7f8a90;stroke-width:.35}
+.metal{fill:#5a6268;stroke:#9aa4aa;stroke-width:.25}
+.dark{fill:#08090a;stroke:#5a6268;stroke-width:.2}
+.rail{fill:#2b3034;stroke:#6c767c;stroke-width:.3}
+.hg{fill:#202529;stroke:#40484e;stroke-width:.3}
+.scope{fill:#1b1f22;stroke:#59636a;stroke-width:.35}
+.grip{stroke:#2a2f33;stroke-width:.4}
+.pcbb{fill:#1d3f73;stroke:#4c78b8;stroke-width:.2}
+.pcbd{fill:#1a1d20;stroke:#59636a;stroke-width:.2}
+.sens{fill:#262b31;stroke:#9cc35a;stroke-width:.3}
+.batt{fill:#3a3120;stroke:#e2b04a;stroke-width:.25}
+.ghost{fill:none;stroke:#7f8a90;stroke-width:.3;stroke-dasharray:1.2 .8}
+.spring{fill:none;stroke:#c9d1d5;stroke-width:.3}
+.beam{stroke:#e5533f;stroke-width:.6;stroke-dasharray:3 2;opacity:.85}
+.dim{stroke:#e2b04a;stroke-width:.22;fill:none;marker-start:url(#arr);marker-end:url(#arr)}
+.ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}
+.lead{stroke:#8a959b;stroke-width:.2;fill:none}
+.dt{fill:#e2b04a;font:600 3px Consolas,monospace;text-anchor:middle}
+.lb{fill:#cfd6da;font:3px "Segoe UI",system-ui,sans-serif}
+.sm{font-size:2.2px}
+.mut{fill:#8a959b}
+.cable{fill:none;stroke:#0a0a0a;stroke-width:3;stroke-linecap:round}
+.cable-hi{fill:none;stroke:#3a3f44;stroke-width:.8;stroke-linecap:round}
+.ctx .dim{stroke-width:.35;marker-start:url(#arrL);marker-end:url(#arrL)}
+.ctx .ext{stroke-width:.25}
+.ctx .dt,.ctx .lb{font-size:5px}
+.o{fill:#bfe9ff;font-family:Consolas,"Courier New",monospace;font-weight:700}
+.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.12}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.2" markerHeight="2.2" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+    <marker id="arrL" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="3.6" markerHeight="3.6" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+    <radialGradient id="glass" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#3a1f2a"/><stop offset="1" stop-color="#07080b"/></radialGradient>
+    <pattern id="hatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1" height="3" fill="#bfe9ff"/></pattern>
+    <pattern id="hex" width="3.6" height="6.235" patternUnits="userSpaceOnUse"><rect width="3.6" height="6.235" fill="#0b0d0f" fill-opacity=".35"/><path d="M0,1.039 L1.8,0 L3.6,1.039 L3.6,3.117 L1.8,4.157 L0,3.117 Z M1.8,4.157 L1.8,6.235 M0,1.039 L0,0 M3.6,1.039 L3.6,0" fill="none" stroke="#4a5258" stroke-width=".6"/></pattern>
+      <g id="ret">
+      <g fill="#c9d1d5">
+        <rect x="-17" y="-.55" width="9" height="1.1"/><rect x="8" y="-.55" width="9" height="1.1"/>
+        <rect x="-.55" y="9.5" width="1.1" height="7.5"/>
+      </g>
+      <g stroke="#c9d1d5" stroke-width=".18" fill="none">
+        <line x1="-8" y1="0" x2="-1.9" y2="0"/><line x1="1.9" y1="0" x2="8" y2="0"/>
+        <line x1="0" y1="-17" x2="0" y2="-1.9"/><line x1="0" y1="1.9" x2="0" y2="9.5"/>
+        <line x1="-6" y1="-.5" x2="-6" y2=".5"/><line x1="-4.5" y1="-.4" x2="-4.5" y2=".4"/><line x1="-3" y1="-.5" x2="-3" y2=".5"/>
+        <line x1="3" y1="-.5" x2="3" y2=".5"/><line x1="4.5" y1="-.4" x2="4.5" y2=".4"/><line x1="6" y1="-.5" x2="6" y2=".5"/>
+        <line x1="-1.1" y1="2.6" x2="1.1" y2="2.6"/><line x1="-1" y1="3.9" x2="1" y2="3.9"/><line x1="-.9" y1="5.2" x2=".9" y2="5.2"/><line x1="-.8" y1="6.5" x2=".8" y2="6.5"/><line x1="-.7" y1="7.8" x2=".7" y2="7.8"/>
+        <line x1=".9" y1="10.5" x2="1.6" y2="10.5"/><line x1=".9" y1="11.5" x2="1.6" y2="11.5"/><line x1=".9" y1="12.5" x2="1.6" y2="12.5"/><line x1=".9" y1="13.5" x2="1.6" y2="13.5"/>
+        <rect x="7" y="-8.5" width="2.2" height="2.2"/><line x1="7" y1="-7.4" x2="9.2" y2="-7.4"/>
+      </g>
+      <path d="M-1.1,1.1 A1.55,1.55 0 1 1 1.1,1.1" fill="none" stroke="#ff4a33" stroke-width=".35"/>
+      <circle r=".3" fill="#ff4a33"/>
+      <g fill="#ff4a33"><circle cx="-1.6" cy="2.6" r=".14"/><circle cx="1.6" cy="2.6" r=".14"/></g>
+    </g>
+</defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PROJETO 12</div>
+    <h1>Telêmetro com Zona de Engajamento</h1>
+    <p class="sub">Mede até 100 m com erro de ±1 m e avisa se o alvo está perto demais para o DMR. Prévia visual com medidas reais em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>76 × 44 × 19</b><span>unidade deitada, com capuz anti-BB de 6 mm (mm)</span></div>
+      <div class="tile"><b>3 – 100 m</b><span>faixa de uso (o sensor vai até 1000 m)</span></div>
+      <div class="tile"><b>± 1 m</b><span>precisão típica desse tipo de laser (confirme no manual)</span></div>
+      <div class="tile"><b>≈ 80 g</b><span>peso estimado</span></div>
+      <div class="tile"><b>≈ 5 h</b><span>medindo sem parar (estimativa)</span></div>
+      <div class="tile"><b>R$ 339–422</b><span>custo com o laser JC02-1 (sem frete dos itens BR)</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Por que este sensor</h2>
+    <div class="tw"><table>
+      <tr><th>Sensor</th><th>Alcance anunciado</th><th>Em alvo escuro (camuflado)</th><th>Serve para 100 m?</th></tr>
+      <tr><td>TF02-Pro (LiDAR)</td><td class="mm">40 m</td><td>≈ 13 m</td><td>Não</td></tr>
+      <tr><td>TF03-100 (LiDAR)</td><td class="mm">100 m (alvo claro)</td><td>40 m (10% de refletividade)</td><td>Não, em pessoas</td></tr>
+      <tr><td><b>Módulo laser de longo alcance</b> (JC02-1, AliExpress)</td><td class="mm">600 – 1200 m</td><td>Sobra margem a 100 m</td><td><b>Sim</b></td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">O módulo de 905 nm é o sensor do aparelho: ele dispara um pulso de laser infravermelho, mede o tempo que a luz leva para voltar e manda a distância pronta para o ESP32 pela porta serial (UART). É o mesmo tipo de peça que vai dentro dos telêmetros de caça e golfe, Classe 1 (seguro para os olhos). Não existe vendedor nacional desse módulo, então ele vem de fora (AliExpress ou Alibaba). Os preços estão na seção de custos.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>Montado no rifle</h2>
+    <p class="hint">Vista lateral esquerda da sua <b>Rossi Shadow MK16 URG-I 13.5</b> com a <b>Red Win 1-6×24</b> na <b>Geissele Super Precision de perfil alto</b> (centro da luneta a 1,93″ ≈ 49 mm do trilho). O telêmetro fica em cima do anel dianteiro, numa tampa de anel impressa que substitui a tampa original, como um ROF-90.</p>
+    <div class="fig">
+      <svg class="ctx" viewBox="0 0 340 200" data-mm="340" data-zoom="2.7">
+        <!-- rifle: guarda-mão URG-I + receptor M4 -->
+        <rect x="0" y="159.5" width="122" height="20.5" class="hg"/>
+        <g fill="#14181b"><rect x="10" y="166" width="22" height="7" rx="3.5"/><rect x="40" y="166" width="22" height="7" rx="3.5"/><rect x="70" y="166" width="22" height="7" rx="3.5"/></g>
+        <rect x="122" y="159.5" width="218" height="20.5" class="hg" style="fill:#262b30"/>
+        <text x="61" y="187" class="lb mut" text-anchor="middle" style="font-size:4px">guarda-mão URG-I 13.5″ (M-LOK)</text>
+        <text x="231" y="173" class="lb mut" text-anchor="middle">receptor M4</text>
+        <rect x="0" y="150" width="340" height="9.5" class="rail"/>
+        <g data-slots="3,34,150,3,5.23,10.01" fill="#0e1113"></g>
+        <!-- Geissele SP: base + pernas -->
+        <rect x="86" y="141" width="108" height="9" rx="1.5" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <polygon points="96,121 114,121 118,141 92,141" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <polygon points="166,121 184,121 188,141 162,141" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <circle cx="100" cy="146" r="3.5" class="dark"/><circle cx="180" cy="146" r="3.5" class="dark"/>
+        <!-- luneta Red Win 1-6x24 (250 mm), eixo em y=101 -->
+        <polygon points="40,84 66,84 78,86 78,116 66,118 40,118" class="scope"/>
+        <rect x="40" y="84" width="3" height="34" class="scope"/>
+        <rect x="78" y="86" width="127" height="30" class="scope"/>
+        <rect x="129" y="72" width="22" height="14" rx="1" class="scope"/>
+        <circle cx="140" cy="101" r="11" class="scope"/>
+        <text x="140" y="102.5" class="lb mut" style="font-size:3px" text-anchor="middle">ilum.</text>
+        <polygon points="205,86 222,79 290,79 290,123 222,123 205,116" class="scope"/>
+        <line x1="230" y1="80" x2="230" y2="122" class="grip"/><line x1="234" y1="80" x2="234" y2="122" class="grip"/><line x1="238" y1="80" x2="238" y2="122" class="grip"/>
+        <!-- anéis Geissele: dianteiro com tampa impressa -->
+        <rect x="96" y="101" width="18" height="20" rx="3" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <rect x="96" y="77" width="18" height="24" rx="3" class="part"/>
+        <rect x="166" y="81" width="18" height="40" rx="3" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <!-- feixe -->
+        <line x1="41" y1="68.5" x2="0" y2="68.5" class="beam"/>
+        <text x="2" y="65" class="lb" style="fill:#e5533f;font-size:4px">laser IR 905 nm</text>
+        <!-- unidade (deitada) -->
+        <rect x="71.5" y="56.5" width="3" height="1.5" class="metal"/>
+        <rect x="41" y="58" width="76" height="19" rx="2.5" class="part"/>
+        <rect x="41" y="59" width="6" height="17" rx="1" fill="url(#hex)" stroke="#7f8a90" stroke-width=".3"/>
+        <rect x="58" y="64.5" width="6" height="6" rx="1" class="metal"/>
+        <rect x="96.5" y="63" width="6" height="3" rx="1" class="dark"/>
+        <text x="82" y="73.5" class="lb mut" style="font-size:3.5px;letter-spacing:.5px" text-anchor="middle">BLACK BIRD</text>
+        <!-- cotas -->
+        <line x1="41" y1="58" x2="41" y2="46" class="ext"/><line x1="117" y1="58" x2="117" y2="46" class="ext"/>
+        <line x1="41" y1="49" x2="117" y2="49" class="dim"/><text x="79" y="47.3" class="dt">76</text>
+        <line x1="41" y1="58" x2="29" y2="58" class="ext"/><line x1="41" y1="77" x2="29" y2="77" class="ext"/>
+        <line x1="32" y1="58" x2="32" y2="77" class="dim"/><text x="30.2" y="67.5" class="dt" transform="rotate(-90 30.2 67.5)">19</text>
+        <line x1="117" y1="58" x2="334" y2="58" class="ext"/><line x1="290" y1="150" x2="334" y2="150" class="ext"/>
+        <line x1="330" y1="58" x2="330" y2="150" class="dim"/><text x="327.8" y="104" class="dt" transform="rotate(-90 327.8 104)">≈ 93 acima do trilho</text>
+        <line x1="290" y1="101" x2="318" y2="101" class="ext"/>
+        <line x1="314" y1="101" x2="314" y2="150" class="dim"/><text x="311.8" y="125.5" class="dt" transform="rotate(-90 311.8 125.5)">49</text>
+        <!-- rótulos -->
+        <text x="47" y="36" class="lb">Telêmetro sobre o anel dianteiro</text>
+        <text x="4" y="55" class="lb mut">liga/desliga</text>
+        <line x1="32" y1="56" x2="58" y2="67" class="lead"/>
+        <text x="124" y="60" class="lb mut">USB-C</text>
+        <line x1="123" y1="61" x2="102" y2="64.5" class="lead"/>
+        <text x="222" y="75" class="lb">Red Win 1-6×24</text>
+        <text x="4" y="134" class="lb mut">tampa do anel impressa (substitui a original)</text>
+        <line x1="70" y1="131" x2="98" y2="92" class="lead"/>
+        <text x="200" y="140" class="lb mut" style="font-size:4px">Geissele SP alta (1,93″)</text>
+        <line x1="199" y1="138.5" x2="192" y2="144" class="lead"/>
+        <text x="4" y="196" class="lb mut">◄ CANO</text>
+        <text x="336" y="196" class="lb mut" text-anchor="end">ATIRADOR ►</text>
+      </svg>
+      <div class="cap">O telêmetro não precisa de abraçadeira. A <b>tampa de cima do anel dianteiro da Geissele</b> é trocada por uma tampa impressa que já tem a base da caixa, no mesmo esquema do ROF-90, e ela usa os parafusos originais da Geissele. A caixa deitada (19 mm) fica centrada para a frente do anel, por cima da objetiva, e termina antes das torres. O topo dela fica cerca de 93 mm acima do trilho. Sem micro dot, o topo da luneta é todo do telêmetro. O laser fica uns 32 mm acima do eixo da luneta, o que é desprezível: alinhado a 50 m, o erro a 20 m é de uns 2 cm. O único comando é o botão liga/desliga com trava, na lateral esquerda, e o USB-C de carga fica no mesmo lado.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Unidade: 3 vistas</h2>
+    <div class="fig">
+      <svg viewBox="0 0 221 261" data-mm="221" data-zoom="4.25" class="vistas3d">
+        <style>.vistas3d .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}.vistas3d .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">DE CIMA</text>
+        <image href="3D/img/vistas_topo.png" x="12" y="9" width="120" height="53"/>
+        <line x1="35" y1="62" x2="35" y2="69.5" class="ext"/><line x1="113" y1="62" x2="113" y2="69.5" class="ext"/>
+        <line x1="35" y1="68" x2="113" y2="68" class="dim"/><text x="74" y="73.2" class="dt">78</text>
+        <line x1="4.5" y1="9" x2="35" y2="9" class="ext"/><line x1="4.5" y1="62" x2="35" y2="62" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="62" class="dim"/><text x="4.2" y="35.5" class="dt" transform="rotate(-90 4.2 35.5)">53</text>
+        <text x="12" y="86" class="lb">LATERAL DIREITA</text>
+        <image href="3D/img/vistas_frente.png" x="12" y="90" width="120" height="65"/>
+        <line x1="35" y1="140" x2="35" y2="162.5" class="ext"/><line x1="113" y1="140" x2="113" y2="162.5" class="ext"/>
+        <line x1="35" y1="161" x2="113" y2="161" class="dim"/><text x="74" y="166.2" class="dt">78</text>
+        <line x1="4.5" y1="90" x2="35" y2="90" class="ext"/><line x1="4.5" y1="140" x2="35" y2="140" class="ext"/>
+        <line x1="6" y1="90" x2="6" y2="140" class="dim"/><text x="4.2" y="115" class="dt" transform="rotate(-90 4.2 115)">50</text>
+        <text x="156" y="86" class="lb">TRASEIRA (tela)</text>
+        <image href="3D/img/vistas_direita.png" x="156" y="90" width="53" height="65"/>
+        <line x1="156" y1="140" x2="156" y2="162.5" class="ext"/><line x1="209" y1="140" x2="209" y2="162.5" class="ext"/>
+        <line x1="156" y1="161" x2="209" y2="161" class="dim"/><text x="182.5" y="166.2" class="dt">53</text>
+        <line x1="148.5" y1="90" x2="156" y2="90" class="ext"/><line x1="148.5" y1="140" x2="156" y2="140" class="ext"/>
+        <line x1="150" y1="90" x2="150" y2="140" class="dim"/><text x="148.2" y="115" class="dt" transform="rotate(-90 148.2 115)">50</text>
+        <text x="12" y="179" class="lb">FRENTE (capuz e grade)</text>
+        <image href="3D/img/vistas_esquerda.png" x="12" y="183" width="53" height="65"/>
+        <line x1="12" y1="233" x2="12" y2="255.5" class="ext"/><line x1="65" y1="233" x2="65" y2="255.5" class="ext"/>
+        <line x1="12" y1="254" x2="65" y2="254" class="dim"/><text x="38.5" y="259.2" class="dt">53</text>
+        <line x1="4.5" y1="183" x2="12" y2="183" class="ext"/><line x1="4.5" y1="233" x2="12" y2="233" class="ext"/>
+        <line x1="6" y1="183" x2="6" y2="233" class="dim"/><text x="4.2" y="208" class="dt" transform="rotate(-90 4.2 208)">50</text>
+        <text x="89" y="179" class="lb">INTERIOR (sem tampa)</text>
+        <image href="3D/img/vistas_topo_SEM_TAMPAtrue.png" x="89" y="183" width="120" height="53"/>
+        <text x="137.75" y="215.9" class="nm">laser JC02-1</text>
+        <text x="162" y="216.4" class="nm">ESP32-C3</text>
+        <text x="162.5" y="198.4" class="nm">TP4056</text>
+        <text x="181.5" y="210.4" class="nm">tela</text>
+        <line x1="112" y1="236" x2="112" y2="243.5" class="ext"/><line x1="190" y1="236" x2="190" y2="243.5" class="ext"/>
+        <line x1="112" y1="242" x2="190" y2="242" class="dim"/><text x="151" y="247.2" class="dt">78</text>
+        <line x1="81.5" y1="183" x2="112" y2="183" class="ext"/><line x1="81.5" y1="236" x2="112" y2="236" class="ext"/>
+        <line x1="83" y1="183" x2="83" y2="236" class="dim"/><text x="81.2" y="209.5" class="dt" transform="rotate(-90 81.2 209.5)">53</text>
+      </svg>
+      <div class="cap">O laser vai deitado, com as duas lentes lado a lado, num berço com pivô de borracha na frente. Atrás dele ficam 2 parafusos M3 com mola: o de elevação entra por cima (na tampa) e o de deriva pela lateral direita. Atrás do laser, em camadas, vão a bateria fina 503040 (5 mm) no fundo, a ESP32-C3 SuperMini por cima dela e o TP4056 por cima de tudo, com o USB-C saindo na lateral esquerda: 5 + 3,5 + 4 = 12,5 mm, dentro dos 15 mm internos. A tela 0,91″ fica em pé na face traseira, logo acima da ocular. O botão liga/desliga com trava (8 × 8 mm) fica na lateral esquerda, perto da frente. Por baixo, a caixa é parafusada (2 M3) na tampa impressa do anel dianteiro da Geissele.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Telas</h2>
+    <p class="hint">OLED 0,91″ de 128 × 32 pixels, baixo e comprido para caber na caixa deitada. No modo "tamanho real", as telas aparecem com a área visível real do display: 22,4 × 5,6 mm.</p>
+    <div class="fig">
+      <div class="screens">
+        <div class="scr"><div class="frame">
+          <svg viewBox="0 0 128 32" data-mm="22.38" data-zoom="14">
+            <rect width="128" height="32" fill="#000"/>
+            <text x="0" y="21" class="o" font-size="22">67.3</text>
+            <text x="54" y="21" class="o" font-size="9">m</text>
+            <rect x="64" y="2" width="10" height="5" fill="none" stroke="#bfe9ff" stroke-width=".8"/><rect x="74" y="3.5" width="1.2" height="2" fill="#bfe9ff"/><rect x="65.2" y="3.2" width="6" height="2.6" fill="#bfe9ff"/>
+            <text x="127" y="8" class="o" font-size="7" text-anchor="end">LIBERADO</text>
+            <text x="127" y="19" class="o" font-size="8" text-anchor="end">MARCA 2</text>
+            <rect x="0" y="25" width="25.4" height="6" fill="url(#hatch)"/>
+            <rect x=".5" y="25" width="127" height="6" fill="none" stroke="#bfe9ff"/>
+            <line x1="25.4" y1="23" x2="25.4" y2="32" stroke="#bfe9ff"/>
+            <rect x="84.2" y="23" width="2.5" height="9" fill="#bfe9ff"/>
+          </svg></div>
+          <p>Alvo dentro da zona: distância + marca do retículo</p>
+        </div>
+        <div class="scr"><div class="frame">
+          <svg viewBox="0 0 128 32" data-mm="22.38" data-zoom="14">
+            <rect width="128" height="32" fill="#000"/>
+            <text x="0" y="21" class="o" font-size="22">12.8</text>
+            <text x="54" y="21" class="o" font-size="9">m</text>
+            <g class="blink"><rect x="88" y="0" width="40" height="21" fill="#bfe9ff"/>
+            <text x="108" y="9" class="o" font-size="7" text-anchor="middle" style="fill:#000">MUITO</text>
+            <text x="108" y="18.5" class="o" font-size="7" text-anchor="middle" style="fill:#000">PERTO</text></g>
+            <rect x="0" y="25" width="25.4" height="6" fill="url(#hatch)"/>
+            <rect x=".5" y="25" width="127" height="6" fill="none" stroke="#bfe9ff"/>
+            <line x1="25.4" y1="23" x2="25.4" y2="32" stroke="#bfe9ff"/>
+            <rect x="15" y="23" width="2.5" height="9" fill="#bfe9ff"/>
+          </svg></div>
+          <p>Abaixo da distância mínima: pisca</p>
+        </div>
+        <div class="scr"><div class="frame">
+          <svg viewBox="0 0 128 32" data-mm="22.38" data-zoom="14">
+            <rect width="128" height="32" fill="#000"/>
+            <text x="0" y="21" class="o" font-size="22">--.-</text>
+            <text x="54" y="21" class="o" font-size="9">m</text>
+            <text x="127" y="8" class="o" font-size="7" text-anchor="end">SEM</text>
+            <text x="127" y="19" class="o" font-size="7" text-anchor="end">LEITURA</text>
+            <rect x="0" y="25" width="25.4" height="6" fill="url(#hatch)"/>
+            <rect x=".5" y="25" width="127" height="6" fill="none" stroke="#bfe9ff"/>
+            <line x1="25.4" y1="23" x2="25.4" y2="32" stroke="#bfe9ff"/>
+          </svg></div>
+          <p>Sem retorno (céu, alvo fora de alcance)</p>
+        </div>
+      </div>
+      <div class="cap">Embaixo fica uma barra de 0 a 100 m. A parte hachurada é a zona proibida, abaixo de 20 m por padrão (dá para ajustar), e o traço cheio marca onde o alvo está. O ícone de bateria fica ao lado do "m". "MARCA 2" quer dizer: mire com a 2ª marca BDC abaixo da ferradura vermelha do retículo da sua Red Win. Cada distância aponta uma marca, numa tabela que você monta testando o seu DMR. Os números acima são só exemplos.</div>
+      <div class="fig" style="margin-top:12px">
+        <svg viewBox="0 0 120 50" data-mm="120" data-zoom="6">
+          <g transform="translate(25,25)">
+            <circle r="22" class="scope"/><circle r="18" fill="url(#glass)"/>
+            <use href="#ret" transform="scale(1.06)"/>
+          </g>
+          <g transform="translate(62,25)">
+            <text x="0" y="-15" class="lb">Retículo da Red Win (BDC)</text>
+            <text x="0" y="-9" class="lb sm mut">ferradura vermelha = ponto de zero</text>
+            <text x="0" y="-4.5" class="lb sm">marcas abaixo do centro:</text>
+            <text x="0" y="-.5" class="lb sm mut">MARCA 1 → 1ª marca</text>
+            <text x="0" y="3.5" class="lb sm mut">MARCA 2 → 2ª marca …</text>
+            <text x="0" y="9" class="lb sm">vale com o zoom em 6×</text>
+            <text x="0" y="13" class="lb sm mut">(retículo no 2º plano focal)</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Como funciona</h2>
+    <div class="tw"><table>
+      <tr><th>Situação</th><th>Resultado</th></tr>
+      <tr><td>Aperta o botão liga/desliga</td><td>Liga em cerca de 2 s e começa a medir sozinho. Não existe botão de medir.</td></tr>
+      <tr><td>Ligado</td><td>Mede sem parar, de 1 a 3 vezes por segundo, e mostra a mediana das 3 últimas leituras para o número não ficar pulando</td></tr>
+      <tr><td>Alvo abaixo da distância mínima</td><td>"MUITO PERTO" piscando</td></tr>
+      <tr><td>Sem retorno do laser</td><td>Mostra "SEM LEITURA" e mantém a última distância válida por 2 s, para não piscar à toa</td></tr>
+      <tr><td>Alvo na zona liberada</td><td>Mostra a distância e qual marca BDC do retículo usar (MARCA 0 = ferradura, MARCA 1, 2, 3…), conforme a sua tabela</td></tr>
+      <tr><td>Bateria fraca</td><td>Ícone de bateria pisca abaixo de 15%</td></tr>
+      <tr><td>Configuração</td><td>Ao ligar, o ESP32 abre por 30 s uma rede Wi-Fi com uma página no celular para ajustar a distância mínima, a tabela de hold e o brilho</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Alinhando o laser com a luneta</h2>
+    <p>A 100 m, um desalinhamento pequeno já faz o laser medir o arbusto ao lado em vez do alvo. Por isso o berço tem ajuste. O laser é invisível, então o alinhamento é feito pela leitura:</p>
+    <ol>
+      <li>Escolha um alvo estreito (poste ou tronco) a uns 50 m, com o fundo bem mais longe.</li>
+      <li>Apoie o rifle, ligue o telêmetro e mire o retículo no centro do poste. Ele já mede sozinho.</li>
+      <li>Se a leitura pular para a distância do fundo, o feixe está fora do poste. Gire os parafusos de elevação e deriva até ela ficar estável na distância do poste.</li>
+      <li>Confirme num alvo a 100 m.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Proteção da lente contra BB</h2>
+    <p>As lentes do laser ficam viradas para o lado de onde vêm os tiros, então precisam de proteção. Só que nem toda proteção funciona com laser:</p>
+    <div class="tw"><table>
+      <tr><th>Proteção</th><th>Funciona?</th><th>Por quê</th></tr>
+      <tr><td>Acrílico transparente na frente</td><td><b>Não</b></td><td>O pulso do laser bate no acrílico, uma parte reflete direto para a lente de recepção e o sensor mede essa reflexão: aparece uma distância falsa de poucos centímetros, ou o alcance cai muito. Além disso, o acrílico trinca com o impacto e solta lascas.</td></tr>
+      <tr><td>Policarbonato transparente (1–2 mm)</td><td>Só com cuidados</td><td>Aguenta BB (é o material dos óculos de proteção), mas tem o mesmo problema da reflexão. Só funciona com uma <b>janela separada para cada lente</b>, uma divisória preta encostada na janela, janela inclinada uns 5° e sempre limpa. Arranhão, poeira e chuva na janela pioram a reflexão. Fica como plano B, e precisa ser testado.</td></tr>
+      <tr><td>Kill flash comercial</td><td>Não serve</td><td>É feito para o diâmetro da objetiva da luneta, não para o laser. A ideia, porém, é a certa.</td></tr>
+      <tr><td><b>Capuz + grade tipo kill flash impressa (escolhida)</b></td><td><b>Sim</b></td><td>Não tem superfície transparente, então não há reflexão para enganar o sensor. Os favos de 3 mm não deixam passar uma BB de 6 mm. A grade perde uns 30% da luz na ida e na volta, o que reduz o alcance máximo de ~600 m para algo em torno de 400 m. Para usar até 100 m, ainda sobra muito.</td></tr>
+    </table></div>
+    <div class="fig">
+      <svg viewBox="0 0 150 62" data-mm="150" data-zoom="5">
+        <!-- corte visto de cima -->
+        <text x="2" y="5" class="lb">CORTE VISTO DE CIMA (frente da caixa)</text>
+        <rect x="40" y="10" width="70" height="44" class="part" style="fill:#2b3035"/>
+        <rect x="46" y="12" width="27.5" height="25" rx="1.5" class="sens"/>
+        <rect x="46" y="14" width="1.5" height="9" fill="url(#glass)"/><rect x="46" y="26" width="1.5" height="9" fill="url(#glass)"/>
+        <text x="60" y="26" class="lb sm" text-anchor="middle">laser JC02-1</text>
+        <!-- capuz -->
+        <rect x="34" y="10" width="12" height="2" class="part"/>
+        <rect x="34" y="37" width="12" height="2" class="part"/>
+        <rect x="38" y="24" width="8" height="1.6" fill="#08090a"/>
+        <rect x="34" y="12" width="4" height="25" fill="url(#hex)" stroke="#7f8a90" stroke-width=".25"/>
+        <line x1="10" y1="18.5" x2="34" y2="18.5" class="beam"/>
+        <line x1="34" y1="30.5" x2="10" y2="30.5" stroke="#5fd17a" stroke-width=".6" stroke-dasharray="3 2"/>
+        <text x="4" y="16" class="lb sm" style="fill:#e5533f">saída do laser</text>
+        <text x="4" y="35" class="lb sm" style="fill:#5fd17a">retorno</text>
+        <!-- BB -->
+        <circle cx="22" cy="46" r="3" fill="#e9e3d0" stroke="#8a959b" stroke-width=".2"/>
+        <text x="22" y="54" class="lb sm mut" text-anchor="middle">BB 6 mm</text>
+        <!-- rótulos -->
+        <line x1="36" y1="8" x2="36" y2="12" class="lead"/><text x="36" y="7" class="lb sm" text-anchor="middle">grade 4 mm (favos 3 mm)</text>
+        <line x1="42" y1="25" x2="60" y2="44" class="lead"/><text x="60" y="47" class="lb sm">divisória preta entre as lentes</text>
+        <text x="60" y="51" class="lb sm mut">(evita que a luz da saída vaze para o retorno)</text>
+        <line x1="34" y1="58" x2="46" y2="58" class="dim"/><text x="40" y="61.5" class="dt">6</text>
+        <line x1="34" y1="39" x2="34" y2="60" class="ext"/><line x1="46" y1="39" x2="46" y2="60" class="ext"/>
+      </svg>
+      <div class="cap">A caixa ganha um <b>capuz de 6 mm</b> na frente (de 70 para 76 mm de comprimento). As lentes ficam recuadas dentro dele, e a boca do capuz é fechada por uma <b>grade de favos hexagonais</b> de 3 mm, com 4 mm de espessura e paredes de 0,6 mm, impressa em PETG <b>preto fosco</b> (o preto absorve o infravermelho em vez de refletir). Uma <b>divisória</b> no meio vai da grade até encostar no laser, entre as duas lentes. A grade é encaixada justa na boca do capuz, sem cola: se uma BB quebrar uma parede, é só imprimir outra (imprima 2 ou 3 de reserva). De brinde, os favos funcionam como para-sol e reduzem a interferência do sol forte na leitura.</div>
+    </div>
+    <div class="note"><b>Teste depois de montar:</b> aponte para o céu (sem alvo). O certo é aparecer "SEM LEITURA". Se aparecer uma distância fixa e curta (0–2 m), tem luz da saída vazando para o retorno: confira se a divisória encosta no laser e na grade. Depois compare a leitura num alvo a 50 m e a 100 m com e sem a grade: a diferença precisa ficar dentro de ±1 m.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas deste projeto, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. As tampas aparecem viradas para cima, como ficam no uso. Arquivos em <b>3D/stl</b>; quantidades, suportes e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do projeto em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Corpo preto com moldura facetada na boca do capuz (a BB bate nela antes da grade) e molduras no liga/desliga e no MARCAR; tampa coyote com nervuras em V; tampa do anel da Geissele coyote, combinando com o anel.</div>
+  </section>
+  <section>
+    <h2><span class="n">09</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>Módulo laser JC02-1, UART (<a href="https://pt.aliexpress.com/item/1005010430761656.html">anúncio</a>)</td><td class="mm">27,5 × 25 × 12,8</td><td>O sensor: mede a distância. 6 fios: GND, VCC, NC, TX, RX e Power ON</td></tr>
+      <tr><td>ESP32-C3 SuperMini</td><td class="mm">22,5 × 18 × 3,5</td><td>Cérebro: lê o laser, calcula a zona e desenha a tela; Wi-Fi para configurar</td></tr>
+      <tr><td>Carregador TP4056 USB-C com proteção</td><td class="mm">≈ 26 × 17 × 4</td><td>Carrega a bateria pelo USB-C (a SuperMini não tem carregador)</td></tr>
+      <tr><td>OLED 0,91″ SSD1306 I2C (128 × 32)</td><td class="mm">38 × 12 × 3,5</td><td>Tela baixa e comprida (área visível 22,4 × 5,6)</td></tr>
+      <tr><td>Bateria LiPo 503040 3,7 V 600 mAh</td><td class="mm">5 × 30 × 40</td><td>Alimentação; fina para a caixa deitada</td></tr>
+      <tr><td>Chave/botão com trava 8 × 8 mm (6 pinos)</td><td class="mm">8 × 8</td><td>Único comando do aparelho, com capa impressa</td></tr>
+      <tr><td>2 parafusos M3 + 2 molas + anel de borracha</td><td class="mm">M3 × 10</td><td>Ajuste de elevação e deriva</td></tr>
+      <tr><td>Caixa impressa 3D + tampa do anel dianteiro da Geissele impressa</td><td class="mm">76 × 44 × 19</td><td>Corpo deitado; a tampa substitui a original e usa os parafusos da Geissele</td></tr>
+      <tr><td>Capuz + grade anti-BB impressa (PETG preto fosco), encaixada justa na boca do capuz (sem cola: sai com a ponta de uma chave)</td><td class="mm">6 × 27 × 15</td><td>Protege as lentes do laser sem superfície transparente (seção 08)</td></tr>    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>Ligação elétrica</h2>
+    <p class="hint">Esquema de ligação, sem escala. Cada bolinha amarela é um pino ou terminal onde vai uma solda; os pontos maiores marcam onde dois fios se unem.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 548">
+        <!-- TP4056: USB-C numa ponta; na outra ponta, de cima para baixo: OUT+, B+, B−, OUT− -->
+        <rect x="192" y="380" width="10" height="40" rx="3" fill="#5a6268"/>
+        <text x="186" y="396" class="pt e" style="font-size:10px;fill:#8a959b">USB-C</text><text x="186" y="410" class="pt e" style="font-size:10px;fill:#8a959b">(carga)</text>
+        <rect x="200" y="335" width="130" height="140" rx="8" class="brd"/>
+        <text x="255" y="410" class="ttl c">TP4056</text>
+        <text x="320" y="359" class="pt e">OUT+</text><text x="320" y="394" class="pt e">B+</text>
+        <text x="320" y="429" class="pt e">B−</text><text x="320" y="464" class="pt e">OUT−</text>
+        <!-- bateria -->
+        <rect x="380" y="370" width="100" height="74" rx="8" class="blk"/>
+        <text x="440" y="402" class="ttl c">LiPo</text>
+        <text x="440" y="420" class="pt c" style="font-size:10px">~600 mAh</text>
+        <text x="390" y="394" class="pt">+</text><text x="390" y="429" class="pt">−</text>
+        <!-- botão -->
+        <rect x="380" y="146" width="90" height="48" rx="6" class="blk"/>
+        <text x="425" y="166" class="pt c" style="font-size:11px">LIGA/DESL.</text>
+        <text x="425" y="182" class="pt c" style="font-size:10px;fill:#8a959b">com trava</text>
+        <!-- SuperMini -->
+        <rect x="520" y="120" width="160" height="300" rx="8" class="brd"/>
+        <text x="600" y="262" class="ttl c">ESP32-C3</text><text x="600" y="280" class="ttl c">SuperMini</text>
+        <text x="530" y="174" class="pt">5V</text><text x="530" y="214" class="pt">GND</text><text x="530" y="254" class="pt">3V3</text>
+        <text x="670" y="179" class="pt e">RX · GPIO20</text><text x="670" y="204" class="pt e">TX · GPIO21</text><text x="670" y="229" class="pt e">GPIO10</text>
+        <text x="670" y="359" class="pt e">SCL · GPIO9</text><text x="670" y="384" class="pt e">SDA · GPIO8</text>
+        <!-- laser -->
+        <text x="815" y="90" class="ttl c">Laser JC02-1</text>
+        <rect x="740" y="100" width="150" height="150" rx="8" class="blk"/>
+        <text x="750" y="129" class="pt">VCC <tspan style="fill:#8a959b;font-size:10px">(azul claro)</tspan></text>
+        <text x="750" y="154" class="pt">GND <tspan style="fill:#8a959b;font-size:10px">(branco)</tspan></text>
+        <text x="750" y="179" class="pt">TX <tspan style="fill:#8a959b;font-size:10px">(amarelo)</tspan></text>
+        <text x="750" y="204" class="pt">RX <tspan style="fill:#8a959b;font-size:10px">(preto!)</tspan></text>
+        <text x="750" y="229" class="pt">ON <tspan style="fill:#8a959b;font-size:10px">(vermelho!)</tspan></text>
+        <text x="880" y="244" class="pt e" style="font-size:10px;fill:#8a959b">verde = NC, isolar</text>
+        <!-- OLED -->
+        <text x="815" y="277" class="ttl c">OLED 0,91″ I2C</text>
+        <rect x="740" y="285" width="150" height="120" rx="8" class="blk"/>
+        <text x="750" y="309" class="pt">VCC</text><text x="750" y="334" class="pt">GND</text><text x="750" y="359" class="pt">SCL</text><text x="750" y="384" class="pt">SDA</text>
+        <!-- fios -->
+        <path class="wr w-pwr" d="M330,390 H380"/>
+        <path class="wr w-gnd" d="M330,425 H380"/>
+        <path class="wr w-pwr" d="M330,355 H355 V170 H380"/>
+        <path class="wr w-pwr" d="M470,170 H520"/>
+        <path class="wr w-gnd" d="M330,460 H490"/>
+        <path class="wr w-gnd" d="M520,210 H490 V480 H715 V150 H740"/>
+        <path class="wr w-gnd" d="M715,330 H740"/>
+        <path class="wr w-3v3" d="M520,250 H500 V492 H730 V125 H740"/>
+        <path class="wr w-3v3" d="M730,305 H740"/>
+        <path class="wr w-tx" d="M740,175 H680"/>
+        <path class="wr w-rx" d="M680,200 H740"/>
+        <path class="wr w-int" d="M680,225 H740"/>
+        <path class="wr w-scl" d="M680,355 H740"/>
+        <path class="wr w-sda" d="M680,380 H740"/>
+        <!-- emendas -->
+        <circle cx="490" cy="460" r="5" fill="#b9c2c7"/><circle cx="715" cy="330" r="5" fill="#b9c2c7"/><circle cx="730" cy="305" r="5" fill="#f0a03a"/>
+        <!-- pinos -->
+        <g class="pin">
+          <circle cx="330" cy="355" r="4"/><circle cx="330" cy="390" r="4"/><circle cx="330" cy="425" r="4"/><circle cx="330" cy="460" r="4"/><circle cx="380" cy="390" r="4"/><circle cx="380" cy="425" r="4"/>
+          <circle cx="380" cy="170" r="4"/><circle cx="470" cy="170" r="4"/>
+          <circle cx="520" cy="170" r="4"/><circle cx="520" cy="210" r="4"/><circle cx="520" cy="250" r="4"/>
+          <circle cx="680" cy="175" r="4"/><circle cx="680" cy="200" r="4"/><circle cx="680" cy="355" r="4"/><circle cx="680" cy="380" r="4"/>
+          <circle cx="740" cy="125" r="4"/><circle cx="740" cy="150" r="4"/><circle cx="740" cy="175" r="4"/><circle cx="740" cy="200" r="4"/>
+          <circle cx="680" cy="225" r="4"/><circle cx="740" cy="225" r="4"/>
+          <circle cx="740" cy="305" r="4"/><circle cx="740" cy="330" r="4"/><circle cx="740" cy="355" r="4"/><circle cx="740" cy="380" r="4"/>
+        </g>
+        <!-- legenda -->
+        <g class="pt" style="font-size:11px">
+          <line x1="20" y1="520" x2="44" y2="520" class="wr w-pwr"/><text x="50" y="524">bateria / 5V</text>
+          <line x1="150" y1="520" x2="174" y2="520" class="wr w-3v3"/><text x="180" y="524">3,3 V</text>
+          <line x1="240" y1="520" x2="264" y2="520" class="wr w-gnd"/><text x="270" y="524">GND</text>
+          <line x1="320" y1="520" x2="344" y2="520" class="wr w-tx"/><line x1="348" y1="520" x2="372" y2="520" class="wr w-rx"/><text x="378" y="524">serial do laser</text>
+          <line x1="510" y1="520" x2="534" y2="520" class="wr w-scl"/><line x1="538" y1="520" x2="562" y2="520" class="wr w-sda"/><text x="568" y="524">I2C da tela</text>
+          <text x="20" y="542" style="fill:#8a959b">Fios que se cruzam sem ponto não estão ligados.</text>
+        </g>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Bateria +</td><td>TP4056 B+</td><td>Fio vermelho</td></tr>
+      <tr><td>Bateria −</td><td>TP4056 B−</td><td>Fio preto</td></tr>
+      <tr><td>TP4056 OUT+</td><td>Botão liga/desliga → SuperMini <b>5V</b></td><td>O regulador da placa transforma a bateria em 3,3 V</td></tr>
+      <tr><td>TP4056 OUT−</td><td>SuperMini GND</td><td></td></tr>
+      <tr><td>SuperMini 3V3</td><td>Laser VCC (fio <b>azul claro</b>) + OLED VCC</td><td>O anúncio não informa a tensão do laser. Pergunte ao vendedor antes de comprar; se for 5 V, o VCC do laser vai no pino 5V</td></tr>
+      <tr><td>SuperMini GND</td><td>Laser GND (fio <b>branco</b>) + OLED GND</td><td></td></tr>
+      <tr><td>Laser TX (fio <b>amarelo</b>)</td><td>GPIO20 (RX)</td><td>TX de um vai no RX do outro</td></tr>
+      <tr><td>Laser RX (fio <b>preto</b>)</td><td>GPIO21 (TX)</td><td>Cuidado: no laser o preto <b>não</b> é GND</td></tr>
+      <tr><td>Laser Power ON (fio <b>vermelho</b>)</td><td>GPIO10</td><td>Liga o laser quando recebe nível alto. Também não é alimentação: vai no GPIO, nunca na bateria</td></tr>
+      <tr><td>Laser NC (fio <b>verde</b>)</td><td>Nenhum</td><td>Não é usado: corte e isole com termorretrátil</td></tr>
+      <tr><td>OLED SDA / SCL</td><td>GPIO8 / GPIO9</td><td>I2C padrão da SuperMini</td></tr>
+      <tr><td><i>Opcional:</i> 2 resistores de 100 kΩ</td><td>Entre o 5V e o GND, com o ponto do meio no GPIO3</td><td>Mede a bateria para o ícone da tela (R$ 0,10 cada)</td></tr>
+    </table></div>
+    <div class="note red"><b>Atenção:</b> para gravar o código pelo USB da SuperMini, desligue o botão liga/desliga antes. Se a bateria e o USB alimentarem a placa ao mesmo tempo, um briga com o outro e pode queimar o TP4056.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">11</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Imprima as peças em PETG</b> (camada de 0,2 mm, 4 paredes, 40% de preenchimento): o corpo deitado, a tampa de cima, o berço do laser, a capa do botão, a tampa do anel dianteiro da Geissele (com a base da caixa) e a grade anti-BB em PETG preto fosco (imprima 2 ou 3 de reserva, deitada, sem suporte). Imprima o corpo com o fundo na mesa e use suporte só na janela do laser. Imprima a tampa do anel com 100% de preenchimento.</li>
+      <li><b>Teste na bancada antes de soldar.</b> Ligue o laser e a tela na SuperMini com jumpers, alimentando só pelo USB, sem bateria. Grave o código e confira se a distância aparece na tela.</li>
+      <li><b>Bateria no carregador:</b> solde a bateria no B+ e no B− do TP4056 (vermelho no +). Ligue o USB-C do TP4056: o LED vermelho indica que está carregando e o azul/verde que a carga terminou.</li>
+      <li><b>Botão:</b> solde o OUT+ do TP4056 num terminal do botão e o outro terminal no pino 5V da SuperMini. O OUT− vai no GND. Use fio de silicone 26–28 AWG e termorretrátil em toda solda.</li>
+      <li><b>Laser no berço:</b> o laser já vem com 6 fios. Corte-os em uns 6 cm, isole o verde (NC) e siga as cores da tabela acima. No laser, o preto é RX e o vermelho é Power ON; nenhum dos dois é alimentação. Encaixe o laser <b>deitado</b> (as duas lentes lado a lado) no berço, encostado na lateral direita, com o anel de borracha na frente (é o pivô) e a mola embaixo da parte de trás. O parafuso M3 de elevação entra por cima e o de deriva pela lateral direita, os dois em porcas embutidas na caixa.</li>
+      <li><b>Tela:</b> encaixe o OLED 0,91″ em pé atrás da janela traseira e prenda com cola quente nas bordas da placa, nunca no vidro.</li>
+      <li><b>Eletrônica em camadas:</b> cole a bateria 503040 no fundo, atrás do laser, com fita dupla face. Por cima dela vai a SuperMini, e por cima da SuperMini vai o TP4056, separado por fita kapton ou isolante. Alinhe o USB-C do TP4056 com o furo da lateral esquerda.</li>
+      <li><b>Botão na lateral esquerda:</b> cole a chave 8 × 8 num suporte impresso na parede esquerda, perto da frente, com a capa impressa saindo pelo furo.</li>
+      <li><b>Feche com cuidado:</b> acomode os fios e confira com o multímetro que não há curto entre 5V/3V3 e GND. Feche a tampa de cima com 3 parafusos M3 × 10. O parafuso de elevação do laser passa pela tampa.</li>
+      <li><b>Na luneta:</b> com o rifle apoiado e a luneta nivelada, solte os parafusos da tampa de cima do anel dianteiro da Geissele e troque-a pela tampa impressa. Aperte os parafusos originais em cruz, aos poucos e sem exagero, para não mexer no nível nem no zero. Depois parafuse a caixa na base da tampa.</li>
+      <li><b>Alinhe o laser</b> com o retículo, como explica a seção 07.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">12</span>Custo de produção</h2>
+    <p class="hint">Preços pesquisados em out/2026 no Mercado Livre e em lojas nacionais, sem frete. Só produtos novos: os links do Mercado Livre já abrem com o filtro "Novo". O módulo laser de longo alcance não tem vendedor nacional, então ele precisa ser importado. Os valores do laser são estimativas que já incluem frete internacional, imposto de importação e ICMS (US$ 1 ≈ R$ 5,50); confira no carrinho antes de fechar a compra.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td><b>Laser opção A (escolhida):</b> módulo JC02-1, 600–1200 m, UART, 27,5 × 25 × 12,8 mm. Preço do anúncio com desconto; confira no carrinho se os impostos já estão inclusos</td><td><a href="https://pt.aliexpress.com/item/1005010430761656.html">AliExpress</a> (importado)</td><td class="r">R$ 239,88</td><td class="r">R$ 282,27</td></tr>
+      <tr><td><b>Laser opção B:</b> JRT TC22-700 (700 m, ±0,7 m, UART 3,3 V). Anúncio <b>confirmado</b>: R$ 319,17 por unidade, mais frete e impostos (~60% + ICMS)</td><td><a href="https://www.alibaba.com/product-detail/TC22-700m-905nm-Laser-Rangefinder-Module_1601029170298.html">Alibaba</a> (importado)</td><td class="r">≈ R$ 760</td><td class="r">≈ R$ 940</td></tr>
+      <tr><td>ESP32-C3 SuperMini</td><td><a href="https://www.usinainfo.com.br/esp32/esp32-c3-super-mini-com-wifi-e-bluetooth-com-usb-c-outlet-9251.html">Usinainfo</a> · <a href="https://curtocircuito.com.br/placa-super-mini-esp32-c3.html">Curto Circuito</a> · <a href="https://lista.mercadolivre.com.br/esp32-c3-super-mini_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 24,24</td><td class="r">R$ 44,12</td></tr>
+      <tr><td>Carregador TP4056 USB-C</td><td><a href="https://www.makerhero.com/produto/modulo-carregador-de-bateria-de-litio-tp4056/">MakerHero</a> · <a href="https://www.eletrogate.com/modulo-carregador-de-baterias-de-litio-tp4056-com-protecao-usb-c">Eletrogate</a> · <a href="https://lista.mercadolivre.com.br/tp4056-usb-c_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 3,70</td><td class="r">R$ 13,12</td></tr>
+      <tr><td>OLED 0,91″ I2C 128 × 32</td><td><a href="https://lista.mercadolivre.com.br/display-oled-0.91_ITEM*CONDITION_2230284">Mercado Livre</a> · <a href="https://curtocircuito.com.br/display-oled-128x32-px-0-91-4-pin-azul.html">Curto Circuito</a> · <a href="https://www.eletrogate.com/display-oled-128x32-i2c-azul-0.91">Eletrogate</a></td><td class="r">R$ 14,90</td><td class="r">R$ 26,90</td></tr>
+      <tr><td>LiPo 503040 3,7 V 600 mAh</td><td><a href="https://lista.mercadolivre.com.br/bateria-3.7v-600mah_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 39,88</td><td class="r">R$ 39,99</td></tr>
+      <tr><td>Chave com trava 8 × 8 mm</td><td><a href="https://www.baudaeletronica.com.br/produto/chave-botao-8x8mm-com-trava-azul.html">Baú da Eletrônica</a> · Mercado Livre</td><td class="r">R$ 0,97</td><td class="r">R$ 0,97</td></tr>
+      <tr><td>Parafusos M3 (ajuste do laser e fixação da caixa), molas e anel de borracha (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/kit-parafusos-m3_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 15,00</td><td class="r">R$ 15,00</td></tr>
+      <tr class="tot"><td>Total com laser opção A (peças impressas não entram)</td><td>sem frete dos itens BR</td><td class="r">≈ R$ 339</td><td class="r">≈ R$ 422</td></tr>
+      <tr class="tot"><td>Total com laser opção B (peças impressas não entram)</td><td>sem frete dos itens BR</td><td class="r">≈ R$ 859</td><td class="r">≈ R$ 1.080</td></tr>    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">13</span>Pontos de atenção</h2>
+    <div class="note red"><b>Módulo laser:</b> não encontrei nenhum vendedor nacional (Mercado Livre e lojas BR) de módulo de 905 nm com saída UART. No Mercado Livre só aparecem sensores curtos (VL53L0X, até 2 m) ou telêmetros prontos de 1000 m, que custam por volta de R$ 580–600 e não têm saída de dados. O escolhido é o <b>JC02-1 no AliExpress</b> (<a href="https://pt.aliexpress.com/item/1005010430761656.html">anúncio</a>), por R$ 239,88 com desconto. Ele tem UART, pino Power ON, medidas publicadas (27,5 × 25 × 12,8 mm) e cabe deitado no espaço reservado para ele na caixa (28 × 25 × 15 mm).<br>
+    <b>Antes de comprar, pergunte ao vendedor pelo chat:</b> (1) a tensão de alimentação, se é 3,3 V ou 5 V; (2) se o TX/RX é de 3,3 V; (3) o baud rate e o manual do protocolo de comandos; (4) o comprimento de onda e a classe do laser (precisa ser Classe 1). <b>Escolha a variante de 600 m</b>: costuma ser a mais barata e sobra alcance para 100 m.<br>
+    Alternativa com preço confirmado: <a href="https://www.alibaba.com/product-detail/TC22-700m-905nm-Laser-Rangefinder-Module_1601029170298.html">JRT TC22-700 no Alibaba</a>, R$ 319,17 mais frete e impostos (≈ R$ 760–940 no total).</div>
+    <div class="note">O berço do laser só deve ser modelado quando o módulo chegar e for medido com paquímetro. O desenho segue as medidas do anúncio (27,5 × 25 × 12,8 mm), e o espaço reservado na caixa deitada (28 × 25 × 15 mm) deixa folga para o ajuste.</div>
+    <div class="note"><b>Onde o projeto economiza:</b> ESP32-C3 SuperMini + TP4056 (cerca de R$ 28) no lugar da XIAO (R$ 60–92) e tampa de anel impressa no lugar de um anel com trilho comprado (R$ 50–119). A economia é de uns R$ 85 a R$ 160 em relação à versão anterior.</div>
+    <div class="note">±1 m a 100 m é um erro de 1%, mais que suficiente para escolher o hold. Para medir um alvo pequeno a 100 m, apoie o rifle (bipé ou barricada); a mediana de 3 leituras ajuda a filtrar o tremor.</div>
+    <div class="note"><b>Tampa do anel da Geissele:</b> antes de modelar a tampa impressa, meça com paquímetro a tampa original da sua réplica: o furo dos parafusos (distância entre eles), a largura do anel e o raio interno (30 mm). Réplicas variam um pouco. A tampa só pode ser trocada com a luneta já nivelada no anel; depois de trocar, confira o zero.</div>
+    <div class="note"><b>Peso na luneta:</b> são cerca de 80 g em cima do anel dianteiro. Em airsoft não há recuo, então PETG com 100% de preenchimento aguenta bem. Aperte os parafusos originais da Geissele em cruz, sem exagerar, para não trincar o plástico nem marcar o tubo.</div>
+    <div class="note">Laser Classe 1 e invisível é seguro para os olhos. Mesmo assim, confirme com o campo se dispositivos laser são permitidos.</div>
+    <div class="note">O telêmetro mede 100 m com folga, mas o alcance efetivo da BB costuma ser bem menor. Distâncias grandes servem para ler o campo e reportar contatos ao squad. O hold de cada distância precisa vir de testes reais com o seu DMR.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  document.querySelectorAll('[data-slots]').forEach(function(g){
+    var a=g.getAttribute('data-slots').split(',').map(Number);
+    for(var k=0;k<a[1];k++){
+      var r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x',a[0]+k*a[5]); r.setAttribute('y',a[2]);
+      r.setAttribute('width',a[4]); r.setAttribute('height',a[3]);
+      g.appendChild(r);
+    }
+  });
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

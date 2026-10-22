@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Painel de Estoque</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f;--blue:#4fa3ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+h2{font-size:18px;margin:36px 0 6px}
+.sub,.hint{color:var(--muted)}
+.hint{font-size:12.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 24px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.cards{display:grid;gap:10px;margin-top:10px}
+.pc{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:8px;padding:12px 14px}
+.pc.ok{border-left-color:var(--accent)}
+.pc.quase{border-left-color:var(--amber)}
+.pc.falta{border-left-color:var(--red)}
+.pc.feito{border-left-color:var(--blue);opacity:.8}
+.pc .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.pc .num{font:600 13px Consolas,monospace;color:var(--muted)}
+.pc .nome{font-weight:700;font-size:16px}
+.badge{font:600 11px Consolas,monospace;padding:2px 8px;border-radius:20px;border:1px solid currentColor;white-space:nowrap}
+.b-ok{color:var(--accent)}.b-quase{color:var(--amber)}.b-falta{color:var(--red)}.b-feito{color:var(--blue)}
+.prog{height:6px;background:#0b0d0f;border-radius:4px;margin:8px 0 6px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent)}
+.pc.quase .prog i{background:var(--amber)}.pc.falta .prog i{background:var(--red)}
+.miss{margin:4px 0 0;padding-left:18px;font-size:13.5px}
+.miss li{margin:2px 0}
+.miss .q{font-family:Consolas,monospace;color:var(--amber)}
+.right{margin-left:auto}
+.preco{font:600 14px Consolas,monospace;color:var(--amber);white-space:nowrap}
+.preco.zero{color:var(--accent)}
+.preco small{font:12px "Segoe UI",system-ui,sans-serif;color:var(--muted)}
+a{color:var(--accent)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.n{font-family:Consolas,monospace;text-align:right;white-space:nowrap}
+td.zero{color:var(--muted)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:12px}
+.note.red{border-color:var(--red)}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+</style>
+<script src="ESTOQUE.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="tag">BLACK BIRD | GADGETS · PAINEL</div>
+  <h1>Painel de Estoque</h1>
+  <p class="sub">Lê o arquivo <b>ESTOQUE.js</b> e mostra quais projetos você já consegue montar e o que falta comprar. Atualize os números no ESTOQUE.js (ou me diga no chat o que chegou) e aperte F5.</p>
+  <p style="margin:10px 0 0;display:flex;gap:10px;flex-wrap:wrap">
+    <a href="PREVIA-AEG/PREVIA.html" style="border:1px solid var(--accent);border-radius:8px;padding:8px 14px;text-decoration:none"><b>Prévia geral no AEG →</b> <span class="hint">todos os equipamentos no Rossi MK16</span></a>
+    <a href="PREVIA-GERAL-LUNETA.html" style="border:1px solid #3a4248;border-radius:8px;padding:8px 14px;text-decoration:none">Luneta com os gadgets →</a>
+  </p>
+  <div id="erro"></div>
+
+  <div class="tiles" id="tiles"></div>
+
+  <h2>Projetos</h2>
+  <p class="hint">Cada projeto é conferido sozinho, com tudo o que está no estoque. Se for montar dois ao mesmo tempo, as peças em comum são divididas: veja a lista "para montar todos" mais abaixo.</p>
+  <div class="cards" id="cards"></div>
+
+  <h2>Para montar todos os que faltam</h2>
+  <p class="hint">Somando as peças de todos os projetos ainda não montados, contra o estoque atual.</p>
+  <div class="tw"><table id="compras"></table></div>
+
+  <h2>Estoque</h2>
+  <div class="filters"><button id="fTodos" class="on">Todas as peças</button><button id="fTenho">Só o que tenho</button></div>
+  <div class="tw"><table id="estoque"></table></div>
+
+  <h2>Peças impressas em 3D</h2>
+  <p class="hint">Some no ESTOQUE.js (linhas p3d_...) cada peça que sair da impressora, ou me diga no chat. Configuração de impressão no LEIA-ME.txt da pasta 3D de cada projeto.</p>
+  <div class="tw"><table id="imp"></table></div>
+
+  <div class="note">Valores: preço médio de cada pacote (kit, rolo ou unidade) em out/2026, das tabelas de custo das prévias. O valor de cada projeto conta pacotes inteiros e <b>diminui</b> conforme você soma no ESTOQUE.js o que chegou. Peças impressas e frete não entram.</div>
+  <div class="note">Solda, fios avulsos e parafusos pequenos não entram na conta. Itens que vêm em rolo ou kit sortido (resistores, jumpers, velcro, cabo) contam como 1 = "tenho".</div>
+</div>
+
+<script>
+(function(){
+  // ---------- catálogo: nome, como comprar, link ----------
+  var CAT = {
+    arduino_uno:{n:'Arduino Uno R3',c:'kit Arduino Uno iniciante',l:'https://lista.mercadolivre.com.br/kit-arduino-uno-r3-iniciante_ITEM*CONDITION_2230284',p:150,u:1},
+    esp32c3:{n:'ESP32-C3 SuperMini',c:'kit 5 unidades',l:'https://lista.mercadolivre.com.br/esp32-c3_ITEM*CONDITION_2230284',p:89,u:5},
+    esp32_devkit:{n:'ESP32 DevKit V1',c:'unidade',l:'https://lista.mercadolivre.com.br/esp32-devkit-v1-30-pinos_ITEM*CONDITION_2230284',p:45,u:1},
+    rpi4_kit:{n:'Kit Raspberry Pi 4 2 GB completo',c:'kit (placa, case, cartão, cabo, fonte)',l:'https://lista.mercadolivre.com.br/kit-raspberry-pi-4-2gb_ITEM*CONDITION_2230284',p:750,u:1},
+    lcd16x2_i2c:{n:'LCD 16×2 com I2C',c:'conjunto LCD + I2C soldado',l:'https://lista.mercadolivre.com.br/display-lcd-16x2-modulo-i2c_ITEM*CONDITION_2230284',p:30,u:1},
+    oled096:{n:'OLED 0,96″ I2C',c:'kit 2 unidades',l:'https://lista.mercadolivre.com.br/display-oled-i2c_ITEM*CONDITION_2230284',p:50,u:2},
+    oled091:{n:'OLED 0,91″ I2C',c:'unidade',l:'https://lista.mercadolivre.com.br/display-oled-0.91_ITEM*CONDITION_2230284',p:22,u:1},
+    monitor_156:{n:'Monitor portátil 15,6″ Full HD (USB-C + mini HDMI)',c:'unidade',l:'https://lista.mercadolivre.com.br/monitor-portatil-15.6_ITEM*CONDITION_2230284',p:600,u:1},
+    mpu6050:{n:'MPU6050 GY-521',c:'unidade',l:'https://lista.mercadolivre.com.br/mpu-6050_ITEM*CONDITION_2230284',p:20,u:1},
+    par_ir:{n:'Par LED IR + fototransistor',c:'kit 10 pares',l:'https://lista.mercadolivre.com.br/kit-led-infravermelho-receptor_ITEM*CONDITION_2230284',p:20,u:10},
+    cc1101:{n:'CC1101 433 MHz + antena',c:'conjunto módulo + antena',l:'https://lista.mercadolivre.com.br/modulo-cc1101-433mhz-antena_ITEM*CONDITION_2230284',p:45,u:1},
+    laser_jc02:{n:'Laser telêmetro JC02-1',c:'importado (AliExpress)',l:'https://pt.aliexpress.com/item/1005010430761656.html',p:220,u:1},
+    rele_1canal:{n:'Relé 1 canal 5 V',c:'vem no kit Uno iniciante',l:'https://lista.mercadolivre.com.br/m%C3%B3dulo-rel%C3%A9-1-canal-5v-arduino_ITEM*CONDITION_2230284',p:12,u:1},
+    uln2003:{n:'Módulo ULN2003',c:'unidade',l:'https://lista.mercadolivre.com.br/modulo-uln2003_ITEM*CONDITION_2230284',p:10,u:1},
+    lm393:{n:'CI LM393 DIP-8',c:'kit 10',l:'https://lista.mercadolivre.com.br/lm393_ITEM*CONDITION_2230284',p:15,u:10},
+    l9110s:{n:'Ponte H L9110S',c:'kit 2',l:'https://lista.mercadolivre.com.br/l9110s_ITEM*CONDITION_2230284',p:15,u:2},
+    n20_motor:{n:'Motor N20 6 V 100 rpm',c:'unidade',l:'https://lista.mercadolivre.com.br/motor-n20-6v_ITEM*CONDITION_2230284',p:30,u:1},
+    tp4056:{n:'Carregador TP4056 USB-C',c:'kit 10',l:'https://www.mercadolivre.com.br/kit-10-modulo-tp4056-carregador-de-bateria-usb-tipo-c-5v-1a/up/MLBU1741803625',p:40,u:10},
+    lipo_250:{n:'LiPo 250 mAh (502030)',c:'unidade',l:'https://lista.mercadolivre.com.br/bateria-3.7v-250mah_ITEM*CONDITION_2230284',p:20,u:1},
+    lipo_600:{n:'LiPo 600 mAh (503040)',c:'unidade',l:'https://lista.mercadolivre.com.br/bateria-3.7v-600mah_ITEM*CONDITION_2230284',p:25,u:1},
+    lipo_1000:{n:'LiPo 1000 mAh (603450)',c:'unidade',l:'https://lista.mercadolivre.com.br/bateria-3.7v-1000mah_ITEM*CONDITION_2230284',p:35,u:1},
+    bat18650:{n:'Bateria 18650',c:'kit 2',l:'https://www.mercadolivre.com.br/kit-2-baterias-de-litio-recarregavel-modelo-18650-2600mah-37v-elgin/p/MLB26869470',p:29,u:2},
+    suporte18650:{n:'Suporte 18650',c:'unidade/kit',l:'https://eletronicos.mercadolivre.com.br/suporte-bateria-18650-3.7v_ITEM*CONDITION_2230284',p:4,u:1},
+    modulo_18650_boost:{n:'Módulo 18650 com saída 5 V',c:'unidade',l:'https://lista.mercadolivre.com.br/modulo-carregador-18650-saida-5v_ITEM*CONDITION_2230284',p:15,u:1},
+    suporte_6aa:{n:'Suporte 6 pilhas AA com chave',c:'unidade',l:'https://lista.mercadolivre.com.br/suporte-6-pilhas-aa-com-chave_ITEM*CONDITION_2230284',p:12,u:1},
+    pilha_aa:{n:'Pilha AA',c:'cartela',l:'https://lista.mercadolivre.com.br/pilha-aa_ITEM*CONDITION_2230284',p:15,u:4},
+    powerbank:{n:'Power bank 20.000 mAh 65 W (2 USB-C)',c:'unidade',l:'https://lista.mercadolivre.com.br/power-bank-20000-mah-tipo-c_ITEM*CONDITION_2230284',p:150,u:1},
+    botao_6x6:{n:'Botão tátil 6×6',c:'kit 100',l:'https://lista.mercadolivre.com.br/push-button-6x6_ITEM*CONDITION_2230284',p:28,u:100},
+    botao_arcade:{n:'Botão arcade 30 mm',c:'kit 10',l:'https://lista.mercadolivre.com.br/kit-10-botoes-arcade-30mm_ITEM*CONDITION_2230284',p:45,u:10},
+    botao_arcade_led:{n:'Botão arcade 30 mm com LED',c:'kit 4',l:'https://lista.mercadolivre.com.br/botoes-arcade-led_ITEM*CONDITION_2230284',p:50,u:4},
+    botao_trava_8x8:{n:'Chave com trava 8×8',c:'unidade',l:'https://www.baudaeletronica.com.br/produto/chave-botao-8x8mm-com-trava-azul.html',p:4,u:1},
+    chave_ss12:{n:'Chave deslizante SS12D00',c:'kit 10',l:'https://www.mercadolivre.com.br/micro-interruptor-chave-ss12d00g4-4mm-10/p/MLB44598138',p:12,u:10},
+    chave_mts102:{n:'Chave alavanca MTS-102',c:'kit 10',l:'https://lista.mercadolivre.com.br/chave-alavanca-mts-102_ITEM*CONDITION_2230284',p:20,u:10},
+    teclado4x4:{n:'Teclado de membrana 4×4',c:'unidade',l:'https://lista.mercadolivre.com.br/teclado-matricial-membrana-4x4_ITEM*CONDITION_2230284',p:12,u:1},
+    mini_teclado:{n:'Mini teclado sem fio',c:'unidade',l:'https://lista.mercadolivre.com.br/mini-teclado-touchpad-sem-fio-usb_ITEM*CONDITION_2230284',p:70,u:1},
+    buzzer_ativo:{n:'Buzzer ativo 5 V',c:'vem no kit Uno iniciante',l:'https://lista.mercadolivre.com.br/buzzer-ativo-5v_ITEM*CONDITION_2230284',p:4,u:1},
+    sirene_piezo:{n:'Sirene piezo 12 V 110 dB',c:'unidade',l:'https://lista.mercadolivre.com.br/sirene-piezo-12v_ITEM*CONDITION_2230284',p:25,u:1},
+    motor_vibra:{n:'Motor vibracall 1027',c:'kit 10',l:'https://lista.mercadolivre.com.br/micro-motor-vibracall_ITEM*CONDITION_2230284',p:25,u:10},
+    led_3mm:{n:'LED 3 mm',c:'kit 10',l:'https://www.usinainfo.com.br/leds-difuso/led-vermelho-3mm-difuso-kit-com-10-unidades-3346.html',p:8,u:10},
+    bc547:{n:'Transistor BC547',c:'kit',l:'https://lista.mercadolivre.com.br/kit-transistor-bc547_ITEM*CONDITION_2230284',p:10,u:20},
+    diodo_1n4148:{n:'Diodo 1N4148',c:'kit',l:'https://lista.mercadolivre.com.br/diodo-1n4148_ITEM*CONDITION_2230284',p:8,u:50},
+    kit_resistores:{n:'Kit de resistores',c:'kit sortido (vem no kit Uno)',l:'https://lista.mercadolivre.com.br/kit-resistores_ITEM*CONDITION_2230284',p:25,u:1},
+    trimpot:{n:'Trimpot 10 kΩ',c:'kit',l:'https://lista.mercadolivre.com.br/kit-trimpot_ITEM*CONDITION_2230284',p:15,u:10},
+    jumpers:{n:'Jumpers',c:'kit (vem no kit Uno)',l:'https://lista.mercadolivre.com.br/kit-jumper-arduino_ITEM*CONDITION_2230284',p:20,u:1},
+    borne_banana_par:{n:'Par borne + pino banana 4 mm',c:'kit 4 pares',l:'https://lista.mercadolivre.com.br/borne-para-pino-banana-4mm_ITEM*CONDITION_2230284',p:25,u:4},
+    cabinho_cores:{n:'Cabinho em 4 cores',c:'rolos',l:'https://lista.mercadolivre.com.br/cabinho-flexivel-0-5mm-kit-cores_ITEM*CONDITION_2230284',p:30,u:1},
+    cabo_4vias:{n:'Cabo manga 4 vias',c:'rolo 1 m',l:'https://lista.mercadolivre.com.br/cabo-manga-4-vias-26awg_ITEM*CONDITION_2230284',p:10,u:1},
+    fita_kapton:{n:'Fita kapton 10 mm (isolante, aguenta o ferro de solda)',c:'rolo 33 m',l:'https://lista.mercadolivre.com.br/fita-kapton-10mm_ITEM*CONDITION_2230284',p:20,u:1},
+    velcro:{n:'Velcro 25 mm',c:'rolo 3 m',l:'https://lista.mercadolivre.com.br/velcro-dupla-face-3-metros_ITEM*CONDITION_2230284',p:15,u:1},
+    parafusos_m3:{n:'Parafusos Allen M3 + porcas (8 a 30 mm)',c:'kit sortido (padrão de todos os projetos)',l:'https://lista.mercadolivre.com.br/kit-parafuso-allen-m3-porca_ITEM*CONDITION_2230284',p:40,u:1},
+    parafusos_m2:{n:'Parafusos M2 (plaquinhas)',c:'kit pequeno',l:'https://lista.mercadolivre.com.br/kit-parafuso-m2_ITEM*CONDITION_2230284',p:15,u:1},
+    esp32cam:{n:'ESP32-CAM + base ESP32-CAM-MB',c:'kit (placa + programador)',l:'https://lista.mercadolivre.com.br/esp32-cam-mb_ITEM*CONDITION_2230284',p:55,u:1},
+    ov2640_ir:{n:'Câmera OV2640 sem filtro IR (850 nm)',c:'unidade',l:'https://lista.mercadolivre.com.br/ov2640-850nm_ITEM*CONDITION_2230284',p:35,u:1},
+    tft13_st7789:{n:'Tela IPS 1,3" 240×240 ST7789',c:'unidade',l:'https://lista.mercadolivre.com.br/display-1.3-st7789-240x240_ITEM*CONDITION_2230284',p:35,u:1},
+    lente_cardboard:{n:'Lente biconvexa 25 mm foco 45 mm (Cardboard)',c:'par',l:'https://lista.mercadolivre.com.br/lente-google-cardboard-25mm_ITEM*CONDITION_2230284',p:20,u:2},
+    led_ir_5mm:{n:'LED infravermelho 5 mm 850 nm',c:'kit 10',l:'https://lista.mercadolivre.com.br/led-infravermelho-850nm-5mm_ITEM*CONDITION_2230284',p:12,u:10},
+    led_ir_3w:{n:'LED infravermelho 3 W 850 nm em estrela 20 mm',c:'kit 2',l:'https://lista.mercadolivre.com.br/led-ir-850nm-3w_ITEM*CONDITION_2230284',p:25,u:2},
+    lente_led_5g:{n:'Lente colimadora 20 mm 5° (para LED 3 W)',c:'unidade',l:'https://lista.mercadolivre.com.br/lente-led-20mm-5-graus_ITEM*CONDITION_2230284',p:15,u:1},
+    driver_7135:{n:'Driver de lanterna 17 mm AMC7135',c:'unidade',l:'https://lista.mercadolivre.com.br/driver-lanterna-17mm-7135_ITEM*CONDITION_2230284',p:15,u:1},
+    irlz44n:{n:'MOSFET IRLZ44N',c:'unidade',l:'https://lista.mercadolivre.com.br/irlz44n_ITEM*CONDITION_2230284',p:6,u:1},
+    extensao_usb:{n:'Extensão USB de painel',c:'unidade',l:'https://lista.mercadolivre.com.br/extensao-usb-painel_ITEM*CONDITION_2230284',p:20,u:1},
+    espuma:{n:'Espuma para a maleta (cortar)',c:'placa',l:'https://lista.mercadolivre.com.br/espuma-para-case_ITEM*CONDITION_2230284',p:40,u:1},
+    laser_verde:{n:'Módulo laser verde 520 nm Ø12 (≤ 5 mW, com driver)',c:'unidade',l:'https://lista.mercadolivre.com.br/modulo-laser-verde-12mm_ITEM*CONDITION_2230284',p:57,u:1},
+    pilha_16340:{n:'Pilha 16340 recarregável 3,7 V',c:'par',l:'https://lista.mercadolivre.com.br/bateria-16340-recarregavel_ITEM*CONDITION_2230284',p:35,u:2},
+    suporte_16340:{n:'Suporte de pilha 16340 / CR123A',c:'unidade',l:'https://lista.mercadolivre.com.br/suporte-bateria-cr123a_ITEM*CONDITION_2230284',p:9,u:1},
+    jack_p2_painel:{n:'Jack P2 3,5 mm estéreo fêmea de painel (com porca)',c:'kit',l:'https://lista.mercadolivre.com.br/jack-p2-femea-painel_ITEM*CONDITION_2230284',p:12,u:5},
+    mcp23017:{n:'Módulo MCP23017 (16 E/S I2C)',c:'unidade',l:'https://lista.mercadolivre.com.br/mcp23017_ITEM*CONDITION_2230284',p:25,u:1},
+    tm1637:{n:'Display TM1637 4 dígitos',c:'unidade',l:'https://lista.mercadolivre.com.br/display-tm1637_ITEM*CONDITION_2230284',p:15,u:1},
+    ws2812_fita:{n:'Fita WS2812 60 LEDs/m (1 m)',c:'rolo 1 m',l:'https://lista.mercadolivre.com.br/fita-led-ws2812b-60_ITEM*CONDITION_2230284',p:45,u:1},
+    microchave_kw11:{n:'Microchave KW11 (fim de curso)',c:'kit',l:'https://lista.mercadolivre.com.br/micro-switch-kw11_ITEM*CONDITION_2230284',p:12,u:10},
+    cabo_usbc_3a:{n:'Cabo USB-A → USB-C 3 A',c:'unidade',l:'https://lista.mercadolivre.com.br/cabo-usb-c-3a_ITEM*CONDITION_2230284',p:15,u:1},
+    led_1w:{n:'LED 1 W branco frio em estrela 20 mm',c:'kit 10',l:'https://lista.mercadolivre.com.br/led-1w-branco-frio-estrela-20mm_ITEM*CONDITION_2230284',p:25,u:10},
+    mt3608:{n:'Módulo elevador MT3608 (step-up)',c:'kit 5',l:'https://lista.mercadolivre.com.br/mt3608_ITEM*CONDITION_2230284',p:25,u:5},
+    reed_switch:{n:'Reed switch 2 × 14 mm (sensor magnético)',c:'kit 10',l:'https://lista.mercadolivre.com.br/reed-switch_ITEM*CONDITION_2230284',p:15,u:10},
+    ima_4x2:{n:'Ímã de neodímio 4 × 2 mm',c:'kit 20',l:'https://lista.mercadolivre.com.br/ima-neodimio-4x2mm_ITEM*CONDITION_2230284',p:14,u:20},
+    lipo_802540:{n:'LiPo 1000 mAh (802540, 8 × 25 × 40)',c:'unidade',l:'https://lista.mercadolivre.com.br/bateria-802540_ITEM*CONDITION_2230284',p:35,u:1},
+    botao_painel_7mm:{n:'Botão de painel 7 mm (pulso, com porca)',c:'kit 10',l:'https://lista.mercadolivre.com.br/chave-push-button-7mm_ITEM*CONDITION_2230284',p:18,u:10},
+    chave_kcd11:{n:'Chave gangorra mini KCD11 (encaixe 10 × 15)',c:'kit 10',l:'https://lista.mercadolivre.com.br/chave-gangorra-kcd11_ITEM*CONDITION_2230284',p:20,u:10},
+    led_uv_5mm:{n:'LED ultravioleta 5 mm 395 nm',c:'kit 10',l:'https://lista.mercadolivre.com.br/led-uv-395nm-5mm_ITEM*CONDITION_2230284',p:12,u:10},
+    bb_tracer:{n:'BB traçante (fluorescente) 0,25 g',c:'pote',l:'https://lista.mercadolivre.com.br/bb-tracer-airsoft-0.25_ITEM*CONDITION_2230284',p:50,u:1},
+    lipo_402030:{n:'LiPo 200 mAh (402030, 4 × 20 × 30)',c:'unidade',l:'https://lista.mercadolivre.com.br/bateria-402030_ITEM*CONDITION_2230284',p:20,u:1},
+    sensor_vibracao:{n:'Sensor de vibração SW-18010P',c:'kit 10',l:'https://lista.mercadolivre.com.br/sensor-vibracao-sw-18010p_ITEM*CONDITION_2230284',p:15,u:10},
+    placa_powerbank:{n:'Placa de power bank 18650 com tela e 2 USB (portas numa borda)',c:'unidade',l:'https://lista.mercadolivre.com.br/placa-power-bank-18650-display-2-usb_ITEM*CONDITION_2230284',p:18,u:1},
+    xt30_par:{n:'Conector XT30 (par macho + fêmea)',c:'kit 5 pares',l:'https://lista.mercadolivre.com.br/conector-xt30-par_ITEM*CONDITION_2230284',p:22,u:5},
+    esp32c3_plus:{n:'ESP32-C3 SuperMini Plus (conector de antena IPEX)',c:'unidade',l:'https://lista.mercadolivre.com.br/esp32-c3-super-mini-plus-ipex_ITEM*CONDITION_2230284',p:47,u:1},
+    antena_24g:{n:'Antena 2,4 GHz 3 dBi + cabinho IPEX → RP-SMA',c:'conjunto',l:'https://lista.mercadolivre.com.br/antena-2.4ghz-3dbi-pigtail-ipex-rp-sma_ITEM*CONDITION_2230284',p:22,u:1},
+    hlk_pm01:{n:'Fonte HLK-PM01 (127/220 V → 5 V 3 W), com bornes',c:'unidade',l:'https://lista.mercadolivre.com.br/hlk-pm01_ITEM*CONDITION_2230284',p:22,u:1},
+    rele_hl:{n:'Módulo relé 1 canal 5 V com jumper H/L (10 A 250 V)',c:'unidade',l:'https://lista.mercadolivre.com.br/modulo-rele-1-canal-5v-h-l_ITEM*CONDITION_2230284',p:11,u:1},
+    piezo_27:{n:'Disco piezo 27 mm',c:'kit 10',l:'https://lista.mercadolivre.com.br/disco-piezoeletrico-27mm_ITEM*CONDITION_2230284',p:15,u:10},
+    prensa_pg7:{n:'Prensa-cabo PG7',c:'kit 10',l:'https://lista.mercadolivre.com.br/prensa-cabo-pg7_ITEM*CONDITION_2230284',p:20,u:10},
+    conector_alavanca:{n:'Conector de alavanca 3 vias (tipo Wago)',c:'kit 10',l:'https://lista.mercadolivre.com.br/conector-de-alavanca-3-vias_ITEM*CONDITION_2230284',p:40,u:10},
+    porta_fusivel:{n:'Porta-fusível de linha 5×20 + fusível 2 A',c:'unidade',l:'https://lista.mercadolivre.com.br/porta-fusivel-de-linha-5x20_ITEM*CONDITION_2230284',p:8,u:1},
+    cabo_forca:{n:'Cabo de força 3×1,0 mm² com plugue (1,5 m)',c:'unidade',l:'https://lista.mercadolivre.com.br/cabo-de-forca-3-pinos-1-5m_ITEM*CONDITION_2230284',p:16,u:1},
+    fita_fotolum:{n:'Fita fotoluminescente 10 mm',c:'rolo',l:'https://lista.mercadolivre.com.br/fita-fotoluminescente-10mm_ITEM*CONDITION_2230284',p:22,u:1},
+    placa_ilhada:{n:'Placa ilhada 5×7 cm',c:'kit 10',l:'https://lista.mercadolivre.com.br/placa-ilhada-5x7_ITEM*CONDITION_2230284',p:20,u:10},
+    capacitor_100nf:{n:'Capacitor cerâmico 100 nF',c:'kit',l:'https://lista.mercadolivre.com.br/capacitor-ceramico-100nf-kit_ITEM*CONDITION_2230284',p:12,u:50}
+  };
+
+  // ---------- projetos: peças necessárias (quantidade) ----------
+  var PROJ = [
+    {id:'01',nome:'Bomba Search & Destroy',pasta:'01-BOMBA-SEARCH-DESTROY',r:{arduino_uno:1,lcd16x2_i2c:1,teclado4x4:1,botao_arcade:1,borne_banana_par:4,sirene_piezo:1,rele_1canal:1,buzzer_ativo:1,led_3mm:1,kit_resistores:1,jumpers:1,suporte_6aa:1,pilha_aa:6,cabinho_cores:1,parafusos_m3:1}},
+    {id:'02',nome:'Powerbank dos Tablets (1 un.)',pasta:'02-POWERBANK-TABLETS',r:{placa_powerbank:1,bat18650:3,suporte18650:3,xt30_par:1,cabo_usbc_3a:2,velcro:1,parafusos_m3:1}},
+    {id:'03',nome:'Nível Anti-Cant',pasta:'03-NIVEL-ANTI-CANT',r:{esp32c3:1,tp4056:1,mpu6050:1,lipo_250:1,led_3mm:3,botao_6x6:1,chave_ss12:1,kit_resistores:1,cabo_4vias:1,parafusos_m3:1,fita_kapton:1}},
+    {id:'04',nome:'Cronógrafo',pasta:'04-CRONOGRAFO',r:{esp32c3:1,par_ir:2,lm393:1,oled096:1,bat18650:1,suporte18650:1,tp4056:1,trimpot:2,botao_6x6:2,chave_ss12:1,kit_resistores:1,parafusos_m3:1,parafusos_m2:1}},
+    {id:'05',nome:'Amplificador de Rede (1 rádio)',pasta:'05-AMPLIFICADOR-REDE',r:{esp32c3_plus:1,antena_24g:1,led_3mm:2,kit_resistores:1,parafusos_m3:1}},
+    {id:'06',nome:'ANPEQ (laser verde com ajuste)',pasta:'06-ANPEQ-LASER',r:{laser_verde:1,pilha_16340:1,suporte_16340:1,tp4056:1,jack_p2_painel:1,chave_mts102:1,parafusos_m3:1}},
+    {id:'07',nome:'Speedloader Elétrico',pasta:'07-SPEEDLOADER-ELETRICO',r:{esp32c3:1,n20_motor:1,l9110s:1,par_ir:1,lm393:1,trimpot:1,oled091:1,botao_arcade:1,botao_6x6:2,chave_ss12:1,modulo_18650_boost:1,suporte18650:1,bat18650:1,kit_resistores:1,parafusos_m3:1}},
+    {id:'08',nome:'Granada de Som e Luz',pasta:'08-GRANADA-SOM-LUZ',r:{esp32c3:1,sirene_piezo:1,led_1w:4,mt3608:1,irlz44n:2,reed_switch:1,ima_4x2:1,lipo_802540:1,tp4056:1,botao_painel_7mm:1,chave_kcd11:1,kit_resistores:1,parafusos_m3:1}},
+    {id:'09',nome:'Alvo Acionador de Lâmpada (1 conjunto)',pasta:'09-ALVO-ACIONADOR',r:{esp32c3:2,piezo_27:1,diodo_1n4148:1,capacitor_100nf:1,kit_resistores:1,bat18650:1,suporte18650:1,tp4056:1,chave_mts102:3,led_3mm:2,placa_ilhada:2,fita_fotolum:1,velcro:1,hlk_pm01:1,rele_hl:1,porta_fusivel:1,conector_alavanca:2,prensa_pg7:2,cabo_forca:1,botao_6x6:1,parafusos_m3:1,parafusos_m2:1}},
+    {id:'10',nome:'Traçante dentro do Silenciador',pasta:'10-TRACANTE-SILENCIADOR',r:{esp32c3:1,led_uv_5mm:6,par_ir:1,lm393:1,trimpot:1,irlz44n:1,lipo_402030:1,tp4056:1,sensor_vibracao:1,led_3mm:1,bb_tracer:1,kit_resistores:1,parafusos_m3:1,parafusos_m2:1}},
+    {id:'11',nome:'Scanner de Rádio',pasta:'11-SCANER-RADIO',r:{esp32_devkit:1,cc1101:1,oled096:1,motor_vibra:1,bc547:1,diodo_1n4148:1,kit_resistores:1,botao_6x6:1,modulo_18650_boost:1,bat18650:1,parafusos_m3:1,parafusos_m2:1}},
+    {id:'12',nome:'Telêmetro',pasta:'12-TELEMETRO-ZONA-ENGAJAMENTO',r:{laser_jc02:1,esp32c3:1,tp4056:1,oled091:1,lipo_600:1,botao_trava_8x8:1,parafusos_m3:1,fita_kapton:1}},
+    {id:'13',nome:'Cyberdeck BLACK BIRD',pasta:'13-CYBERDECK',r:{rpi4_kit:1,monitor_156:1,mini_teclado:1,powerbank:1,esp32c3:1,mcp23017:1,tm1637:1,ws2812_fita:1,rele_1canal:1,microchave_kw11:1,botao_arcade_led:4,chave_mts102:3,led_3mm:3,buzzer_ativo:1,bc547:1,uln2003:1,modulo_18650_boost:1,bat18650:1,suporte18650:1,cabo_usbc_3a:2,extensao_usb:2,espuma:1,kit_resistores:1,parafusos_m3:1,parafusos_m2:1}},
+    {id:'14',nome:'Visão Noturna clip-on',pasta:'14-VISAO-NOTURNA',r:{esp32cam:1,ov2640_ir:1,tft13_st7789:1,lente_cardboard:1,led_ir_5mm:4,irlz44n:1,lipo_1000:1,modulo_18650_boost:1,botao_6x6:2,chave_ss12:1,kit_resistores:1,parafusos_m3:1,led_ir_3w:1,lente_led_5g:1,driver_7135:1,bat18650:1,suporte18650:1,tp4056:1,botao_trava_8x8:1,fita_kapton:1}}
+  ];
+
+  // ---------- peças impressas de cada projeto (quantidade) ----------
+  var P3D = {
+    '01':{caixa:1,painel:1,moldura_lcd:1,alca:1,passa_fios:4},
+    '02':{caixa:1,tampa:1,cartucho:2,botao_aperto:2,calco:2},
+    '03':{caixa:1,tampa:1,mandibula:1,pod:1},
+    '04':{tunel:1,visor:1,tampa_inferior:1,adaptador_boca:1},
+    '05':{caixa:1,tampa:1,calco:2},
+    '06':{caixa:1,tampa:1,berco:1,trava_pivo:1,botao_torre:2,mandibula:2,protecao_bb:1},
+    '07':{corpo:1,tampa_inferior:1,reservatorio:1,tampa_reservatorio:1,roda:1,trava_roda:2,trava_motor:1,bico_m4:1,capa_botao:2},
+    '08':{corpo:1,base:1,topo:1,pino:1,chassi:1,suporte_led:4,presilha:4,presilha_lipo:2},
+    '09':{caixa_alvo:1,tampa_alvo:1,alvo:1,trava_piezo:1,caixa_acionador:1,tampa_acionador:1,capa_botao:1},
+    '10':{chassi:1,frente:1,presilha_c3:1,presilha_lipo:1,presilha_tp:1},
+    '11':{corpo:1,tampa_frente:1,clipe_molle:1},
+    '12':{corpo:1,tampa:1,grade:1,berco_laser:1,capa_botao:1,tampa_anel:1},
+    '13':{base_fe:1,base_fd:1,base_te:1,base_td:1,tampa_fe:1,tampa_fd:1,tampa_te:1,tampa_td:1,painel_fe:1,painel_fd:1,painel_te:1,painel_td:1,cantoneira_tela:4,capa_missil_base:3,capa_missil_tampa:3,suporte_tm1637:1,manete_base:1,manete_alavanca:1,trilho_neon:2,dobradica_base:2,dobradica_tampa:2,trava_lingueta:2,trava_batente:2,alca:1,emenda:4,coluna:2},
+    '14':{casco:1,tampa:1,capuz_lente:1,suporte_tela:1,base_flip:1,mandibula:1,capa_botao:2,pino_trava:1,ir_caixa:1,ir_tampa:1,tnut_mlok:2}
+  };
+  function faltaImprimir(p){ var o=[], t=P3D[p.id]||{}; for(var k in t){ var f=t[k]-tem('p3d_'+p.id+'_'+k); if(f>0) o.push([k,f,t[k]]); } return o; }
+
+  var $=function(s){return document.querySelector(s)};
+  var E = (typeof ESTOQUE==='object') ? ESTOQUE : null;
+  var M = (typeof MONTADOS==='object' && MONTADOS) ? MONTADOS : [];
+  if(!E){ $('#erro').innerHTML='<div class="note red"><b>Não consegui ler o ESTOQUE.js.</b> Ele precisa estar na mesma pasta deste painel. Se você editou o arquivo, confira se não apagou uma vírgula ou um número.</div>'; E={}; }
+  function tem(id){ return +E[id]||0 }
+  // valor para comprar o que falta: pacotes inteiros (ex.: faltam 3 de um kit de 2 = 2 kits), preços médios de out/2026
+  var ROLO=['kit_resistores','jumpers','velcro','cabo_4vias','parafusos_m3','cabinho_cores','fita_kapton'];
+  function custo(id,falta){ var c=CAT[id]; if(!c||!c.p||falta<=0) return 0; return Math.ceil(falta/(c.u||1))*c.p }
+  function reais(v){ return 'R$ '+Math.round(v).toLocaleString('pt-BR') }
+  function link(id){ var c=CAT[id]||{n:id,c:'',l:'#'}; return '<a href="'+c.l+'" target="_blank" rel="noopener">'+c.n+'</a>'+(c.c?' <span class="hint">('+c.c+')</span>':'') }
+
+  // ---------- projetos ----------
+  var nOk=0,nQuase=0,nFeito=0,html='';
+  PROJ.forEach(function(p){
+    var ids=Object.keys(p.r), falt=[], okCount=0, cheio=0, resta=0;
+    ids.forEach(function(id){ cheio+=custo(id,p.r[id]); var f=p.r[id]-tem(id); if(f>0){ falt.push([id,f,p.r[id]]); resta+=custo(id,f); } else okCount++; });
+    var depFalta=(p.dep||[]).filter(function(d){return M.indexOf(d)<0});
+    var feito=M.indexOf(p.id)>=0, cls, badge, imp=faltaImprimir(p);
+    if(feito){cls='feito';badge='<span class="badge b-feito">MONTADO</span>';nFeito++;}
+    else if(!falt.length && !depFalta.length && imp.length){cls='quase';badge='<span class="badge b-quase">FALTA IMPRIMIR</span>';nQuase++;}
+    else if(!falt.length && !depFalta.length){cls='ok';badge='<span class="badge b-ok">PODE MONTAR</span>';nOk++;}
+    else if(falt.length<=2 && !depFalta.length){cls='quase';badge='<span class="badge b-quase">FALTA POUCO</span>';nQuase++;}
+    else {cls='falta';badge='<span class="badge b-falta">FALTAM '+falt.length+' ITENS</span>';}
+    var pct=Math.round(okCount/ids.length*100);
+    html+='<div class="pc '+cls+'"><div class="top"><span class="num">'+p.id+'</span><span class="nome">'+p.nome+'</span>'+badge+(feito?'<span class="right"></span>':'<span class="right preco'+(resta?'':' zero')+'" title="Valor para comprar o que falta (pacotes inteiros, preços médios de out/2026). Diminui quando você soma as peças no ESTOQUE.js.">'+(resta?'falta '+reais(resta)+' <small>de '+reais(cheio)+'</small>':'R$ 0 <small>tudo comprado</small>')+'</span>')+'<a href="'+p.pasta+'/PREVIA.html">prévia →</a></div>';
+    if(!feito){
+      html+='<div class="prog"><i style="width:'+pct+'%"></i></div><div class="hint">'+okCount+' de '+ids.length+' peças no estoque</div>';
+      if(depFalta.length) html+='<div class="hint" style="color:var(--amber)">Precisa antes do(s) projeto(s) '+depFalta.join(', ')+' montado(s).</div>';
+      if(falt.length){ html+='<ul class="miss">'; falt.forEach(function(f){ html+='<li><span class="q">falta '+f[1]+'×</span> '+link(f[0])+(f[1]<f[2]?' <span class="hint">(tem '+tem(f[0])+' de '+f[2]+')</span>':'')+'</li>'; }); html+='</ul>'; }
+      var nImp=Object.keys(P3D[p.id]||{}).length;
+      if(nImp) html+='<div class="hint" style="margin-top:4px">Impressão 3D: '+(nImp-imp.length)+' de '+nImp+' peças prontas'+(imp.length?' · falta: '+imp.map(function(f){return f[1]+'× '+f[0]}).join(', '):' ✓')+' <a href="'+p.pasta+'/3D/LEIA-ME.txt">LEIA-ME</a></div>';
+    }
+    html+='</div>';
+  });
+  $('#cards').innerHTML=html;
+  $('#tiles').innerHTML='<div class="tile"><b style="color:var(--accent)">'+nOk+'</b><span>podem ser montados agora</span></div><div class="tile"><b style="color:var(--amber)">'+nQuase+'</b><span>faltam 1 ou 2 peças</span></div><div class="tile"><b style="color:var(--blue)">'+nFeito+'</b><span>já montados</span></div><div class="tile"><b>'+Object.keys(E).filter(function(k){return tem(k)>0}).length+'</b><span>tipos de peça no estoque</span></div>';
+
+  // ---------- compras para todos os não montados ----------
+  var soma={};
+  PROJ.forEach(function(p){ if(M.indexOf(p.id)>=0) return; for(var id in p.r){ soma[id]=(soma[id]||0)+p.r[id]; } });
+  var linhas='<tr><th>Peça</th><th style="text-align:right">Precisa</th><th style="text-align:right">Tem</th><th style="text-align:right">Comprar</th><th style="text-align:right">Valor</th></tr>', algum=false, totalTudo=0;
+  Object.keys(soma).sort(function(a,b){return (CAT[a]||{n:a}).n.localeCompare((CAT[b]||{n:b}).n)}).forEach(function(id){
+    var need=soma[id]; if(ROLO.indexOf(id)>=0) need=1;
+    var f=need-tem(id); if(f<=0) return; algum=true;
+    var v=custo(id,f); totalTudo+=v;
+    linhas+='<tr><td>'+link(id)+'</td><td class="n">'+need+'</td><td class="n">'+tem(id)+'</td><td class="n" style="color:var(--amber)">'+f+'</td><td class="n">'+(v?reais(v):'—')+'</td></tr>';
+  });
+  if(algum) linhas+='<tr><td colspan="4"><b>Total para montar todos os que faltam</b> <span class="hint">(pacotes inteiros, preços médios de out/2026)</span></td><td class="n"><b>'+reais(totalTudo)+'</b></td></tr>';
+  $('#compras').innerHTML=algum?linhas:'<tr><td>Nada a comprar: o estoque cobre todos os projetos que faltam.</td></tr>';
+  $('#tiles').innerHTML+='<div class="tile"><b style="color:var(--amber)">'+reais(totalTudo)+'</b><span>para comprar tudo o que falta</span></div>';
+
+  // ---------- estoque ----------
+  function usos(id){ return PROJ.filter(function(p){return p.r[id]}).map(function(p){return p.id}).join(', ') }
+  function tabela(soTenho){
+    var h='<tr><th>Peça</th><th style="text-align:right">Tenho</th><th>Usada em</th></tr>';
+    Object.keys(CAT).forEach(function(id){ var t=tem(id); if(soTenho&&!t) return; h+='<tr><td>'+link(id)+'</td><td class="n'+(t?'':' zero')+'">'+t+'</td><td class="hint">'+usos(id)+'</td></tr>'; });
+    $('#estoque').innerHTML=h;
+  }
+  tabela(false);
+
+  // ---------- impressão 3D ----------
+  var ti='<tr><th>Projeto</th><th>Peça</th><th style="text-align:right">Precisa</th><th style="text-align:right">Impressas</th></tr>';
+  PROJ.forEach(function(p){ var t=P3D[p.id]||{}; for(var k in t){ var n=tem('p3d_'+p.id+'_'+k), ok=n>=t[k];
+    ti+='<tr><td class="hint">'+p.id+'</td><td><a href="'+p.pasta+'/3D/stl/'+k+'.stl">'+k+'</a></td><td class="n">'+t[k]+'</td><td class="n" style="color:'+(ok?'var(--accent)':'var(--amber)')+'">'+n+(ok?' ✓':'')+'</td></tr>'; } });
+  $('#imp').innerHTML=ti;
+  $('#fTodos').onclick=function(){tabela(false);this.classList.add('on');$('#fTenho').classList.remove('on')};
+  $('#fTenho').onclick=function(){tabela(true);this.classList.add('on');$('#fTodos').classList.remove('on')};
+})();
+</script>
+</body>
+</html>

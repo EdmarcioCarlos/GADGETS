@@ -1,0 +1,63 @@
+14 - VISÃO NOTURNA CLIP-ON (versão compacta) · PEÇAS 3D
+======================================================
+
+CORES: PRETO = casco, suporte_tela, base_flip
+       COYOTE = tampa (com o emblema e o nome BLACK BIRD), capuz_lente, mandibula, capa_botao, pino_trava
+
+PEÇA            QTD  SUPORTE  POSIÇÃO NA MESA
+casco            1   sim*     face de trás (com o furo da lente) na mesa
+tampa            1   não      face de fora (com a marca) na mesa
+capuz_lente      1   não      aba na mesa
+suporte_tela     1   não      trilhos da tela na mesa
+base_flip        1   não      garra na mesa, como está no arquivo
+mandibula        1   não      como está no arquivo
+capa_botao       2   não      cabeça para cima
+pino_trava       1   não      em pé, ponta chanfrada para cima (imprima 2: é pequeno)
+--- LANTERNA IR (para 80 m) ---
+ir_caixa         1   não      face do M-LOK na mesa (preto)
+ir_tampa         1   não      face de fora na mesa (coyote)
+tnut_mlok        2   não      deitada (preto) · porca M3 embutida
+* casco: suporte só embaixo da orelha da dobradiça ("suporte só tocando a mesa").
+
+CONFIGURAÇÃO: PETG, camada 0,2, 5 perímetros, 5 camadas topo/fundo, 40% giroide.
+
+FERRAGENS (tudo M3 Allen + porca, padrão do projeto)
+- 1 M3 × 50 + porca ............ pino da dobradiça
+- 1 M3 × 30 + porca ............ garra Picatinny
+- 4 M3 × 10 .................... tampa lateral
+- 2 M3 × 10 .................... capuz da lente
+- 2 M3 × 8 ..................... suporte da tela (nos rasgos de foco)
+- 2 M3 × 8 ..................... placa dos botões
+- TRAVA DA DOBRADIÇA: pino_trava + 1 molinha de caneta (furo da articulação de trás) + 1 M3 × 12 (botão,
+  rosqueia no pino pelo rasgo da esquerda). Puxe o botão para trás, gire, solte: trava em pé e virado.
+- 1 BB de 6 mm + 1 molinha de caneta na articulação da frente (só tira a folga).
+- Em pé, a unidade apoia no BATENTE da base: o peso fica nele, não na trava.
+- LANTERNA IR: 2 M3 × 12 (caixa -> porcas M-LOK, cabeça por dentro) + 2 porcas M3 nas tnut_mlok
+  + 2 M3 × 10 (tampa). Dentro: suporte 18650, TP4056 USB-C, botão com trava 8x8, driver 7135 17 mm,
+  LED 3 W 850 nm em estrela, lente colimadora 20 mm de 5° (IR_LENTE_H = altura da lente: CONFIRA).
+A LiPo não leva parafuso: fica entre o batente de trás, o ressalto com aba da frente e o batente
+do suporte da tela, que encosta por cima dela.
+
+MEDIDAS PARA CONFERIR ANTES DE IMPRIMIR (topo do pecas.scad)
+- EIXO: altura do centro da luneta acima do trilho (Geissele alta = 49 mm).
+- TELA_PCB: tamanho da placa da tela de 1,3" que chegou.
+- CAM_Z: altura da lente da câmera (o rasgo da frente já tem folga de ±4 mm).
+- LIPO: medidas da LiPo de 1000 mAh (503450 = 50 × 34 × 5,5).
+
+Desenhos da prévia: montagem.scad (SEM_TAMPA = interior; VIRADO = unidade virada para o lado).
+
+ ACIONADOR REMOTO NA LANTERNA IR (ir_caixa)
+   A traseira tem um encaixe para o plugue SF do acionador duplo de M-LOK.
+   Dentro: uma mola de caneta no fundo do furo (contato do meio, fio pelo
+   furinho de trás) e uma lâmina de cobre na fenda de cima (contato do corpo).
+   Ligue os dois em paralelo com o botão com trava. Meça o plugue e ajuste
+   SF_D (diâmetro) e SF_L (comprimento) no pecas.scad antes de imprimir.
+
+ DOIS JEITOS DE FIXAR (imprima UMA das bases; o resto é igual)
+   base_flip  BASCULANTE: vira para a esquerda (pino_trava + mola + 1 BB;
+              1 M3 x 50 no eixo + 1 M3 x 12 de botão)
+   base_fixa  ELEVADOR FIXO: bloco maciço (como um riser de luneta) do trilho
+              até o fundo do casco; a orelha encaixa no recorte e 2 M3 x 50
+              + 2 porcas atravessam o bloco e a orelha. Não usa pino_trava.
+              Pode imprimir com 40% de preenchimento.
+   Impressão das duas: igual (garras para baixo, suporte só tocando a mesa).

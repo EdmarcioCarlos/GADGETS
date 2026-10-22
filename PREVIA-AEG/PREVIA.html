@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DMR com os Gadgets</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f;--coyote:#c9a26a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.foto{display:block;width:100%;height:auto;border-radius:8px;background:#f7f7f7}
+.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:12px}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+td .num{font:600 12px Consolas,monospace;color:var(--accent)}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:12px}
+.item{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;text-decoration:none;color:var(--text)}
+.item img{width:100%;height:150px;object-fit:contain;background:#fff;border-radius:6px;display:block}
+.item b{display:block;margin-top:6px}
+.item .num{font:600 12px Consolas,monospace;color:var(--accent)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PRÉVIA GERAL NO AEG</div>
+    <h1>O seu DMR com todos os gadgets</h1>
+    <p class="sub">Rossi Neptune Shadow MK16 URG-I 13,5″ (AEG) com Red Win 1-6×24 na Geissele Super Precision alta, a 450 fps, com silenciador, e todos os equipamentos que vão no rifle, cada um na posição que está no projeto dele. As peças vêm dos mesmos modelos 3D das prévias de cada projeto. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Resumo</h2>
+    <div class="tiles">
+      <div class="tile"><b>≈ 1.020 mm</b><span>comprimento com o silenciador e a coronha aberta (890 de fábrica)</span></div>
+      <div class="tile"><b>5 gadgets</b><span>no rifle: 03, 06, 10 (dentro do silenciador), 12 e 14 (+ a lanterna IR do 14)</span></div>
+      <div class="tile"><b>≈ 530 g</b><span>peso somado dos gadgets no rifle, com a lanterna IR (estimativa)</span></div>
+      <div class="tile"><b>450 fps</b><span>≈ 137 m/s e 1,9 J com BB de 0,20 g</span></div>
+      <div class="tile"><b>R$ 889–1.393</b><span>custo somado dos gadgets do rifle (reaproveitando kits)</span></div>
+    </div>
+    <div class="fig" style="padding:8px"><img class="foto" src="3D/img/aeg_3d_esquerda.png" alt="AEG com os gadgets, vista 3D do lado esquerdo"></div>
+    <div class="cap">Vista em 3D do lado esquerdo. A réplica foi desenhada a partir das fotos de lado do fabricante (lojas abaixo), com a escala tirada do guarda-mão de 13,5″. Aparecem o receptor de 192 mm, a janela de ejeção, o magwell, a empunhadura inclinada, a coronha tipo MOE, o castle nut, o guarda-mão MK16 com as fileiras de M-LOK e o logo do tridente. Os gadgets estão em preto e coyote, como serão impressos.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>A sua réplica</h2>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>De fábrica</th><th>No seu</th></tr>
+      <tr><td>Modelo</td><td>Rossi Neptune Shadow MK16 URG-I 13,5″, AEG 6 mm</td><td>igual</td></tr>
+      <tr><td>Comprimento</td><td class="mm">890 (coronha aberta) · 800 (fechada)</td><td>≈ 1.020 com o silenciador (≈ 180 mm, CONFIRA)</td></tr>
+      <tr><td>Cano interno</td><td class="mm">365 × 6,03</td><td>igual</td></tr>
+      <tr><td>Peso</td><td class="mm">2.300 g</td><td>≈ 3,4 kg com luneta, montagem, silenciador e gadgets (estimativa)</td></tr>
+      <tr><td>Velocidade</td><td>≈ 380 fps (0,20 g)</td><td><b>450 fps</b> (≈ 137 m/s · 1,9 J com 0,20 g; ≈ 116 m/s com 0,28 g)</td></tr>
+      <tr><td>Mecânica</td><td>gearbox V2, MOSFET com gatilho eletrônico, hop-up ProWin</td><td>igual</td></tr>
+      <tr><td>Guarda-mão</td><td>M-LOK 13,5″ com trilho Picatinny em cima</td><td>igual; é nele que vão o anti-cant (03) e a visão noturna (14)</td></tr>
+      <tr><td>Magazine</td><td>mid-cap M4 de 100 BBs</td><td>outro modelo (no desenho, um mid-cap M4 comum; me diga qual é para eu desenhar igual)</td></tr>
+      <tr><td>Luneta</td><td>—</td><td>Red Win 1-6×24 na Geissele Super Precision alta (eixo a 49 mm do trilho)</td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">Dados de fábrica: <a href="https://azsports.com.br/rifle-de-airsoft-eletrico-aeg-rossi-neptune-shadow-mk16-urg-i-13-5-6-0mm">AZ Sports</a> · <a href="https://lojablackstar.com.br/produtos/rossi-neptune-shadow-mk16-urg-i-13-5-60mm/">Loja Blackstar</a> · <a href="https://www.bravusairsoft.com.br/rifle-de-airsoft-eletrico-rossi-neptune-shadow-mk16-urg-i-135-6mm">Bravus Airsoft</a> · <a href="https://www.lojadacarabina.com.br/airsoft-neptune-shadow-rossi-rifle-mk16-urg-i-13-5-6mm.html">Loja da Carabina</a> (fotos do fabricante nessas páginas).</p>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>Vistas de lado</h2>
+    <div class="fig">
+      <svg viewBox="0 0 1212 980" data-mm="1212" data-zoom="0.78" class="vistas3d vaegf126ac">
+        <style>.vaegf126ac .lb{font:23.8px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vaegf126ac .dt{font:600 23.8px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vaegf126ac .dim{stroke:#e2b04a;stroke-width:1.75;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vaegf126ac .ext{stroke:#e2b04a;stroke-width:1.05;opacity:.55}.vaegf126ac .nm{font:600 17.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:4.9px;stroke-linejoin:round}</style>
+        <text x="84" y="35" class="lb">LADO ESQUERDO</text>
+        <image href="3D/img/aeg_frente_VIRADOfalse.png" x="84" y="63" width="1044" height="315"/>
+        <text x="583" y="154.3" class="nm">03 anti-cant</text>
+        <text x="460" y="119.3" class="nm">03 pod de LEDs</text>
+        <text x="546" y="68.3" class="nm">12 telêmetro</text>
+        <text x="676" y="113.3" class="nm">14 visão noturna</text>
+        <text x="1038" y="192.3" class="nm">silenciador</text>
+        <text x="841" y="123.3" class="nm">06 ANPEQ</text>
+        <text x="360" y="100" class="nm">Red Win 1-6×24</text>
+        <line x1="84" y1="378" x2="84" y2="430.5" class="ext"/><line x1="1128" y1="378" x2="1128" y2="430.5" class="ext"/>
+        <line x1="84" y1="420" x2="1128" y2="420" class="dim"/><text x="606" y="456.4" class="dt">1044</text>
+        <line x1="31.5" y1="63" x2="84" y2="63" class="ext"/><line x1="31.5" y1="378" x2="84" y2="378" class="ext"/>
+        <line x1="42" y1="63" x2="42" y2="378" class="dim"/><text x="29.4" y="220.5" class="dt" transform="rotate(-90 29.4 220.5)">315</text>
+        <text x="84" y="546" class="lb">LADO DIREITO</text>
+        <image href="3D/img/aeg_tras_VIRADOfalse.png" x="84" y="574" width="1044" height="315"/>
+        <text x="356" y="695.3" class="nm">lanterna IR 850 nm (80 m)</text>
+        <text x="536" y="624.3" class="nm">14 visão noturna</text>
+        <text x="371" y="634.3" class="nm">06 ANPEQ</text>
+        <text x="174" y="703.3" class="nm">silenciador</text>
+        <text x="676" y="751.3" class="nm">Neptune Spear</text>
+        <line x1="84" y1="889" x2="84" y2="941.5" class="ext"/><line x1="1128" y1="889" x2="1128" y2="941.5" class="ext"/>
+        <line x1="84" y1="931" x2="1128" y2="931" class="dim"/><text x="606" y="967.4" class="dt">1044</text>
+        <line x1="31.5" y1="574" x2="84" y2="574" class="ext"/><line x1="31.5" y1="889" x2="84" y2="889" class="ext"/>
+        <line x1="42" y1="574" x2="42" y2="889" class="dim"/><text x="29.4" y="731.5" class="dt" transform="rotate(-90 29.4 731.5)">315</text>
+      </svg>
+    </div>
+    <div class="cap">Escala real (use "Tamanho real" depois de calibrar). Os nomes mostram cada gadget; a réplica é simplificada, só para mostrar posição e tamanho.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>De cima e com a visão noturna virada</h2>
+    <div class="fig">
+      <svg viewBox="0 0 1212 587.99" data-mm="1212" data-zoom="0.78" class="vistas3d vaegd211b1">
+        <style>.vaegd211b1 .lb{font:23.8px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vaegd211b1 .dt{font:600 23.8px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vaegd211b1 .dim{stroke:#e2b04a;stroke-width:1.75;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vaegd211b1 .ext{stroke:#e2b04a;stroke-width:1.05;opacity:.55}.vaegd211b1 .nm{font:600 17.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:4.9px;stroke-linejoin:round}</style>
+        <text x="84" y="35" class="lb">DE CIMA</text>
+        <image href="3D/img/aeg_topo_VIRADOfalse.png" x="84" y="63" width="1044" height="95"/>
+        <text x="856" y="81.3" class="nm">lanterna IR</text>
+        <line x1="84" y1="158" x2="84" y2="210.5" class="ext"/><line x1="1128" y1="158" x2="1128" y2="210.5" class="ext"/>
+        <line x1="84" y1="200" x2="1128" y2="200" class="dim"/><text x="606" y="236.4" class="dt">1044</text>
+        <line x1="31.5" y1="63" x2="84" y2="63" class="ext"/><line x1="31.5" y1="158" x2="84" y2="158" class="ext"/>
+        <line x1="42" y1="63" x2="42" y2="158" class="dim"/><text x="29.4" y="110.5" class="dt" transform="rotate(-90 29.4 110.5)">95</text>
+        <text x="84" y="326" class="lb">DE CIMA · VISÃO NOTURNA VIRADA PARA O LADO</text>
+        <image href="3D/img/aeg_topo_VIRADOtrue.png" x="84" y="354" width="1044" height="142.99"/>
+        <line x1="84" y1="496.99" x2="84" y2="549.49" class="ext"/><line x1="1128" y1="496.99" x2="1128" y2="549.49" class="ext"/>
+        <line x1="84" y1="538.99" x2="1128" y2="538.99" class="dim"/><text x="606" y="575.39" class="dt">1044</text>
+        <line x1="31.5" y1="354" x2="84" y2="354" class="ext"/><line x1="31.5" y1="496.99" x2="84" y2="496.99" class="ext"/>
+        <line x1="42" y1="354" x2="42" y2="496.99" class="dim"/><text x="29.4" y="425.5" class="dt" transform="rotate(-90 29.4 425.5)">143</text>
+      </svg>
+    </div>
+    <div class="duas" style="margin-top:12px">
+      <div class="fig" style="padding:8px;margin:0"><img class="foto" src="3D/img/aeg_3d_luneta.png" alt="Luneta com o telêmetro, o anti-cant e a visão noturna"></div>
+      <div class="fig" style="padding:8px;margin:0"><img class="foto" src="3D/img/aeg_3d_virado.png" alt="Visão noturna virada para o lado"></div>
+    </div>
+    <div class="fig" style="padding:8px;margin:12px 0 0"><img class="foto" src="3D/img/aeg_3d_direita.png" alt="Lado direito com a lanterna IR no guarda-mão"></div>
+    <div class="cap">Embaixo, o lado direito: a lanterna IR 850 nm no M-LOK, perto da ponta do guarda-mão. Em cima, à esquerda, o conjunto da luneta. À direita, a visão noturna virada para a esquerda (90°, com clique): a luneta fica livre para o dia, e a unidade não bate no pod de LEDs nem no telêmetro.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>De trás (o que você vê ao mirar)</h2>
+    <div class="fig">
+      <svg viewBox="0 0 285.99 337" data-mm="285.99" data-zoom="3.29" class="vistas3d vaeg038992">
+        <style>.vaeg038992 .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vaeg038992 .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vaeg038992 .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vaeg038992 .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vaeg038992 .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">DE TRÁS (o que você vê)</text>
+        <image href="3D/img/aeg_esquerda_VIRADOfalse.png" x="12" y="9" width="95" height="315"/>
+        <text x="24" y="124.9" class="nm">lanterna IR</text>
+        <line x1="12" y1="324" x2="12" y2="331.5" class="ext"/><line x1="107" y1="324" x2="107" y2="331.5" class="ext"/>
+        <line x1="12" y1="330" x2="107" y2="330" class="dim"/><text x="59.5" y="335.2" class="dt">95</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="324" x2="12" y2="324" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="324" class="dim"/><text x="4.2" y="166.5" class="dt" transform="rotate(-90 4.2 166.5)">315</text>
+        <text x="131" y="5" class="lb">DE TRÁS · VISÃO NOTURNA VIRADA</text>
+        <image href="3D/img/aeg_esquerda_VIRADOtrue.png" x="131" y="9" width="142.99" height="315"/>
+        <line x1="131" y1="324" x2="131" y2="331.5" class="ext"/><line x1="273.99" y1="324" x2="273.99" y2="331.5" class="ext"/>
+        <line x1="131" y1="330" x2="273.99" y2="330" class="dim"/><text x="202.5" y="335.2" class="dt">143</text>
+        <line x1="123.5" y1="9" x2="131" y2="9" class="ext"/><line x1="123.5" y1="324" x2="131" y2="324" class="ext"/>
+        <line x1="125" y1="9" x2="125" y2="324" class="dim"/><text x="123.2" y="166.5" class="dt" transform="rotate(-90 123.2 166.5)">315</text>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Os gadgets no rifle</h2>
+    <div class="tw"><table>
+      <tr><th>Projeto</th><th>Onde vai</th><th>Peso (≈)</th><th></th></tr>
+      <tr><td><span class="num">03</span> Nível Anti-Cant</td><td>Unidade no trilho do guarda-mão, logo à frente da Geissele (embaixo da objetiva); pod de 3 LEDs na lateral esquerda do tubo (9 h), perto do anel de zoom, com o aperto às 3 h</td><td class="mm">40 g</td><td><a href="../03-NIVEL-ANTI-CANT/PREVIA.html">prévia →</a></td></tr>
+      <tr><td><span class="num">06</span> ANPEQ (laser verde)</td><td>Na ponta do trilho de cima do guarda-mão, logo antes da massa de mira. Torres com clique para pôr o ponto do laser no ponto de impacto da luneta; liga pelo seu acionador de M-LOK (cabo P2)</td><td class="mm">≈ 120 g</td><td><a href="../06-ANPEQ-LASER/PREVIA.html">prévia →</a></td></tr>
+      <tr><td><span class="num">10</span> Traçante</td><td><b>Dentro do seu silenciador</b>, no lugar da espuma: não aparece por fora. A BB traçante sai brilhando pela boca</td><td class="mm">≈ 40 g</td><td><a href="../10-TRACANTE-SILENCIADOR/PREVIA.html">prévia →</a></td></tr>
+      <tr><td><span class="num">12</span> Telêmetro</td><td>Em cima do anel da frente da Geissele, numa tampa impressa; laser na frente, tela para você</td><td class="mm">85 g</td><td><a href="../12-TELEMETRO-ZONA-ENGAJAMENTO/PREVIA.html">prévia →</a></td></tr>
+      <tr><td><span class="num">14</span> Visão Noturna</td><td>Trilho do guarda-mão, 5–10 mm na frente da objetiva; vira para a esquerda. Para ver a 80 m, vai junto uma lanterna IR 850 nm no M-LOK do lado direito</td><td class="mm">150 g</td><td><a href="../14-VISAO-NOTURNA/PREVIA.html">prévia →</a></td></tr>
+      <tr><td><span class="num">14</span> Lanterna IR 850 nm (montada)</td><td>Caixa tática no M-LOK do lado direito do guarda-mão, perto da ponta (2 porcas M-LOK impressas); é ela que ilumina a 80–100 m para a visão noturna. LED 3 W com lente de 5° e 18650</td><td class="mm">≈ 150 g</td><td><a href="../14-VISAO-NOTURNA/PREVIA.html">prévia →</a></td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Os gadgets que não vão no rifle</h2>
+    <p class="hint">Equipamento de jogo, de pulso, de bancada e da base. Clique para abrir a prévia de cada um.</p>
+    <div class="grade">
+      <a class="item" href="../01-BOMBA-SEARCH-DESTROY/PREVIA.html"><img src="../01-BOMBA-SEARCH-DESTROY/3D/img/pecas.png" alt=""><span class="num">01</span><b>Bomba Search &amp; Destroy</b><span class="hint">objetivo de jogo</span></a>
+      <a class="item" href="../02-POWERBANK-TABLETS/PREVIA.html"><img src="../02-POWERBANK-TABLETS/3D/img/pecas.png" alt=""><span class="num">02</span><b>Powerbank dos Tablets</b><span class="hint">no poste, embaixo do tablet da missão</span></a>
+      <a class="item" href="../04-CRONOGRAFO/PREVIA.html"><img src="../04-CRONOGRAFO/3D/img/pecas.png" alt=""><span class="num">04</span><b>Cronógrafo</b><span class="hint">na boca, para medir os 450 fps (veja a nota do silenciador abaixo)</span></a>
+      <a class="item" href="../05-AMPLIFICADOR-REDE/PREVIA.html"><img src="../05-AMPLIFICADOR-REDE/3D/img/pecas.png" alt=""><span class="num">05</span><b>Amplificador de Rede</b><span class="hint">rádio dos tablets do Battlefield</span></a>
+      <a class="item" href="../07-SPEEDLOADER-ELETRICO/PREVIA.html"><img src="../07-SPEEDLOADER-ELETRICO/3D/img/pecas.png" alt=""><span class="num">07</span><b>Speedloader Elétrico</b><span class="hint">carrega os magazines do AEG</span></a>
+      <a class="item" href="../08-GRANADA-SOM-LUZ/PREVIA.html"><img src="../08-GRANADA-SOM-LUZ/3D/img/pecas.png" alt=""><span class="num">08</span><b>Granada de Som e Luz</b><span class="hint">no colete, para o jogo</span></a>
+      <a class="item" href="../09-ALVO-ACIONADOR/PREVIA.html"><img src="../09-ALVO-ACIONADOR/3D/img/pecas.png" alt=""><span class="num">09</span><b>Alvo Acionador de Lâmpada</b><span class="hint">no campo · acende o refletor nos jogos noturnos</span></a>
+      <a class="item" href="../11-SCANER-RADIO/PREVIA.html"><img src="../11-SCANER-RADIO/3D/img/pecas.png" alt=""><span class="num">11</span><b>Scanner de Rádio</b><span class="hint">no colete (MOLLE)</span></a>
+      <a class="item" href="../13-CYBERDECK/PREVIA.html"><img src="../13-CYBERDECK/3D/img/pecas.png" alt=""><span class="num">13</span><b>Cyberdeck BLACK BIRD</b><span class="hint">computador de campo · partida de caça</span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Espaços e interferências</h2>
+    <div class="tw"><table>
+      <tr><th>Ponto</th><th>Medida</th><th>Situação</th></tr>
+      <tr><td>Traçante (10) dentro do silenciador</td><td class="mm">Ø 32 × 130</td><td>Precisa das medidas de dentro do seu silenciador (veja a prévia do 10). Sem a espuma, o silenciador abafa menos o som</td></tr>
+      <tr><td>ANPEQ (06) na frente da luneta</td><td class="mm">≈ 42 de altura</td><td>A caixa (37) fica abaixo da visão da luneta (49 − 12 = 37); só a torre de cima passa uns 5 mm, longe da objetiva: fica desfocada e não aparece na imagem. O laser sai ≈ 35 mm abaixo do eixo da luneta: zere na distância em que mais atira (ex.: 40 m)</td></tr>
+      <tr><td>Anti-cant (03) até a objetiva</td><td class="mm">≈ 10</td><td>OK</td></tr>
+      <tr><td>Laser do telêmetro (12) por cima da visão noturna (14)</td><td class="mm">≈ 5</td><td>OK: a visão noturna não tem nada em cima, então o laser passa livre e dá para medir distância com ela na frente</td></tr>
+      <tr><td>Lanterna IR no M-LOK direito</td><td class="mm">—</td><td>OK: fica abaixo e à direita do eixo da luneta, longe da câmera da visão noturna e da mão de apoio (que vai embaixo/à esquerda). A 80 m o feixe cobre o retículo com folga</td></tr>
+      <tr><td>Visão noturna virada para a esquerda</td><td class="mm">—</td><td>OK: fica longe do pod de LEDs (03), que está mais atrás no tubo, e do telêmetro em cima</td></tr>
+      <tr><td>Trilho livre na frente da objetiva</td><td class="mm">≥ 85</td><td>OK: o guarda-mão de 13,5″ tem trilho até a ponta; a visão noturna usa 50 mm de trilho</td></tr>
+
+      <tr><td>Cronógrafo (04) com o silenciador</td><td class="mm">Ø 38</td><td>O adaptador de boca do cronógrafo foi feito para o quebra-chamas (24 mm). Para usar na ponta do silenciador, mude <code>QUEBRA_CHAMA_D</code> no <code>04-CRONOGRAFO/3D/pecas.scad</code> para o diâmetro do seu silenciador e reimprima só o adaptador</td></tr>
+    </table></div>
+    <div class="note"><b>Me passe as medidas do seu silenciador para deixar o desenho exato:</b> por fora (usei 180 × 38 mm) e por dentro, sem a espuma (o traçante usa Ø 32 × 150 mm), e o modelo do magazine que você usa hoje.</div>
+    <div class="note">A 450 fps, muitos campos classificam a réplica como DMR, com distância mínima de engajamento (geralmente 20–30 m) e tiro só em semi. Ajuste a <b>zona de engajamento</b> do telêmetro (12) para a distância mínima do seu campo: ele avisa quando o alvo está perto demais.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">09</span>Custo somado dos gadgets do rifle</h2>
+    <div class="tw"><table>
+      <tr><th>Projeto</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>03 · Nível anti-cant</td><td class="r">R$ 116</td><td class="r">R$ 176</td></tr>
+      <tr><td>10 · Traçante dentro do silenciador (reaproveitando kits, com 1 pote de BB traçante)</td><td class="r">R$ 92</td><td class="r">R$ 178</td></tr>
+
+      <tr><td>12 · Telêmetro</td><td class="r">R$ 339</td><td class="r">R$ 422</td></tr>
+      <tr><td>14 · Visão noturna + lanterna IR montada, para 80 m (reaproveitando kits)</td><td class="r">R$ 253</td><td class="r">R$ 440</td></tr>
+      <tr><td>06 · ANPEQ, laser verde com ajuste (reaproveitando kits; você já tem o acionador)</td><td class="r">R$ 89</td><td class="r">R$ 177</td></tr>
+      <tr class="tot"><td>Total (peças impressas não entram)</td><td class="r">≈ R$ 889</td><td class="r">≈ R$ 1.393</td></tr>
+
+    </table></div>
+    <p class="hint">Valores de cada prévia (out/2026). O detalhe de cada compra, com os links, está na prévia do projeto.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

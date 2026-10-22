@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amplificador de Rede</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:100%;max-width:420px}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
+.duas img{width:100%;height:auto;display:block;border-radius:8px;background:#f8f8f8}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243a;stroke:#4f79b0;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}.pt.c,.ttl.c{text-anchor:middle}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-gnd{stroke:#8a959b}.w-usb{stroke:#4fa3ff}.w-led{stroke:#47c76a}.w-led2{stroke:#ffd84a}
+.w-wifi{stroke:#4fa3ff;stroke-dasharray:6 6}.w-lr{stroke:#e2b04a;stroke-dasharray:10 6}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | GAMES · PROJETO 05 · INTERMEDIÁRIO</div>
+    <h1>Amplificador de Rede dos Tablets</h1>
+    <p class="sub">Para o <b>LA CATEDRAL BATTLEFIELD</b> funcionar num campo grande, sem roteador e sem internet. Ao lado de cada tablet vai uma caixinha com uma ESP32-C3 e antena: o tablet se conecta no Wi-Fi dela, e ela repassa tudo o que o jogo manda para as outras caixinhas pelo rádio de <b>longo alcance</b> da Espressif (o mesmo do TESTE_ALCANCE). Caixinha sem tablet vira <b>repetidor</b> sozinha. A energia vem do powerbank (02). Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>36 × 38 × 68</b><span>largura × fundo × altura da caixa com a tampa (a antena sobe mais ≈ 110)</span></div>
+      <div class="tile"><b>1 por tablet</b><span>+ 1 ou 2 repetidores onde o sinal não chega (rádio sem tablet)</span></div>
+      <div class="tile"><b>≈ 0,5 W</b><span>≈ 100 mA em 5 V, pela 2ª saída USB do powerbank (02)</span></div>
+      <div class="tile"><b>≈ 150–400 m</b><span>entre 2 rádios no modo longo alcance, com antena externa, no alto e com visada (estimativa: o TESTE_ALCANCE mede no seu campo)</span></div>
+      <div class="tile"><b>R$ 20–85</b><span>por rádio: R$ 20 com a SuperMini comum (do kit de 5); R$ 60–85 com a versão de antena externa</span></div>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Por que intermediário:</b> a montagem é fácil (placa, 2 LEDs e uma antena), mas é preciso gravar o código em cada rádio, instalar o APK novo do Battlefield em todos os tablets e testar o alcance no campo antes do jogo.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 300">
+        <rect x="20" y="40" width="110" height="74" rx="8" class="blk"/><text x="75" y="70" class="pt c">TABLET</text><text x="75" y="88" class="pt c" style="font-size:10px;fill:#8a959b">ponto A</text>
+        <rect x="200" y="40" width="110" height="74" rx="8" class="brd"/><text x="255" y="70" class="pt c">RÁDIO</text><text x="255" y="88" class="pt c" style="font-size:10px;fill:#8a959b">ESP32-C3</text>
+        <rect x="395" y="186" width="110" height="74" rx="8" class="brd"/><text x="450" y="216" class="pt c">RÁDIO</text><text x="450" y="234" class="pt c" style="font-size:10px;fill:#8a959b">repetidor</text>
+        <rect x="590" y="40" width="110" height="74" rx="8" class="brd"/><text x="645" y="70" class="pt c">RÁDIO</text><text x="645" y="88" class="pt c" style="font-size:10px;fill:#8a959b">ESP32-C3</text>
+        <rect x="770" y="40" width="110" height="74" rx="8" class="blk"/><text x="825" y="70" class="pt c">TABLET</text><text x="825" y="88" class="pt c" style="font-size:10px;fill:#8a959b">ponto B</text>
+        <path class="wr w-wifi" d="M130,77 H200"/><path class="wr w-wifi" d="M700,77 H770"/>
+        <path class="wr w-lr" d="M310,77 H590"/><path class="wr w-lr" d="M300,114 L410,186"/><path class="wr w-lr" d="M490,186 L600,114"/>
+        <text x="165" y="64" class="pt c" style="font-size:10px">Wi-Fi</text><text x="735" y="64" class="pt c" style="font-size:10px">Wi-Fi</text>
+        <text x="450" y="64" class="pt c" style="font-size:11px;fill:#e2b04a">ESP-NOW longo alcance (direto, se alcançar)</text>
+        <text x="450" y="160" class="pt c" style="font-size:11px;fill:#e2b04a">ou pelo repetidor</text>
+        <text x="20" y="150" class="pt" style="font-size:11px;fill:#8a959b">Rede "LACATEDRAL-JOGO"</text><text x="20" y="166" class="pt" style="font-size:11px;fill:#8a959b">(igual em todos os rádios)</text>
+        <text x="20" y="290" class="pt" style="font-size:11px;fill:#8a959b">O jogo do tablet não muda: ele continua mandando as mensagens (UDP) "para a rede"; o rádio é que leva elas até os outros pontos.</text>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>Parte</th><th>O que faz</th></tr>
+      <tr><td><b>Rede do tablet</b></td><td>Todos os rádios criam a mesma rede Wi-Fi <b>LACATEDRAL-JOGO</b> (senha <code>lacatedral</code>). O tablet se conecta na mais forte, que é a do rádio do lado dele. Sem internet e sem roteador</td></tr>
+      <tr><td><b>Repasse</b></td><td>Tudo o que o Battlefield manda (porta 47800) o rádio corta em pedaços de até 236 bytes e manda pelo ar, em ESP-NOW <b>longo alcance</b> (bem mais longe que o Wi-Fi comum, só que mais devagar). Os outros rádios montam de novo e entregam ao tablet deles</td></tr>
+      <tr><td><b>Notícia de ponto em ponto</b></td><td>O jogo já manda o placar de todos os pontos que conhece. Então, se A alcança B e B alcança C, a notícia de A chega em C pelo tablet de B</td></tr>
+      <tr><td><b>Repetidor</b></td><td>Rádio <b>sem tablet</b> conectado vira repetidor sozinho: repassa o que ouve (até 2 vezes). Ponha no alto, no meio do caminho entre dois pontos que não se alcançam. Ele também usa um powerbank (02)</td></tr>
+      <tr><td><b>LED TAB</b></td><td>Aceso = tablet conectado no rádio · piscadinha a cada 2 s = ligado, sem tablet (modo repetidor)</td></tr>
+      <tr><td><b>LED REDE</b></td><td>Aceso = ouve outro rádio com sinal bom · pisca devagar = sinal fraco · apagado = não ouve ninguém</td></tr>
+      <tr><td><b>Página de diagnóstico</b></td><td>Celular na rede LACATEDRAL-JOGO, abra <code>http://192.168.4.1</code>: mostra os rádios que ele ouve, o sinal de cada um (dBm) e quantas mensagens passaram</td></tr>
+    </table></div>
+    <div class="note ok"><b>O app do tablet foi atualizado:</b> o <code>LaCatedralBattlefield.apk</code> novo (18/10/2026) manda as mensagens grandes em pedaços de até 1100 bytes, que passam inteiros pelo rádio. Instale o APK novo em <b>todos</b> os tablets (ele continua funcionando igual no roteador comum).</div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>O aparelho</h2>
+    <div class="fig">
+      <svg viewBox="0 0 184.98 245" data-mm="184.98" data-zoom="4.5" class="vistas3d vvistas98f264">
+        <style>.vvistas98f264 .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vvistas98f264 .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vvistas98f264 .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vvistas98f264 .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vvistas98f264 .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">DE FRENTE</text>
+        <image href="3D/img/vistas_frente.png" x="12" y="9" width="36" height="223"/>
+        <text x="24" y="135.9" class="nm">TAB</text>
+        <text x="36" y="135.9" class="nm">REDE</text>
+        <text x="30" y="47.9" class="nm">antena 3 dBi</text>
+        <line x1="12" y1="187" x2="12" y2="239.5" class="ext"/><line x1="48" y1="187" x2="48" y2="239.5" class="ext"/>
+        <line x1="12" y1="238" x2="48" y2="238" class="dim"/><text x="30" y="243.2" class="dt">36</text>
+        <line x1="4.5" y1="119" x2="12" y2="119" class="ext"/><line x1="4.5" y1="187" x2="12" y2="187" class="ext"/>
+        <line x1="6" y1="119" x2="6" y2="187" class="dim"/><text x="4.2" y="153" class="dt" transform="rotate(-90 4.2 153)">68</text>
+        <text x="72" y="5" class="lb">LADO DIREITO</text>
+        <image href="3D/img/vistas_direita.png" x="72" y="9" width="40.98" height="223"/>
+        <text x="107" y="155.9" class="nm">túnel da fita</text>
+        <line x1="75.51" y1="187" x2="75.51" y2="239.5" class="ext"/><line x1="112.98" y1="187" x2="112.98" y2="239.5" class="ext"/>
+        <line x1="75.51" y1="238" x2="112.98" y2="238" class="dim"/><text x="94.24" y="243.2" class="dt">37</text>
+        <line x1="64.5" y1="119" x2="75.51" y2="119" class="ext"/><line x1="64.5" y1="187" x2="75.51" y2="187" class="ext"/>
+        <line x1="66" y1="119" x2="66" y2="187" class="dim"/><text x="64.2" y="153" class="dt" transform="rotate(-90 64.2 153)">68</text>
+        <text x="136.98" y="5" class="lb">DE CIMA, SEM A TAMPA (placa nas guias)</text>
+        <image href="3D/img/vistas_topo_SEM_TAMPAtrue.png" x="136.98" y="9" width="36" height="40.98"/>
+        <text x="154.98" y="32.88" class="nm">ESP32-C3</text>
+        <text x="154.98" y="5.88" class="nm">túnel</text>
+        <line x1="136.98" y1="46.47" x2="136.98" y2="57.48" class="ext"/><line x1="172.98" y1="46.47" x2="172.98" y2="57.48" class="ext"/>
+        <line x1="136.98" y1="55.98" x2="172.98" y2="55.98" class="dim"/><text x="154.98" y="61.18" class="dt">36</text>
+        <line x1="129.48" y1="9" x2="136.98" y2="9" class="ext"/><line x1="129.48" y1="46.47" x2="136.98" y2="46.47" class="ext"/>
+        <line x1="130.98" y1="9" x2="130.98" y2="46.47" class="dim"/><text x="129.18" y="27.74" class="dt" transform="rotate(-90 129.18 27.74)">37</text>
+      </svg>
+      <div class="cap">Caixinha preta de 36 × 26 × 64 (+ tampa de 4) com tampa coyote (emblema e nome BLACK BIRD, a única marca do projeto) e painel hexagonal na frente. <b>Dentro:</b> a ESP32-C3 em pé, nas 2 guias, com o USB-C para <b>baixo</b> (o cabo do powerbank entra por baixo, a chuva não entra); 2 calços em cima da placa. <b>Na frente:</b> LED TAB e LED REDE com molduras. <b>Em cima:</b> antena 2,4 GHz de rosca (RP-SMA) na tampa; sem antena externa, o furo leva o tampão coyote. <b>Nas costas:</b> túnel para 1 fita de velcro e nervuras em V para o poste.</div>
+    </div>
+    <div class="duas">
+      <div class="fig" style="padding:8px;margin:0"><img src="3D/img/radio_3d.png" alt="Rádio montado com a antena"><div class="cap">Montado, com a antena de 3 dBi.</div></div>
+      <div class="fig" style="padding:8px;margin:0"><img src="../02-POWERBANK-TABLETS/3D/img/poste_3d.png" alt="Tablet, powerbank e rádio presos num poste"><div class="cap">No poste: o rádio fica <b>acima do tablet</b> (quanto mais alto, mais longe ele alcança), o powerbank (02) embaixo.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. Arquivos em <b>3D/stl</b>; quantidades, ferragens e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do rádio em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Caixa e 2 calços pretos; tampa (com o furo da antena) e tampão da antena coyote.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Componentes (por rádio)</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>ESP32-C3 SuperMini (a do kit de 5) <b>ou</b> ESP32-C3 SuperMini <b>Plus</b> com conector de antena IPEX</td><td class="mm">18 × 22,5</td><td>Rede Wi-Fi do tablet + rádio de longo alcance</td></tr>
+      <tr><td>Antena 2,4 GHz 3 dBi RP-SMA + cabinho IPEX → RP-SMA de painel (só na versão Plus)</td><td class="mm">furo Ø 6,6</td><td>Alcance bem maior que a antena de cerâmica da placa</td></tr>
+      <tr><td>2 LEDs 3 mm (verde e amarelo) + 2 resistores de 220 Ω</td><td class="mm">furo Ø 3,2</td><td>LED TAB e LED REDE</td></tr>
+      <tr><td>Cabo USB-A → USB-C (vem com o powerbank 02)</td><td class="mm">—</td><td>Energia: 2ª saída do powerbank</td></tr>
+      <tr><td>Fita de velcro 25 mm</td><td class="mm">≈ 60 cm</td><td>Prende no poste, acima do tablet</td></tr>
+      <tr><td>2 parafusos M3 × 10 Allen</td><td class="mm">—</td><td>Tampa</td></tr>
+      <tr><td>Peças impressas (pasta <code>3D</code>)</td><td class="mm">—</td><td>caixa, tampa, 2 calços, tampão da antena (se não usar antena)</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Ligação elétrica</h2>
+    <p class="hint">Sem escala. Na sua SuperMini, atrás, só aparece o <b>número</b> do pino: "3" = GPIO3, "4" = GPIO4, "G" ou "GND" = terra.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 300">
+        <rect x="300" y="40" width="200" height="220" rx="8" class="brd"/><text x="380" y="170" class="ttl c">ESP32-C3</text><text x="380" y="188" class="ttl c">SuperMini</text>
+        <g class="pt e"><text x="492" y="84">pino 3 (GPIO3)</text><text x="492" y="134">pino 4 (GPIO4)</text><text x="492" y="214">GND</text></g>
+        <text x="400" y="252" class="pt c" style="font-size:11px">USB-C (embaixo)</text>
+        <rect x="560" y="64" width="70" height="30" rx="4" fill="#3a3f44" stroke="#c9d1d5"/><text x="595" y="84" class="pt c" style="font-size:11px">220 Ω</text>
+        <rect x="560" y="114" width="70" height="30" rx="4" fill="#3a3f44" stroke="#c9d1d5"/><text x="595" y="134" class="pt c" style="font-size:11px">220 Ω</text>
+        <circle cx="720" cy="79" r="12" fill="#47c76a"/><text x="720" y="58" class="pt c">LED TAB (verde)</text>
+        <circle cx="720" cy="129" r="12" fill="#ffd84a"/><text x="720" y="160" class="pt c">LED REDE (amarelo)</text>
+        <path class="wr w-led" d="M500,79 H560 M630,79 H708"/><path class="wr w-led2" d="M500,129 H560 M630,129 H708"/>
+        <path class="wr w-gnd" d="M732,79 H860 V210 H500 M732,129 H860"/>
+        <text x="852" y="100" class="pt e" style="font-size:10px;fill:#8a959b">perna curta</text>
+        <rect x="320" y="0" width="160" height="26" rx="6" class="blk"/><text x="400" y="18" class="pt c" style="font-size:11px">antena (IPEX, só Plus)</text>
+        <path class="wr" style="stroke:#c9a227" d="M400,26 V40"/>
+        <rect x="40" y="200" width="170" height="60" rx="8" class="blk"/><text x="125" y="225" class="pt c">Powerbank (02)</text><text x="125" y="243" class="pt c" style="font-size:10px;fill:#8a959b">USB-A 2</text>
+        <path class="wr w-usb" d="M210,230 H260 V280 H400 V262"/>
+        <g class="pin"><circle cx="500" cy="79" r="4"/><circle cx="500" cy="129" r="4"/><circle cx="500" cy="210" r="4"/><circle cx="708" cy="79" r="4"/><circle cx="708" cy="129" r="4"/><circle cx="732" cy="79" r="4"/><circle cx="732" cy="129" r="4"/></g>
+        <circle cx="860" cy="129" r="5" fill="#b9c2c7"/>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Pino <b>3</b> (GPIO3)</td><td>220 Ω → LED TAB, perna longa</td><td>Perna curta no GND</td></tr>
+      <tr><td>Pino <b>4</b> (GPIO4)</td><td>220 Ω → LED REDE, perna longa</td><td>Perna curta no GND</td></tr>
+      <tr><td>USB-C da placa</td><td>Powerbank (02), 2ª saída</td><td>Também é por ele que você grava o código</td></tr>
+      <tr><td>Conector IPEX da placa (versão Plus)</td><td>Cabinho → RP-SMA da tampa → antena</td><td>Veja abaixo, peça por peça</td></tr>
+    </table></div>
+
+    <h3 style="margin:28px 0 4px;font-size:16px">A antena, peça por peça</h3>
+    <p class="hint">A antena <b>não é soldada</b>: é tudo de encaixe e rosca. Ela é ligada à placa por um <b>cabinho fino</b> (o "pigtail"): numa ponta tem um plugue minúsculo que encaixa na placa (IPEX), na outra um conector de rosca que fica preso na tampa (RP-SMA), e a antena rosqueia nele por fora.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 500">
+        <!-- 1: a placa vista de cima -->
+        <text x="20" y="26" class="ttl">1 · A placa (versão Plus), vista de cima</text>
+        <rect x="140" y="70" width="180" height="225" rx="10" fill="#1d3f73" stroke="#4f79b0" stroke-width="2"/>
+        <rect x="155" y="80" width="100" height="18" rx="3" fill="#d8dcdf" stroke="#8a959b"/><text x="205" y="93" class="pt c" style="font-size:9px;fill:#222">antena cerâmica</text>
+        <circle cx="292" cy="92" r="10" fill="#c9a227" stroke="#7a5f10" stroke-width="1.5"/><circle cx="292" cy="92" r="4" fill="#7a5f10"/>
+        <rect x="262" y="108" width="14" height="7" rx="1" fill="#111" stroke="#c9d1d5" stroke-width="1"/>
+        <rect x="190" y="150" width="70" height="70" rx="4" fill="#151515"/><text x="225" y="190" class="pt c" style="font-size:10px">ESP32-C3</text>
+        <rect x="203" y="285" width="44" height="16" rx="5" fill="#b8bec2"/><text x="225" y="318" class="pt c" style="font-size:10px;fill:#8a959b">USB-C (fica para baixo)</text>
+        <g class="pt" style="font-size:11px">
+          <line x1="292" y1="80" x2="292" y2="52" stroke="#e2b04a" stroke-width="1.2"/><text x="214" y="46">conector IPEX (U.FL): o cabinho</text><text x="214" y="60" style="fill:#8a959b">encaixa aqui, de cima para baixo</text>
+          <line x1="276" y1="112" x2="330" y2="128" stroke="#e2b04a" stroke-width="1.2"/><text x="334" y="126">resistor de 0 Ω:</text><text x="334" y="140" style="fill:#8a959b">escolhe qual antena</text><text x="334" y="154" style="fill:#8a959b">a placa usa</text>
+          <line x1="155" y1="89" x2="120" y2="89" stroke="#e2b04a" stroke-width="1.2"/><text x="116" y="85" class="e" style="text-anchor:end">antena da</text><text x="116" y="99" style="text-anchor:end">própria placa</text>
+        </g>
+        <text x="20" y="350" class="pt" style="font-size:11px;fill:#8a959b">A SuperMini <tspan style="fill:#d6dcdf">comum</tspan> não tem o conector</text>
+        <text x="20" y="366" class="pt" style="font-size:11px;fill:#8a959b">dourado: usa só a antena cerâmica e</text>
+        <text x="20" y="382" class="pt" style="font-size:11px;fill:#8a959b">a tampa leva o tampão no furo.</text>
+
+        <!-- 2: corte da tampa com a antena montada -->
+        <text x="470" y="26" class="ttl">2 · Montado (corte da caixa por cima)</text>
+        <rect x="662" y="44" width="16" height="108" rx="7" fill="#1a1a1a" stroke="#59636a"/>
+        <rect x="656" y="150" width="28" height="52" rx="4" fill="#2a2a2a" stroke="#59636a"/>
+        <rect x="646" y="206" width="48" height="16" rx="2" fill="#9aa4aa" stroke="#59636a"/>
+        <rect x="642" y="222" width="56" height="5" fill="#c9d1d5"/>
+        <rect x="480" y="227" width="380" height="22" fill="#8a6a45" stroke="#5a4630"/>
+        <rect x="655" y="227" width="30" height="22" fill="#9aa4aa"/>
+        <rect x="652" y="249" width="36" height="40" rx="3" fill="#9aa4aa" stroke="#59636a"/>
+        <g stroke="#6f787d" stroke-width="1"><line x1="656" y1="209" x2="684" y2="215"/><line x1="656" y1="252" x2="684" y2="258"/><line x1="656" y1="262" x2="684" y2="268"/><line x1="656" y1="272" x2="684" y2="278"/></g>
+        <path d="M670,289 C670,340 600,330 570,380 C555,405 560,415 560,424" fill="none" stroke="#c9a227" stroke-width="4" stroke-linecap="round"/>
+        <rect x="550" y="422" width="20" height="12" rx="3" fill="#c9a227" stroke="#7a5f10"/>
+        <rect x="490" y="434" width="250" height="12" rx="3" fill="#1d3f73" stroke="#4f79b0"/>
+        <line x1="482" y1="249" x2="482" y2="470" stroke="#59636a" stroke-dasharray="5 4"/><line x1="858" y1="249" x2="858" y2="470" stroke="#59636a" stroke-dasharray="5 4"/>
+        <text x="745" y="444" class="pt" style="font-size:10px;fill:#8a959b">placa (de lado)</text>
+        <g class="pt" style="font-size:11px">
+          <circle cx="700" cy="98" r="10" fill="#e2b04a"/><text x="700" y="102" class="c" style="fill:#111;text-anchor:middle">1</text><text x="716" y="96">antena 3 dBi: rosqueia</text><text x="716" y="110" style="fill:#8a959b">só com a mão, em pé</text>
+          <circle cx="716" cy="214" r="10" fill="#e2b04a"/><text x="716" y="218" style="fill:#111;text-anchor:middle">2</text><text x="732" y="212">porca + arruela</text><text x="732" y="226" style="fill:#8a959b">por FORA da tampa</text>
+          <circle cx="500" cy="270" r="10" fill="#e2b04a"/><text x="500" y="274" style="fill:#111;text-anchor:middle">3</text><text x="516" y="274">tampa (furo 6,6)</text>
+          <circle cx="716" cy="270" r="10" fill="#e2b04a"/><text x="716" y="274" style="fill:#111;text-anchor:middle">4</text><text x="732" y="268">corpo do conector RP-SMA</text><text x="732" y="282" style="fill:#8a959b">entra por BAIXO da tampa</text>
+          <circle cx="640" cy="352" r="10" fill="#e2b04a"/><text x="640" y="356" style="fill:#111;text-anchor:middle">5</text><text x="656" y="350">cabinho (≈ 15 cm): curva larga,</text><text x="656" y="364" style="fill:#8a959b">sem dobrar em quina</text>
+          <circle cx="532" cy="428" r="10" fill="#e2b04a"/><text x="532" y="432" style="fill:#111;text-anchor:middle">6</text><text x="584" y="410">plugue IPEX: aperte reto</text><text x="584" y="424" style="fill:#8a959b">até dar um "clique"</text>
+        </g>
+        <text x="20" y="490" class="pt" style="font-size:11px;fill:#8a959b">O cabinho, o conector da tampa e a antena vêm juntos num kit: "antena 2,4 GHz 3 dBi RP-SMA + cabo pigtail IPEX (U.FL) → RP-SMA".</text>
+      </svg>
+    </div>
+    <ol class="steps">
+      <li><b>Confira o kit:</b> a ponta pequena do cabinho tem que ser <b>IPEX / U.FL</b> (também chamada MHF1). <b>Não serve "MHF4"</b>: é menor e não encaixa. A ponta grande e a antena têm que ser do mesmo tipo (<b>RP-SMA</b> com RP-SMA). Comprando o kit inteiro, já vem certo.</li>
+      <li><b>Encaixe o IPEX primeiro</b>, com a placa ainda fora da caixa: ponha o plugue bem em cima do conector dourado, reto, e aperte com a unha ou com o dedo até sentir um <b>clique</b>. Para tirar, levante reto com a unha. <b>Nunca puxe pelo fio.</b></li>
+      <li><b>Prenda o conector grande na tampa:</b> tire a porca e a arruela dele, passe o corpo por <b>baixo</b> da tampa, pelo furo, ponha a arruela e a porca por <b>cima</b> e aperte (com alicate, sem força exagerada).</li>
+      <li><b>Feche:</b> desça a placa nas guias (USB-C para baixo), acomode o cabinho em curva larga, sem passar por cima do USB-C, e feche a tampa com os 2 M3 × 10.</li>
+      <li><b>Por último, a antena:</b> rosqueie por cima, só com a mão, e deixe em pé (é assim que ela alcança mais longe).</li>
+    </ol>
+    <div class="note"><b>O resistor de 0 Ω:</b> na versão Plus, a placa tem as 2 antenas (a de cerâmica e o conector) e um resistor minúsculo perto do conector escolhe qual delas é usada. Na maioria das Plus ele já vem virado para o conector; em algumas vem para a cerâmica, e aí a antena externa não faz efeito. Como saber: na página <code>http://192.168.4.1</code>, compare o sinal dos outros rádios com e sem a antena rosqueada. Se não mudar nada, me mande uma foto bem de perto da sua placa que eu mostro onde mexer.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Primeiro o teste de alcance:</b> se ainda não fez, use o <code>LA CATEDRAL BATTLEFIELD/RADIO/TESTE_ALCANCE</code> no campo. Ele mostra se a antena da placa basta ou se precisa da versão com antena externa e de repetidores.</li>
+      <li><b>Grave o código</b> em cada rádio: Arduino IDE, pacote <b>esp32</b> da Espressif 3.x, placa "ESP32C3 Dev Module", <b>USB CDC On Boot: Enabled</b>; abra <code>AMPLIFICADOR_REDE/AMPLIFICADOR_REDE.ino</code> e carregue. É o <b>mesmo</b> código em todos (sem mudar nada). Se não gravar: segure BOOT, aperte e solte RESET, solte BOOT.</li>
+      <li><b>Teste na mesa:</b> ligue 2 rádios no USB. Em segundos o LED azul da placa acende (um ouve o outro). No celular, conecte em LACATEDRAL-JOGO e abra <code>http://192.168.4.1</code>: o outro rádio aparece na lista.</li>
+      <li><b>Imprima</b> seguindo o <code>3D/LEIA-ME.txt</code>.</li>
+      <li><b>LEDs:</b> solde um resistor de 220 Ω na perna longa de cada LED. Encaixe os LEDs por dentro nos furos da frente. Fios: verde (TAB) no pino 3, amarelo (REDE) no pino 4, as pernas curtas juntas no GND.</li>
+      <li><b>Antena (versão Plus):</b> siga o desenho "A antena, peça por peça" (seção 05): IPEX na placa primeiro, depois o conector grande na tampa (porca por fora). Na SuperMini comum, ponha o tampão no furo.</li>
+      <li><b>Placa:</b> desça a ESP32-C3 nas guias com o USB-C para baixo, depois os 2 calços. Feche a tampa com 2 M3 × 10 e rosqueie a antena.</li>
+      <li><b>App:</b> instale o <code>LaCatedralBattlefield.apk</code> novo em todos os tablets. Em cada tablet: Wi-Fi → LACATEDRAL-JOGO → senha <code>lacatedral</code>. Quando o Android avisar "sem internet", toque em <b>manter conexão</b>.</li>
+      <li><b>No campo:</b> rádio no poste <b>acima</b> do tablet (2 m ou mais é o ideal), com a antena em pé; cabo na 2ª saída do powerbank. Confira o LED REDE de cada ponto. Ponto com LED REDE apagado ou piscando: ponha um repetidor no alto, no meio do caminho.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Custo de produção</h2>
+    <p class="hint">Valores de out/2026, sem frete, só produtos novos (os links do Mercado Livre já abrem com o filtro "Novo"). A SuperMini <b>Plus</b> com IPEX é difícil de achar no Mercado Livre (na loja nacional que achei custa ≈ R$ 115; no AliExpress ≈ US$ 5–13): os valores dela são <b>estimativas</b>. Peças impressas não entram.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>ESP32-C3 SuperMini comum (do kit de 5 do cronógrafo, 04)</td><td><a href="https://lista.mercadolivre.com.br/esp32-c3_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 16,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td><b>ou</b> ESP32-C3 SuperMini Plus com IPEX</td><td><a href="https://lista.mercadolivre.com.br/esp32-c3-super-mini-plus-ipex_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 35,00</td><td class="r">R$ 60,00</td></tr>
+      <tr><td>Antena 2,4 GHz 3 dBi + cabinho IPEX → RP-SMA (só com a Plus)</td><td><a href="https://lista.mercadolivre.com.br/antena-2.4ghz-3dbi-pigtail-ipex-rp-sma_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 19,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td>2 LEDs 3 mm + 2 resistores 220 Ω</td><td>você já tem (LEDs e kit de resistores)</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr><td>Cabo USB, velcro e parafusos</td><td>sobras do powerbank (02) e do kit M3</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="reuse"><td colspan="3">Por rádio, com a SuperMini comum</td><td class="r">≈ R$ 16</td><td class="r">≈ R$ 20</td></tr>
+      <tr class="tot"><td colspan="3">Por rádio, com a Plus + antena</td><td class="r">≈ R$ 54</td><td class="r">≈ R$ 85</td></tr>
+      <tr class="tot"><td colspan="3">6 rádios (5 tablets + 1 repetidor) com a Plus + antena</td><td class="r">≈ R$ 324</td><td class="r">≈ R$ 510</td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">Cada repetidor precisa também de um powerbank (02). Com a SuperMini comum, 6 rádios = um kit de 5 + 1 avulsa (≈ R$ 100–125).</p>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Pontos de atenção</h2>
+    <div class="note red"><b>Todos os tablets com o APK novo.</b> Um tablet com o app antigo manda mensagens grandes inteiras, e o rádio descarta o que passa de 1472 bytes: esse tablet some do jogo nos outros pontos.</div>
+    <div class="note"><b>SuperMini Plus e a antena:</b> em algumas, o caminho da antena é escolhido por um resistor de 0 Ω (ou uma ponte de solda) ao lado do conector. Confira no anúncio ou na foto se está virado para o IPEX. Não ligue o rádio com o IPEX ativo e sem antena.</div>
+    <div class="note">Cada rádio aceita até <b>4 aparelhos</b> conectados (tablet, celular da organização...). O canal Wi-Fi é o 1 em todos: se o campo tiver outra rede forte no canal 1, mude <code>CANAL</code> no código (o mesmo em todos os rádios).</div>
+    <div class="note">O alcance cai muito com o rádio baixo, atrás de parede, barranco ou mato fechado. Altura e visada valem mais que potência: suba o rádio no poste e ponha a antena em pé.</div>
+    <div class="note">O código não foi compilado aqui no PC (não há Arduino instalado). Se aparecer erro ao gravar, me mande a mensagem. O APK novo foi compilado e assinado: <code>LA CATEDRAL BATTLEFIELD/LaCatedralBattlefield.apk</code>.</div>
+    <div class="note ok">Nos jogos de 1 tablet por time, ou com todos perto do roteador, o amplificador não é necessário: o jogo continua funcionando no Wi-Fi comum, igual antes.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ANPEQ Laser Verde</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-gnd{stroke:#8a959b}.w-sw{stroke:#ffd84a}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PROJETO 06 · INTERMEDIÁRIO</div>
+    <h1>ANPEQ: Laser Verde com Ajuste</h1>
+    <p class="sub">Caixa estilo PEQ, só com laser (sem lanterna), na ponta do trilho de cima do guarda-mão. Duas torres com <b>clique</b>, iguais às da luneta, movem o laser para cima/baixo e esquerda/direita: assim o ponto verde fica exatamente onde a BB bate, no mesmo lugar do retículo da sua Red Win. Liga pelo seu acionador de M-LOK (cabo P2). Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>116 × 52 × 43</b><span>com o capuz, a torre do lado e a garra (mm)</span></div>
+      <div class="tile"><b>≈ 120 g</b><span>com a pilha (estimativa)</span></div>
+      <div class="tile"><b>20 cliques/volta</b><span>1 clique ≈ 2,8 cm a 50 m · ± 1,5 m de ajuste a 50 m</span></div>
+      <div class="tile"><b>≈ 4 h ligado</b><span>pilha 16340 recarregável, carga USB-C</span></div>
+      <div class="tile"><b>R$ 89–177</b><span>reaproveitando os kits (você já tem o acionador); do zero, R$ 123–224</span></div>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Por que intermediário:</b> não tem placa nem código (só pilha, laser, jack e chave), mas as torres e o pivô são mecânica de precisão: impressão fina, contraporcas bem apertadas e montagem com calma.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="tw"><table>
+      <tr><th>Peça</th><th>O que faz</th></tr>
+      <tr><td><b>Berço com pivô</b></td><td>O laser fica num tubo impresso (berço) que tem uma bola atrás. A bola fica presa entre o bloco de trás da caixa e a trava do pivô: o berço só pode inclinar, não anda</td></tr>
+      <tr><td><b>Torre de cima (elevação)</b></td><td>Empurra a frente do berço para baixo. <b>Horário = ponto desce</b> (está gravado "HOR. = BAIXO" na tampa)</td></tr>
+      <tr><td><b>Torre do lado direito (deriva)</b></td><td>Empurra a frente do berço para a esquerda. <b>Horário = ponto vai para a esquerda</b> ("HOR. = ESQ" em relevo ao lado)</td></tr>
+      <tr><td><b>Mola diagonal</b></td><td>Embaixo, à esquerda, empurra o berço contra os 2 parafusos: sem folga, o ponto não pula com o recuo</td></tr>
+      <tr><td><b>O clique</b></td><td>Uma BB de 6 mm com molinha encosta nas 20 ranhuras de baixo do botão: <b>20 cliques por volta</b>, 0,5 mm de rosca por volta. Cada clique move o ponto ≈ <b>2,8 cm a 50 m</b> (≈ 2,2 cm a 40 m). As 20 marcas na tampa do botão ajudam a contar</td></tr>
+      <tr><td><b>Por que o parafuso não gira</b></td><td>O botão gira uma porca presa dentro dele. O parafuso tem uma contraporca apertada na cabeça que corre num canal sextavado: ele não consegue girar, só andar para dentro e para fora</td></tr>
+      <tr><td><b>Ligar</b></td><td>Acionador de M-LOK no jack P2 de trás: acende enquanto você aperta. Chave <b>CONTÍNUO</b> atrás: fica aceso (para zerar ou usar parado)</td></tr>
+    </table></div>
+    <div class="note ok"><b>Como zerar o laser com a luneta:</b> (1) com a luneta já zerada, apoie o rifle e atire um grupo de 5 BBs num alvo a 40 m (ou a distância em que você mais atira); (2) com a chave CONTÍNUO ligada e o rifle parado, gire a torre de cima até o ponto verde ficar na altura do centro do grupo; (3) gire a torre do lado até ele ficar no centro; (4) confira com mais 5 tiros. O laser sai ≈ 35 mm abaixo da luneta, então perto (10–20 m) o ponto fica alguns centímetros abaixo: normal.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>O aparelho</h2>
+    <div class="fig">
+      <svg viewBox="0 0 309.98 152.8" data-mm="309.98" data-zoom="3.03" class="vistas3d vvistas950043">
+        <style>.vvistas950043 .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vvistas950043 .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vvistas950043 .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vvistas950043 .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vvistas950043 .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">DE CIMA (torre de elevação)</text>
+        <image href="3D/img/vistas_topo.png" x="12" y="9" width="130.99" height="51"/>
+        <text x="118" y="32.9" class="nm">elevação</text>
+        <text x="67" y="32.9" class="nm">marca</text>
+        <text x="139" y="32.9" class="nm">anti-BB</text>
+        <line x1="20.01" y1="60" x2="20.01" y2="67.5" class="ext"/><line x1="142.99" y1="60" x2="142.99" y2="67.5" class="ext"/>
+        <line x1="20.01" y1="66" x2="142.99" y2="66" class="dim"/><text x="81.5" y="71.2" class="dt">123</text>
+        <line x1="4.5" y1="9" x2="20.01" y2="9" class="ext"/><line x1="4.5" y1="60" x2="20.01" y2="60" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="60" class="dim"/><text x="4.2" y="34.5" class="dt" transform="rotate(-90 4.2 34.5)">51</text>
+        <text x="166.99" y="5" class="lb">LADO DIREITO (torre de deriva)</text>
+        <image href="3D/img/vistas_frente.png" x="166.99" y="9" width="130.99" height="51.4"/>
+        <text x="272.99" y="37.9" class="nm">deriva</text>
+        <text x="293.99" y="37.9" class="nm">proteção anti-BB</text>
+        <line x1="175" y1="57.4" x2="175" y2="67.9" class="ext"/><line x1="297.98" y1="57.4" x2="297.98" y2="67.9" class="ext"/>
+        <line x1="175" y1="66.4" x2="297.98" y2="66.4" class="dim"/><text x="236.49" y="71.6" class="dt">123</text>
+        <line x1="159.49" y1="9" x2="175" y2="9" class="ext"/><line x1="159.49" y1="57.4" x2="175" y2="57.4" class="ext"/>
+        <line x1="160.99" y1="9" x2="160.99" y2="57.4" class="dim"/><text x="159.19" y="33.2" class="dt" transform="rotate(-90 159.19 33.2)">48</text>
+        <text x="12" y="84.4" class="lb">TRÁS (acionador e carga)</text>
+        <image href="3D/img/vistas_esquerda.png" x="12" y="88.4" width="51" height="51.4"/>
+        <text x="49.5" y="104.3" class="nm">jack P2</text>
+        <text x="20.5" y="104.3" class="nm">CONTÍNUO</text>
+        <text x="35" y="130.3" class="nm">USB-C</text>
+        <line x1="12" y1="136.8" x2="12" y2="147.3" class="ext"/><line x1="63" y1="136.8" x2="63" y2="147.3" class="ext"/>
+        <line x1="12" y1="145.8" x2="63" y2="145.8" class="dim"/><text x="37.5" y="151" class="dt">51</text>
+        <line x1="4.5" y1="88.4" x2="12" y2="88.4" class="ext"/><line x1="4.5" y1="136.8" x2="12" y2="136.8" class="ext"/>
+        <line x1="6" y1="88.4" x2="6" y2="136.8" class="dim"/><text x="4.2" y="112.6" class="dt" transform="rotate(-90 4.2 112.6)">48</text>
+        <text x="87" y="84.4" class="lb">CORTE (pelo eixo do laser)</text>
+        <image href="3D/img/vistas_tras_CORTEtrue.png" x="87" y="88.4" width="122.98" height="48.4"/>
+        <text x="125.99" y="117.3" class="nm">laser verde Ø12</text>
+        <text x="155.99" y="106.3" class="nm">pivô (bola)</text>
+        <text x="111.99" y="97" class="nm">torre + BB do clique</text>
+        <text x="183.99" y="113.3" class="nm">pilha 16340</text>
+        <text x="190.99" y="129.8" class="nm">TP4056</text>
+        <text x="102.99" y="128.3" class="nm">mola</text>
+        <line x1="87" y1="136.8" x2="87" y2="144.3" class="ext"/><line x1="209.98" y1="136.8" x2="209.98" y2="144.3" class="ext"/>
+        <line x1="87" y1="142.8" x2="209.98" y2="142.8" class="dim"/><text x="148.49" y="148" class="dt">123</text>
+        <line x1="79.5" y1="88.4" x2="87" y2="88.4" class="ext"/><line x1="79.5" y1="136.8" x2="87" y2="136.8" class="ext"/>
+        <line x1="81" y1="88.4" x2="81" y2="136.8" class="dim"/><text x="79.2" y="112.6" class="dt" transform="rotate(-90 79.2 112.6)">48</text>
+      </svg>
+      <div class="cap">Caixa preta de 110 × 46 × 33 com tampa coyote (emblema e nome BLACK BIRD, a única marca do projeto) e nervuras apontando para a frente. Embaixo, 2 garras Picatinny com mandíbulas coyote. <b>Por dentro, de trás para a frente:</b> o TP4056 deitado no fundo com o USB-C saindo atrás, a pilha 16340 no suporte por cima dele, o bloco do pivô com a bola do berço, o berço com o laser verde e, na frente, as 2 torres e a mola diagonal. Atrás, com molduras de proteção: o jack P2 do acionador (lado direito) e a chave CONTÍNUO (lado esquerdo). Na frente, a <b>proteção anti-BB</b> coyote (removível, 2 M3) cobre o capuz: grade de favos de 4,2 mm, onde a BB de 6 mm não passa, com um furo de 4 mm no centro para o laser, e lugar para um disco de policarbonato de 1 mm atrás (opcional).</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. Arquivos em <b>3D/stl</b>; quantidades, ferragens e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do ANPEQ em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Caixa, berço e trava do pivô pretos; tampa, 2 botões das torres (facetados, com 20 marcas), 2 mandíbulas e a proteção anti-BB coyote.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>Módulo laser verde 520 nm, ponto, ≤ 5 mW, com driver, 3–5 V</td><td class="mm">Ø 12 × 45</td><td>O laser (entra justo no berço)</td></tr>
+      <tr><td>Pilha 16340 recarregável 3,7 V + suporte 16340/CR123A</td><td class="mm">Ø 17 × 34 · 40 × 20</td><td>Energia (≈ 700 mAh)</td></tr>
+      <tr><td>TP4056 USB-C (do kit do 04)</td><td class="mm">28 × 17</td><td>Carrega a pilha pela traseira</td></tr>
+      <tr><td>Jack P2 3,5 mm estéreo fêmea de painel</td><td class="mm">furo Ø 6</td><td>Entrada do seu acionador de M-LOK (cabo P2)</td></tr>
+      <tr><td>Chave alavanca mini MTS-102</td><td class="mm">furo Ø 6</td><td>CONTÍNUO (liga sem segurar o botão)</td></tr>
+      <tr><td>2 BBs de 6 mm, 2 molinhas e 1 mola de caneta</td><td class="mm">—</td><td>Cliques das torres e a mola que segura o berço</td></tr>
+      <tr><td>Parafusos M3 + 4 porcas (ver LEIA-ME)</td><td class="mm">—</td><td>Torres, pivô, tampa e garras</td></tr>
+      <tr><td>Seu acionador duplo de M-LOK (já tem)</td><td class="mm">—</td><td>O cabo P2 vai aqui; o cabo SF vai na lanterna IR da visão noturna (14)</td></tr>
+      <tr><td>Peças impressas (pasta <code>3D</code>)</td><td class="mm">—</td><td>caixa, tampa, berço, trava do pivô, 2 botões das torres, 2 mandíbulas, proteção anti-BB</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Ligação elétrica</h2>
+    <p class="hint">Sem placa e sem código. O jack e a chave ficam <b>em paralelo</b>: qualquer um dos dois liga o laser.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 300">
+        <rect x="360" y="48" width="110" height="56" rx="8" class="blk"/><text x="420" y="72" class="ttl c">Pilha</text><text x="420" y="90" class="pt c" style="font-size:10px">16340</text><g class="pt" style="font-size:11px"><text x="366" y="66">+</text><text x="366" y="92">−</text></g>
+        <rect x="192" y="55" width="10" height="40" rx="3" fill="#5a6268"/><rect x="200" y="20" width="130" height="110" rx="8" class="blk"/><text x="265" y="14" class="ttl c">TP4056</text><text x="210" y="79" class="pt" style="font-size:10px;fill:#8a959b">USB-C</text><g class="pt" style="font-size:11px;text-anchor:end"><text x="322" y="39">OUT+</text><text x="322" y="66">B+</text><text x="322" y="92">B−</text><text x="322" y="119">OUT−</text></g>
+        <rect x="640" y="30" width="180" height="70" rx="8" class="blk"/><text x="730" y="22" class="ttl c">Laser verde</text><text x="730" y="62" class="pt c" style="font-size:11px">vermelho (+) · preto (−)</text>
+        <rect x="430" y="170" width="170" height="50" rx="8" class="blk"/><text x="515" y="162" class="ttl c">Jack P2 (acionador)</text><text x="515" y="200" class="pt c" style="font-size:11px">ponta + anel · corpo</text>
+        <rect x="660" y="170" width="160" height="50" rx="8" class="blk"/><text x="740" y="162" class="ttl c">Chave CONTÍNUO</text><text x="740" y="200" class="pt c" style="font-size:11px">MTS-102</text>
+        <path class="wr w-pwr" d="M330,62 H360"/><path class="wr w-gnd" d="M330,88 H360"/>
+        <path class="wr w-pwr" d="M330,35 H620 V60 H640"/>
+        <path class="wr w-sw" d="M820,80 H860 V250 H515 V220 M740,250 V220"/>
+        <path class="wr w-gnd" d="M330,115 H410 V195 H430 M600,195 H660"/>
+        <g class="pin"><circle cx="330" cy="35" r="4"/><circle cx="330" cy="62" r="4"/><circle cx="330" cy="88" r="4"/><circle cx="330" cy="115" r="4"/><circle cx="640" cy="60" r="4"/><circle cx="820" cy="80" r="4"/><circle cx="430" cy="195" r="4"/></g>
+        <text x="20" y="285" class="pt" style="font-size:11px;fill:#8a959b">Laser (−) → ponta e anel do jack (juntos) e um lado da chave · corpo do jack e o outro lado da chave → OUT− do TP4056.</text>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Pilha + / −</td><td>TP4056 B+ / B−</td><td>Pelo suporte 16340</td></tr>
+      <tr><td>TP4056 OUT+</td><td>Laser (+), fio vermelho</td><td>—</td></tr>
+      <tr><td>Laser (−), fio preto</td><td>Jack: ponta + anel (juntos) · chave: um terminal</td><td>Juntando ponta e anel, qualquer botão do cabo P2 liga</td></tr>
+      <tr><td>Jack: corpo · chave: outro terminal</td><td>TP4056 OUT−</td><td>Jack e chave em paralelo</td></tr>
+    </table></div>
+    <div class="note">Confira com o multímetro (modo continuidade) quais partes do plugue P2 do seu acionador fecham quando você aperta o botão. Se for ponta + corpo ou anel + corpo, a ligação acima já funciona.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Imprima</b> seguindo o <code>3D/LEIA-ME.txt</code> (botões e berço com camada fina). Confira se o seu laser tem Ø 12 × 45; se não, mude <code>LASER_D</code> e <code>LASER_L</code>.</li>
+      <li><b>Teste o laser</b> direto na pilha antes de montar (cuidado com os olhos).</li>
+      <li><b>Torres:</b> ponha a porca no fundo de cada botão. Em cada parafuso (M3 × 12 em cima, M3 × 16 do lado), rosqueie uma contraporca até a cabeça e aperte as duas com 2 chaves.</li>
+      <li><b>Cliques:</b> molinha e BB no furo ao lado de cada torre; encaixe o botão por dentro (a aba fica presa pela borda) e rosqueie o parafuso na porca do botão, de dentro para fora, com a contraporca entrando no canal sextavado.</li>
+      <li><b>Berço:</b> empurre o laser no berço até o fundo (passe os fios pelo furo da bola). Ponha a bola no bloco de trás e aperte a trava do pivô com 2 M3 × 12: firme, mas deixando o berço inclinar com a mão.</li>
+      <li><b>Mola</b> no furo diagonal embaixo, encostando no berço.</li>
+      <li><b>Atrás:</b> TP4056 no fundo (USB-C no furo), suporte da pilha por cima nos apoios, jack P2 e chave MTS-102 com as porcas por fora. Solde conforme a ligação.</li>
+      <li><b>Tampa</b> com 4 M3 × 10 (os 2 pinos dela seguram o suporte da pilha).</li>
+      <li><b>Proteção anti-BB:</b> (opcional) ponha o disco de policarbonato de 1 mm no rebaixo de trás, encaixe a proteção no capuz e prenda com 2 M3 × 12.</li>
+      <li><b>No rifle:</b> 2 garras no trilho de cima, na ponta do guarda-mão; aperte os 2 parafusos atravessados. Ligue o acionador no jack e zere (seção 02).</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Custo de produção</h2>
+    <p class="hint">Valores de out/2026, sem frete, só produtos novos (os links do Mercado Livre já abrem com o filtro "Novo"). Não achei preços exatos no Brasil nas buscas: são <b>estimativas</b> de anúncios comuns; confira antes de comprar. Peças impressas não entram.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>Módulo laser verde 520 nm Ø 12, ponto, ≤ 5 mW, com driver</td><td><a href="https://lista.mercadolivre.com.br/modulo-laser-verde-12mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 35,00</td><td class="r">R$ 80,00</td></tr>
+      <tr><td><b>Conjunto:</b> par de pilhas 16340 recarregáveis (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/bateria-16340-recarregavel_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>reserva (troca rápida no jogo)</td><td class="r">R$ 25,00</td><td class="r">R$ 45,00</td></tr>
+      <tr><td>Suporte de pilha 16340 / CR123A</td><td><a href="https://lista.mercadolivre.com.br/suporte-bateria-cr123a_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 6,00</td><td class="r">R$ 12,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit de jacks P2 3,5 mm fêmea de painel (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/jack-p2-femea-painel_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>reserva</td><td class="r">R$ 8,00</td><td class="r">R$ 15,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 chaves alavanca MTS-102 (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/chave-alavanca-mts-102_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>13 (maleta, usa 3)</td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td>TP4056, parafusos M3, BBs, molas de caneta</td><td>kits do 04 e do 01</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr><td>Acionador duplo de M-LOK</td><td>você já tem</td><td>14 (cabo SF na lanterna IR)</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="reuse"><td colspan="3">Total reaproveitando os kits</td><td class="r">≈ R$ 89</td><td class="r">≈ R$ 177</td></tr>
+      <tr class="tot"><td colspan="3">Total do zero (comprando também o kit 10 TP4056)</td><td class="r">≈ R$ 123</td><td class="r">≈ R$ 224</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Pontos de atenção</h2>
+    <div class="note red"><b>Olhos:</b> laser de 5 mW (classe 3R) machuca o olho se olhar direto ou mirar no rosto de alguém. Óculos de airsoft <b>não</b> protegem contra laser. Nunca aponte para pessoas; use para zerar e mirar no alvo.</div>
+    <div class="note red"><b>Regras do campo:</b> muitos campos proíbem laser visível em jogo ou só deixam com potência baixa. Confirme antes e, se precisar, use um módulo de 1 mW (classe 2).</div>
+    <div class="note">O TP4056 do kit carrega com 1 A, forte para uma 16340 (≈ 700 mAh). Troque o resistor marcado <b>122</b> perto do chip por um de <b>2,4 kΩ</b> (carga de 500 mA), ou carregue a pilha num carregador externo.</div>
+    <div class="note">Confira a tensão do seu laser. Se for "3 V" (não 3–5 V), ponha um diodo 1N4007 em série no fio vermelho (baixa ≈ 0,7 V) para não queimar com a pilha cheia (4,2 V).</div>
+    <div class="note">A caixa (37 mm) fica abaixo da visão da luneta; só a torre de cima passa uns 5 mm, longe da objetiva, e fica desfocada (não aparece).</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alvo Acionador</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:100%;max-width:420px}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
+.duas img{width:100%;height:auto;display:block;border-radius:8px;background:#f8f8f8}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243a;stroke:#4f79b0;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}.pt.c,.ttl.c{text-anchor:middle}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-gnd{stroke:#8a959b}.w-usb{stroke:#4fa3ff}.w-led{stroke:#47c76a}.w-led2{stroke:#ffd84a}
+.w-wifi{stroke:#4fa3ff;stroke-dasharray:6 6}.w-lr{stroke:#e2b04a;stroke-dasharray:10 6}
+.pin{fill:#e2b04a}
+.w-sig{stroke:#ffd84a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | GAMES · PROJETO 09 · INTERMEDIÁRIO</div>
+    <h1>Alvo Acionador de Lâmpada</h1>
+    <p class="sub">Para os <b>jogos noturnos</b>: alvos espalhados pelo campo que, quando o time <b>acerta a placa</b>, acendem um <b>refletor da rede elétrica (127 V)</b> perto dali por um tempo e clareiam a área. Depois o alvo fica <b>5 minutos</b> sem efeito. São 2 aparelhos: o <b>alvo</b> (bateria, no poste ou na árvore) e o <b>acionador</b> (caixa fechada ligada na tomada, que liga o refletor por um relé). Requisitos completos em <a href="REQUISITOS.md">REQUISITOS.md</a>. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>99 × 48 × 108</b><span>o alvo (largura × fundo × altura), com a placa de 88 × 88 e os túneis das fitas</span></div>
+      <div class="tile"><b>120 × 58 × 114</b><span>o acionador de 127 V, com os prensa-cabos e as orelhas de parede</span></div>
+      <div class="tile"><b>30 s – 3 min</b><span>tempo do refletor aceso (2 chaves no alvo) · depois 5 min de espera</span></div>
+      <div class="tile"><b>semanas</b><span>de bateria no alvo: ele dorme e só acorda com a BB (ou para piscar o LED)</span></div>
+      <div class="tile"><b>R$ 118–181</b><span>por conjunto (alvo + acionador), estimado; o seu refletor não entra</span></div>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Por que intermediário:</b> a eletrônica do alvo é simples (piezo + sono profundo), mas o acionador mexe com a <b>rede de 127 V</b>: precisa de atenção e das regras de segurança da seção 08.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 230">
+        <rect x="20" y="50" width="160" height="110" rx="10" class="blk"/><text x="100" y="40" class="ttl c">ALVO (no campo)</text>
+        <circle cx="100" cy="105" r="34" fill="#8a6a45"/><circle cx="100" cy="105" r="22" fill="none" stroke="#3a2c1c" stroke-width="2"/><circle cx="100" cy="105" r="9" fill="#3a2c1c"/>
+        <text x="100" y="178" class="pt c" style="font-size:11px">BB bate → piezo sente</text>
+        <path class="wr w-lr" d="M185,105 H470"/><text x="328" y="92" class="pt c" style="font-size:11px;fill:#e2b04a">aviso sem fio: "acende por X s"</text>
+        <text x="328" y="125" class="pt c" style="font-size:10px;fill:#8a959b">ESP-NOW · até ~30 m · só o pareado obedece</text>
+        <rect x="470" y="50" width="170" height="110" rx="10" class="brd"/><text x="555" y="40" class="ttl c">ACIONADOR (127 V)</text>
+        <text x="555" y="95" class="pt c">ESP32-C3 + relé</text><text x="555" y="115" class="pt c" style="font-size:10px;fill:#8a959b">fonte HLK-PM01 · fusível</text>
+        <path class="wr" style="stroke:#c0392b" d="M640,105 H730"/><text x="685" y="95" class="pt c" style="font-size:10px">127 V</text>
+        <rect x="730" y="60" width="150" height="90" rx="10" fill="#2b2b2b" stroke="#59636a"/><rect x="745" y="75" width="120" height="50" rx="4" fill="#fff4b0"/><text x="805" y="140" class="pt c" style="font-size:11px;fill:#111">SEU REFLETOR</text>
+        <text x="20" y="215" class="pt" style="font-size:11px;fill:#8a959b">Depois de acionar, o alvo dorme 5 min sem ouvir o piezo; o acionador apaga o refletor sozinho quando acaba o tempo.</text>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>Situação</th><th>O que acontece</th></tr>
+      <tr><td><b>Pronto</b></td><td>O alvo dorme. O LED vermelho dá uma piscadinha a cada 4 s (ajuda o time a achar o alvo no escuro, junto com a faixa fotoluminescente)</td></tr>
+      <tr><td><b>Acertou</b></td><td>O piezo acorda a placa em milissegundos, ela manda o aviso 6 vezes seguidas (se um se perder, os outros chegam) e o refletor acende pelo tempo das chaves T1/T2</td></tr>
+      <tr><td><b>Espera</b></td><td>5 min sem efeito: o LED fica apagado e o alvo nem ouve o piezo. Depois, 2 piscadas e volta a "pronto"</td></tr>
+      <tr><td><b>Tempo (chaves T1/T2)</b></td><td>as duas desligadas = 30 s · só T1 = 1 min · só T2 = 2 min · as duas = 3 min</td></tr>
+      <tr><td><b>Pareamento</b></td><td>No acionador: segure o botão 3 s (LED verde pisca rápido) e acerte o alvo. Cada acionador aceita até 4 alvos. Sem nenhum pareado, ele obedece a qualquer alvo (bom para testar, ruim no jogo)</td></tr>
+      <tr><td><b>Bateria fraca</b></td><td>Abaixo de 3,3 V o alvo pisca rápido e para (protege a bateria). Recarregue pelo USB-C de baixo e ligue de novo na chave LIGA</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>Os aparelhos</h2>
+    <div class="fig">
+      <svg viewBox="0 0 202.97 205.98" data-mm="202.97" data-zoom="4.5" class="vistas3d valvoaf1da8">
+        <style>.valvoaf1da8 .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.valvoaf1da8 .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.valvoaf1da8 .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.valvoaf1da8 .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.valvoaf1da8 .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">ALVO · DE FRENTE</text>
+        <image href="3D/img/alvo_frente.png" x="12" y="9" width="106.99" height="108"/>
+        <text x="60.99" y="67.9" class="nm">placa-alvo</text>
+        <text x="60.99" y="18.9" class="nm">LED pronto</text>
+        <line x1="12" y1="117" x2="12" y2="124.5" class="ext"/><line x1="110.48" y1="117" x2="110.48" y2="124.5" class="ext"/>
+        <line x1="12" y1="123" x2="110.48" y2="123" class="dim"/><text x="61.24" y="128.2" class="dt">98</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="117" x2="12" y2="117" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="117" class="dim"/><text x="4.2" y="63" class="dt" transform="rotate(-90 4.2 63)">108</text>
+        <text x="142.99" y="5" class="lb">ALVO · LADO DIREITO</text>
+        <image href="3D/img/alvo_direita.png" x="142.99" y="9" width="47.98" height="108"/>
+        <text x="163.99" y="67.9" class="nm">LIGA · T1 · T2</text>
+        <text x="186.99" y="91.9" class="nm">túnel da fita</text>
+        <line x1="142.99" y1="117" x2="142.99" y2="124.5" class="ext"/><line x1="190.97" y1="117" x2="190.97" y2="124.5" class="ext"/>
+        <line x1="142.99" y1="123" x2="190.97" y2="123" class="dim"/><text x="166.98" y="128.2" class="dt">48</text>
+        <line x1="135.49" y1="9" x2="142.99" y2="9" class="ext"/><line x1="135.49" y1="117" x2="142.99" y2="117" class="ext"/>
+        <line x1="136.99" y1="9" x2="136.99" y2="117" class="dim"/><text x="135.19" y="63" class="dt" transform="rotate(-90 135.19 63)">108</text>
+        <text x="12" y="141" class="lb">ALVO · DE CIMA, SEM A TAMPA</text>
+        <image href="3D/img/alvo_topo_SEM_TAMPAtrue.png" x="12" y="145" width="106.99" height="47.98"/>
+        <text x="60.99" y="172.88" class="nm">bateria 18650</text>
+        <line x1="12" y1="192.98" x2="12" y2="200.48" class="ext"/><line x1="110.48" y1="192.98" x2="110.48" y2="200.48" class="ext"/>
+        <line x1="12" y1="198.98" x2="110.48" y2="198.98" class="dim"/><text x="61.24" y="204.18" class="dt">98</text>
+        <line x1="4.5" y1="145" x2="12" y2="145" class="ext"/><line x1="4.5" y1="192.98" x2="12" y2="192.98" class="ext"/>
+        <line x1="6" y1="145" x2="6" y2="192.98" class="dim"/><text x="4.2" y="168.99" class="dt" transform="rotate(-90 4.2 168.99)">48</text>
+      </svg>
+      <div class="cap"><b>Alvo:</b> caixa preta de 96 × 34 × 104 com tampa coyote (emblema e nome BLACK BIRD, a única marca do projeto). Na frente, a <b>placa-alvo coyote</b> de 88 × 88, com anéis gravados e uma faixa rebaixada para a fita fotoluminescente; atrás dela, pela janela de 28 mm, o <b>disco piezo</b> apertado por espuma (trava do piezo com 2 parafusos). Em cima, por dentro, a bateria 18650 no suporte; embaixo, o TP4056 com o USB-C de carga virado para baixo. Na lateral direita, as chaves <b>LIGA, T1 e T2</b>; acima da placa, o LED vermelho "pronto". Atrás, 2 túneis para as fitas de velcro.</div>
+    </div>
+    <div class="fig">
+      <svg viewBox="0 0 143.98 262.48" data-mm="143.98" data-zoom="4.5" class="vistas3d vacionadore619cb">
+        <style>.vacionadore619cb .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vacionadore619cb .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vacionadore619cb .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vacionadore619cb .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vacionadore619cb .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">ACIONADOR · DE FRENTE</text>
+        <image href="3D/img/acionador_frente_PARTEacionador.png" x="12" y="9" width="119.98" height="154"/>
+        <text x="47.99" y="31.9" class="nm">LED</text>
+        <text x="47.99" y="47.9" class="nm">PAREAR/TESTE</text>
+        <text x="94.99" y="153.9" class="nm">entrada e saída</text>
+        <line x1="12" y1="123" x2="12" y2="170.5" class="ext"/><line x1="131.98" y1="123" x2="131.98" y2="170.5" class="ext"/>
+        <line x1="12" y1="169" x2="131.98" y2="169" class="dim"/><text x="71.99" y="174.2" class="dt">120</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="123" x2="12" y2="123" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="123" class="dim"/><text x="4.2" y="66" class="dt" transform="rotate(-90 4.2 66)">114</text>
+        <text x="12" y="187" class="lb">ACIONADOR · DE CIMA, SEM A TAMPA</text>
+        <image href="3D/img/acionador_topo_PARTEacionador_SEM_TAMPAtrue.png" x="12" y="191" width="119.98" height="58.48"/>
+        <text x="47.99" y="216.88" class="nm">5 V</text>
+        <text x="93.99" y="216.88" class="nm">127 V</text>
+        <line x1="12" y1="248.48" x2="12" y2="256.98" class="ext"/><line x1="131.98" y1="248.48" x2="131.98" y2="256.98" class="ext"/>
+        <line x1="12" y1="255.48" x2="131.98" y2="255.48" class="dim"/><text x="71.99" y="260.68" class="dt">120</text>
+        <line x1="4.5" y1="191" x2="12" y2="191" class="ext"/><line x1="4.5" y1="248.48" x2="12" y2="248.48" class="ext"/>
+        <line x1="6" y1="191" x2="6" y2="248.48" class="dim"/><text x="4.2" y="219.74" class="dt" transform="rotate(-90 4.2 219.74)">57</text>
+      </svg>
+      <div class="cap"><b>Acionador:</b> caixa preta de 96 × 45 × 110 com <b>tampa coyote de 4 parafusos</b> (aviso "127 V – PERIGO – TIRE DA TOMADA ANTES DE ABRIR" gravado). Uma <b>divisória</b> separa o lado de <b>127 V</b> (direita: fonte HLK-PM01, relé, fusível e conectores de alavanca) do lado de <b>5 V</b> (esquerda: ESP32-C3, LED verde e botão PAREAR/TESTE). Os 2 cabos (entrada da tomada e saída para o refletor) entram por <b>prensa-cabos PG7</b> no fundo. Orelhas laterais para parafusar na parede, ou túneis de velcro para o poste.</div>
+    </div>
+    <div class="duas">
+      <div class="fig" style="padding:8px;margin:0"><img src="3D/img/alvo_3d.png" alt="Alvo montado"><div class="cap">O alvo montado, pronto para o poste.</div></div>
+      <div class="fig" style="padding:8px;margin:0"><img src="3D/img/acionador_3d.png" alt="Acionador sem a tampa"><div class="cap">O acionador (sem a tampa) com os 2 cabos saindo por baixo.</div></div>
+    </div>
+    <div class="fig" style="padding:8px"><img src="3D/img/campo_3d.png" alt="Alvo no poste e refletor na parede" style="width:100%;height:auto;display:block;border-radius:8px;background:#f8f8f8"><div class="cap">No campo: o alvo no poste e, numa parede próxima, o refletor com o acionador embaixo. Acertou: a área em volta do alvo fica clara.</div></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. Arquivos em <b>3D/stl</b>; quantidades, ferragens e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do alvo e do acionador" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Pretas: caixa do alvo, trava do piezo e caixa do acionador. Coyote: placa-alvo, tampa do alvo (com a marca), tampa do acionador (com o aviso) e capa do botão.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Componentes (por conjunto)</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td colspan="3"><b>Alvo</b></td></tr>
+      <tr><td>ESP32-C3 SuperMini</td><td class="mm">18 × 22,5</td><td>Dorme e acorda com a BB; manda o aviso sem fio</td></tr>
+      <tr><td>Disco piezo 27 mm + disco de espuma EVA 10 mm</td><td class="mm">Ø 27</td><td>Sente a batida da BB na placa</td></tr>
+      <tr><td>1N4148 + resistores 1 MΩ e 10 kΩ + capacitor 100 nF</td><td class="mm">—</td><td>Transformam a batida num pulso seguro para o pino 3</td></tr>
+      <tr><td>Bateria 18650 + suporte · TP4056 USB-C</td><td class="mm">77 × 21 · 28 × 17</td><td>Energia por semanas; carga pelo USB-C de baixo</td></tr>
+      <tr><td>2 resistores 1 MΩ</td><td class="mm">—</td><td>Divisor para medir a bateria (pino 4)</td></tr>
+      <tr><td>3 chaves alavanca MTS-102</td><td class="mm">furo Ø 6</td><td>LIGA, T1 e T2 (tempo)</td></tr>
+      <tr><td>LED vermelho 3 mm + 330 Ω</td><td class="mm">furo Ø 3,2</td><td>"Pronto" (piscadinha a cada 4 s)</td></tr>
+      <tr><td>Fita fotoluminescente 10 mm</td><td class="mm">≈ 35 cm</td><td>Brilha no escuro em volta da placa</td></tr>
+      <tr><td colspan="3"><b>Acionador</b></td></tr>
+      <tr><td>ESP32-C3 SuperMini</td><td class="mm">18 × 22,5</td><td>Ouve os alvos e comanda o relé</td></tr>
+      <tr><td>Fonte HLK-PM01 (100–240 V → 5 V 3 W), de preferência numa plaquinha com bornes</td><td class="mm">≈ 38 × 26</td><td>Alimenta a ESP32 e o relé a partir da tomada</td></tr>
+      <tr><td>Módulo relé 1 canal 5 V com jumper H/L (10 A 250 V)</td><td class="mm">26 × 50</td><td>Liga a fase do refletor</td></tr>
+      <tr><td>Porta-fusível de linha + fusível 2 A</td><td class="mm">5 × 20</td><td>Protege se der curto</td></tr>
+      <tr><td>2 conectores de alavanca 3 vias · 2 prensa-cabos PG7</td><td class="mm">—</td><td>Neutro e terra · entrada e saída dos cabos</td></tr>
+      <tr><td>Cabo de força 3 × 1,0 mm² com plugue (≈ 1,5 m)</td><td class="mm">—</td><td>Entrada: liga na tomada</td></tr>
+      <tr><td>LED verde 3 mm + 330 Ω · botão 6 × 6</td><td class="mm">—</td><td>Estado e PAREAR/TESTE</td></tr>
+      <tr><td>Peças impressas (pasta <code>3D</code>)</td><td class="mm">—</td><td>caixa, tampa, placa-alvo e trava do piezo (alvo) · caixa, tampa e capa do botão (acionador)</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Ligação elétrica</h2>
+    <h3 style="margin:14px 0 4px;font-size:16px">Alvo</h3>
+    <p class="hint">Sem escala. Na sua SuperMini só aparece o número do pino: "3" = GPIO3. A TP4056 tem os 4 pontos na mesma ponta: OUT+, B+, B−, OUT−.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 300">
+        <rect x="32" y="85" width="10" height="40" rx="3" fill="#5a6268"/><rect x="40" y="60" width="120" height="130" rx="8" class="blk"/><text x="100" y="52" class="ttl c">TP4056</text>
+        <text x="50" y="109" class="pt" style="font-size:10px;fill:#8a959b">USB-C</text>
+        <g class="pt e" style="font-size:11px"><text x="152" y="84">OUT+</text><text x="152" y="114">B+</text><text x="152" y="144">B−</text><text x="152" y="174">OUT−</text></g>
+        <rect x="200" y="95" width="90" height="60" rx="8" class="blk"/><text x="250" y="125" class="ttl c">18650</text><g class="pt" style="font-size:11px"><text x="206" y="114">+</text><text x="206" y="144">−</text></g>
+        <rect x="330" y="40" width="90" height="34" rx="6" class="blk"/><text x="375" y="62" class="pt c" style="font-size:11px">chave LIGA</text>
+        <rect x="350" y="140" width="110" height="34" rx="6" class="blk"/><text x="405" y="156" class="pt c" style="font-size:10px">divisor</text><text x="405" y="168" class="pt c" style="font-size:10px">1 MΩ + 1 MΩ</text>
+        <rect x="200" y="200" width="90" height="44" rx="6" fill="#8a6a45" stroke="#59636a"/><text x="245" y="226" class="pt c" style="font-size:11px">piezo 27 mm</text>
+        <rect x="330" y="200" width="140" height="44" rx="6" class="blk"/><text x="400" y="218" class="pt c" style="font-size:10px">circuito do piezo</text><text x="400" y="232" class="pt c" style="font-size:10px">(desenho abaixo)</text>
+        <rect x="520" y="40" width="170" height="230" rx="8" class="brd"/><text x="605" y="235" class="ttl c">ESP32-C3</text><text x="605" y="253" class="ttl c">SuperMini</text>
+        <g class="pt" style="font-size:11px"><text x="528" y="84">5V</text><text x="528" y="119">GND</text><text x="528" y="164">pino 4</text><text x="528" y="226">pino 3</text></g>
+        <g class="pt e" style="font-size:11px"><text x="682" y="84">pino 0</text><text x="682" y="119">pino 1</text><text x="682" y="164">pino 7</text></g>
+        <rect x="760" y="63" width="130" height="30" rx="6" class="blk"/><text x="825" y="83" class="pt c" style="font-size:11px">chave T1 → GND</text>
+        <rect x="760" y="98" width="130" height="30" rx="6" class="blk"/><text x="825" y="118" class="pt c" style="font-size:11px">chave T2 → GND</text>
+        <rect x="760" y="143" width="130" height="30" rx="6" class="blk"/><text x="825" y="163" class="pt c" style="font-size:11px">330 Ω → LED → GND</text>
+        <path class="wr w-pwr" d="M160,110 H200"/><path class="wr w-gnd" d="M160,140 H200"/>
+        <path class="wr w-pwr" d="M160,80 H180 V57 H330 M420,57 H470 V80 H520"/>
+        <path class="wr w-pwr" d="M470,80 V110 H405 V140"/>
+        <path class="wr w-sig" d="M460,157 H500 V160 H520"/>
+        <path class="wr w-gnd" d="M160,170 H180 V280 H490 V115 H520 M405,174 V280 M245,244 V280 M400,244 V280"/>
+        <path class="wr w-sig" d="M290,212 H330 M470,222 H520"/>
+        <path class="wr w-sig" d="M690,80 H760 M690,115 H760 M690,160 H760"/>
+        <g class="pin"><circle cx="160" cy="80" r="4"/><circle cx="160" cy="110" r="4"/><circle cx="160" cy="140" r="4"/><circle cx="160" cy="170" r="4"/><circle cx="520" cy="80" r="4"/><circle cx="520" cy="115" r="4"/><circle cx="520" cy="160" r="4"/><circle cx="520" cy="222" r="4"/><circle cx="690" cy="80" r="4"/><circle cx="690" cy="115" r="4"/><circle cx="690" cy="160" r="4"/></g>
+        <g fill="#b9c2c7"><circle cx="470" cy="80" r="5"/><circle cx="405" cy="280" r="5"/><circle cx="245" cy="280" r="5"/><circle cx="400" cy="280" r="5"/></g>
+      </svg>
+    </div>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 190">
+        <text x="20" y="22" class="ttl">Circuito do piezo (numa pontinha da placa ilhada)</text>
+        <circle cx="80" cy="90" r="28" fill="#c9a227" stroke="#7a5f10"/><circle cx="80" cy="90" r="16" fill="#e8e0c8"/><text x="80" y="140" class="pt c" style="font-size:11px">piezo</text>
+        <text x="112" y="84" class="pt" style="font-size:10px">+ (vermelho)</text>
+        <path class="wr w-sig" d="M108,90 H200"/><path d="M200,78 L200,102 L224,90 Z" fill="#cfd6da"/><line x1="226" y1="78" x2="226" y2="102" stroke="#cfd6da" stroke-width="3"/>
+        <text x="212" y="70" class="pt c" style="font-size:10px">1N4148</text><text x="212" y="118" class="pt c" style="font-size:9px;fill:#8a959b">listra para a direita</text>
+        <path class="wr w-sig" d="M226,90 H420"/>
+        <rect x="420" y="80" width="70" height="20" rx="3" fill="#3a3f44" stroke="#c9d1d5"/><text x="455" y="95" class="pt c" style="font-size:10px">10 kΩ</text>
+        <path class="wr w-sig" d="M490,90 H560"/><text x="566" y="95" class="pt">pino 3 da ESP32-C3</text>
+        <path class="wr w-sig" d="M300,90 V112 M360,90 V120"/>
+        <rect x="290" y="112" width="20" height="40" rx="3" fill="#3a3f44" stroke="#c9d1d5"/><text x="280" y="136" class="pt e" style="font-size:10px">1 MΩ</text>
+        <line x1="346" y1="120" x2="374" y2="120" stroke="#cfd6da" stroke-width="3"/><line x1="346" y1="128" x2="374" y2="128" stroke="#cfd6da" stroke-width="3"/><text x="382" y="128" class="pt" style="font-size:10px">100 nF</text>
+        <path class="wr w-gnd" d="M80,118 V172 H360 M300,152 V172 M360,128 V172"/><text x="372" y="176" class="pt" style="font-size:10px;fill:#8a959b">GND</text>
+        <g fill="#b9c2c7"><circle cx="300" cy="90" r="5"/><circle cx="360" cy="90" r="5"/><circle cx="300" cy="172" r="5"/></g>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>18650 + / −</td><td>TP4056 B+ / B−</td><td>Os 2 do meio da ponta da TP4056</td></tr>
+      <tr><td>TP4056 OUT+</td><td>Chave LIGA → pino <b>5V</b> da SuperMini</td><td>O regulador da placa faz os 3,3 V</td></tr>
+      <tr><td>TP4056 OUT−</td><td>GND comum</td><td>—</td></tr>
+      <tr><td>Depois da chave LIGA</td><td>1 MΩ → pino <b>4</b> → 1 MΩ → GND</td><td>Mede a bateria</td></tr>
+      <tr><td>Piezo (+)</td><td>1N4148 → nó → 10 kΩ → pino <b>3</b></td><td>No nó: 1 MΩ e 100 nF para o GND. Piezo (−) no GND</td></tr>
+      <tr><td>Pinos <b>0</b> e <b>1</b></td><td>Chaves T1 e T2 → GND</td><td>Ligada = pino no GND</td></tr>
+      <tr><td>Pino <b>7</b></td><td>330 Ω → LED vermelho (perna longa); perna curta no GND</td><td>"Pronto"</td></tr>
+    </table></div>
+
+    <h3 style="margin:28px 0 4px;font-size:16px">Acionador (127 V)</h3>
+    <p class="hint">Sem escala. Cores da rede: <b style="color:#c0392b">fase</b> (marrom/preto/vermelho), <b style="color:#4fa3ff">neutro</b> (azul), <b style="color:#5cb85c">terra</b> (verde/amarelo). Fios que se cruzam sem bolinha não estão ligados.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 436">
+        <rect x="20" y="40" width="120" height="130" rx="8" class="blk"/><text x="80" y="30" class="ttl c">TOMADA 127 V</text><text x="80" y="160" class="pt c" style="font-size:10px;fill:#8a959b">cabo com plugue</text>
+        <g class="pt e" style="font-size:11px"><text x="132" y="74">F</text><text x="132" y="114">N</text><text x="132" y="154">T</text></g>
+        <rect x="180" y="58" width="80" height="24" rx="5" fill="#e8e8e8" stroke="#59636a"/><text x="220" y="75" class="pt c" style="font-size:10px;fill:#111">fusível 2 A</text>
+        <rect x="300" y="30" width="150" height="100" rx="8" class="blk"/><text x="375" y="22" class="ttl c">fonte HLK-PM01</text>
+        <g class="pt" style="font-size:11px"><text x="308" y="64">L ~</text><text x="308" y="114">N ~</text></g><g class="pt e" style="font-size:11px"><text x="442" y="64">+5V</text><text x="442" y="114">GND</text></g>
+        <rect x="560" y="20" width="180" height="130" rx="8" class="brd"/><text x="612" y="140" class="ttl c">ESP32-C3</text>
+        <g class="pt" style="font-size:11px"><text x="568" y="64">5V</text><text x="568" y="114">GND</text></g>
+        <g class="pt e" style="font-size:11px"><text x="732" y="54">pino 6</text><text x="732" y="89">pino 10</text><text x="732" y="134">pino 5</text></g>
+        <rect x="770" y="35" width="120" height="30" rx="6" class="blk"/><text x="830" y="55" class="pt c" style="font-size:10px">330 Ω → LED verde</text>
+        <rect x="770" y="70" width="120" height="30" rx="6" class="blk"/><text x="830" y="90" class="pt c" style="font-size:10px">botão → GND</text>
+        <rect x="480" y="200" width="200" height="110" rx="8" class="blk"/><text x="580" y="255" class="ttl c">relé 5 V</text><text x="580" y="272" class="pt c" style="font-size:10px;fill:#8a959b">jumper em H</text>
+        <g class="pt c" style="font-size:10px"><text x="510" y="216">VCC</text><text x="550" y="216">GND</text><text x="590" y="216">IN</text><text x="540" y="302">COM</text><text x="620" y="302">NA</text></g>
+        <rect x="740" y="330" width="140" height="85" rx="8" fill="#2b2b2b" stroke="#59636a"/><text x="810" y="322" class="ttl c">REFLETOR</text>
+        <g class="pt" style="font-size:11px"><text x="748" y="354">F</text><text x="748" y="379">N</text><text x="748" y="404">T</text></g>
+        <path class="wr" style="stroke:#c0392b" d="M140,70 H180 M260,70 H280 V60 H300 M280,70 V380 H540 V310"/>
+        <path class="wr" style="stroke:#c0392b" d="M620,310 V350 H740"/>
+        <path class="wr" style="stroke:#4fa3ff" d="M140,110 H300 M200,110 V395 H700 V375 H740"/>
+        <path class="wr" style="stroke:#5cb85c" d="M140,150 H160 V412 H720 V400 H740"/>
+        <path class="wr w-pwr" d="M450,60 H560 M510,60 V200"/>
+        <path class="wr w-gnd" d="M450,110 H560 M550,110 V200"/>
+        <path class="wr w-sig" d="M740,50 H770 M740,85 H770 M740,130 H755 V170 H590 V200"/>
+        <g class="pin"><circle cx="140" cy="70" r="4"/><circle cx="140" cy="110" r="4"/><circle cx="140" cy="150" r="4"/><circle cx="300" cy="60" r="4"/><circle cx="300" cy="110" r="4"/><circle cx="450" cy="60" r="4"/><circle cx="450" cy="110" r="4"/><circle cx="560" cy="60" r="4"/><circle cx="560" cy="110" r="4"/><circle cx="740" cy="50" r="4"/><circle cx="740" cy="85" r="4"/><circle cx="740" cy="130" r="4"/><circle cx="510" cy="200" r="4"/><circle cx="550" cy="200" r="4"/><circle cx="590" cy="200" r="4"/><circle cx="540" cy="310" r="4"/><circle cx="620" cy="310" r="4"/><circle cx="740" cy="350" r="4"/><circle cx="740" cy="375" r="4"/><circle cx="740" cy="400" r="4"/></g>
+        <g fill="#b9c2c7"><circle cx="280" cy="70" r="5"/><circle cx="200" cy="110" r="5"/><circle cx="510" cy="60" r="5"/><circle cx="550" cy="110" r="5"/></g>
+        <text x="292" y="245" class="pt" style="font-size:10px;fill:#8a959b">neutro: conector de alavanca</text>
+        <text x="300" y="428" class="pt" style="font-size:10px;fill:#8a959b">terra: conector de alavanca (direto)</text>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Tomada <b>F</b> (fase)</td><td>Fusível 2 A → fonte <b>L</b> e relé <b>COM</b></td><td>No lado de 127 V da divisória</td></tr>
+      <tr><td>Relé <b>NA</b> (normalmente aberto)</td><td>Refletor <b>F</b></td><td>Só o fio da fase passa pelo relé</td></tr>
+      <tr><td>Tomada <b>N</b> (neutro)</td><td>Conector de alavanca → fonte <b>N</b> e refletor <b>N</b></td><td>Azul</td></tr>
+      <tr><td>Tomada <b>T</b> (terra)</td><td>Conector de alavanca → refletor <b>T</b></td><td>Verde/amarelo; se o refletor não tiver, isole a ponta</td></tr>
+      <tr><td>Fonte +5V / GND</td><td>ESP32 <b>5V</b> / GND e relé VCC / GND</td><td>Os fios de 5 V passam pela abertura no alto da divisória</td></tr>
+      <tr><td>Pino <b>5</b></td><td>Relé <b>IN</b></td><td>Jumper do relé em <b>H</b> (liga com sinal alto)</td></tr>
+      <tr><td>Pino <b>6</b> · pino <b>10</b></td><td>330 Ω → LED verde · botão → GND</td><td>—</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Grave os códigos</b> (Arduino IDE, pacote esp32 3.x, placa "ESP32C3 Dev Module", USB CDC On Boot: Enabled): <code>ALVO/ALVO.ino</code> nas placas dos alvos e <code>ACIONADOR/ACIONADOR.ino</code> nas dos acionadores. <b>Grave sempre pelo USB do PC, com nada ligado na tomada.</b></li>
+      <li><b>Teste na mesa, sem rede:</b> acionador ligado só no USB do PC (o relé estala no clique do botão) e o alvo montado na placa ilhada: bater com a caneta no piezo faz o relé estalar.</li>
+      <li><b>Imprima</b> seguindo o <code>3D/LEIA-ME.txt</code>.</li>
+      <li><b>Alvo:</b> solde o circuito do piezo, o divisor, o LED e as chaves na placa ilhada com a ESP32-C3; parafuse a placa (2 M2) na parede de trás. Suporte da 18650 nas 2 barras de cima (2 M3 × 8), TP4056 nas guias com o USB-C para baixo. Piezo na janela da frente, espuma, trava do piezo (2 M3 × 10). Placa-alvo por fora com 4 M3 × 12 e as porcas por dentro. Fita fotoluminescente na faixa rebaixada.</li>
+      <li><b>Acionador (fora da tomada):</b> fonte e relé nos pinos da parede de trás, do lado direito; ESP32-C3 na placa ilhada do lado esquerdo; LED e botão na frente. Os fios de 5 V passam pela abertura no alto da divisória.</li>
+      <li><b>Fios da rede (fora da tomada):</b> passe os 2 cabos pelos prensa-cabos. Fase da tomada → fusível → fonte L e relé COM; relé NA → fase do refletor; neutros juntos num conector de alavanca; terras juntos no outro. <b>Aperte os prensa-cabos.</b> Se não se sentir seguro, peça para um eletricista fazer só esta parte.</li>
+      <li><b>Feche a tampa com os 4 parafusos</b> e só então ponha na tomada. Clique no botão: o refletor acende 3 s.</li>
+      <li><b>Pareie:</b> segure o botão 3 s e acerte o alvo. Repita para cada conjunto, um de cada vez.</li>
+      <li><b>No campo:</b> alvo no poste a até ~30 m do acionador, com visada. Atire de 10, 20 e 30 m para conferir.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Custo de produção</h2>
+    <p class="hint">Valores de out/2026, sem frete, só produtos novos (os links do Mercado Livre já abrem com o filtro "Novo"). As buscas <b>não mostraram preços em reais</b> da fonte HLK-PM01, do relé H/L, dos prensa-cabos e do piezo: são <b>estimativas</b> de anúncios comuns; confira antes de comprar. Peças impressas e o seu refletor não entram.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td><b>Conjunto:</b> kit 5 ESP32-C3 SuperMini (usa 2 por conjunto)</td><td><a href="https://lista.mercadolivre.com.br/esp32-c3_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>2º conjunto + 1</td><td class="r">R$ 80,00</td><td class="r">R$ 98,00</td></tr>
+      <tr><td>Fonte HLK-PM01 5 V 3 W (de preferência com bornes)</td><td><a href="https://lista.mercadolivre.com.br/hlk-pm01_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 15,00</td><td class="r">R$ 30,00</td></tr>
+      <tr><td>Módulo relé 1 canal 5 V com jumper H/L</td><td><a href="https://lista.mercadolivre.com.br/modulo-rele-1-canal-5v-h-l_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 8,00</td><td class="r">R$ 15,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 discos piezo 27 mm (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/disco-piezoeletrico-27mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>9 alvos</td><td class="r">R$ 10,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 prensa-cabos PG7 (usa 2)</td><td><a href="https://lista.mercadolivre.com.br/prensa-cabo-pg7_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>4 acionadores</td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td><b>Conjunto:</b> conectores de alavanca 3 vias (usa 2)</td><td><a href="https://lista.mercadolivre.com.br/conector-de-alavanca-3-vias_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>outros acionadores</td><td class="r">R$ 20,00</td><td class="r">R$ 60,00</td></tr>
+      <tr><td>Porta-fusível de linha 5 × 20 + fusível 2 A</td><td><a href="https://lista.mercadolivre.com.br/porta-fusivel-de-linha-5x20_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 5,00</td><td class="r">R$ 10,00</td></tr>
+      <tr><td>Cabo de força 3 × 1,0 mm² com plugue (≈ 1,5 m)</td><td><a href="https://lista.mercadolivre.com.br/cabo-de-forca-3-pinos-1-5m_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 12,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td>Bateria 18650 (do kit de 2) + suporte</td><td><a href="https://www.mercadolivre.com.br/kit-2-baterias-de-litio-recarregavel-modelo-18650-2600mah-37v-elgin/p/MLB26869470">Mercado Livre</a></td><td>a outra do kit: 2º alvo</td><td class="r">R$ 17,00</td><td class="r">R$ 21,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 chaves MTS-102 (usa 3)</td><td><a href="https://lista.mercadolivre.com.br/chave-alavanca-mts-102_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>2 alvos + 1</td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td>Fita fotoluminescente 10 mm (rolo)</td><td><a href="https://lista.mercadolivre.com.br/fita-fotoluminescente-10mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>muitos alvos</td><td class="r">R$ 15,00</td><td class="r">R$ 30,00</td></tr>
+      <tr><td>Placa ilhada (kit), TP4056, LEDs, resistores, 1N4148, capacitor, botão, velcro, parafusos</td><td>kits que você já tem ou dos outros projetos</td><td>—</td><td class="r">R$ 5,00</td><td class="r">R$ 15,00</td></tr>
+      <tr class="tot"><td colspan="3">1º conjunto (comprando os kits inteiros)</td><td class="r">≈ R$ 217</td><td class="r">≈ R$ 369</td></tr>
+      <tr class="reuse"><td colspan="3">Cada conjunto a mais (reaproveitando as sobras)</td><td class="r">≈ R$ 118</td><td class="r">≈ R$ 181</td></tr>
+      <tr class="tot"><td colspan="3">6 conjuntos</td><td class="r">≈ R$ 807</td><td class="r">≈ R$ 1.274</td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">Para baratear: um acionador pode obedecer a até 4 alvos (vários alvos acendem o mesmo refletor), então dá para ter mais alvos que acionadores.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Pontos de atenção</h2>
+    <div class="note red"><b>127 V dá choque de verdade.</b> Só abra o acionador <b>fora da tomada</b>. Nunca ligue o USB do PC com ele na tomada. Toda emenda da rede vai em conector de alavanca ou borne, nunca com fita. A tampa fica sempre com os 4 parafusos. Na dúvida, chame um eletricista para ligar os fios da rede (é só a primeira vez).</div>
+    <div class="note red"><b>Relé com jumper em H.</b> Com o jumper em L, o relé pode ficar ligado direto com a ESP32 de 3,3 V. Se o refletor acender ao contrário (aceso parado, apagado no acerto), mude <code>RELE_ATIVO_ALTO</code> no código.</div>
+    <div class="note">Potência do refletor: o relé aguenta 10 A, e o fusível de 2 A deixa até ≈ 250 W em 127 V. Refletor de LED de 50–200 W fica com folga. Para mais que isso, troque o fusível (e confira o cabo).</div>
+    <div class="note">Sensibilidade: se a BB não aciona de longe, aperte mais o piezo (espuma mais grossa) ou troque o capacitor de 100 nF por 47 nF. Se acionar sozinho com vento ou batida no poste, use 220 nF.</div>
+    <div class="note">Os códigos ainda não foram compilados aqui no PC (não há Arduino instalado). Se aparecer erro ao gravar, me mande a mensagem.</div>
+    <div class="note ok">O aviso do alvo usa a mesma mensagem dos outros aparelhos BLACK BIRD (tipo 50). Dá para, no futuro, o amplificador de rede (05) ou um painel do organizador mostrar qual alvo foi acertado.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

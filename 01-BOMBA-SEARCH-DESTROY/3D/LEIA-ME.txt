@@ -1,0 +1,31 @@
+==========================================================
+ 01 - BOMBA SEARCH & DESTROY · PEÇAS 3D
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+
+ CONFIGURAÇÃO (Creality K1C, PETG, resistente a BB a 10 m+)
+   Camada 0,2 mm · 5 paredes · 5 camadas em cima e embaixo
+   Preenchimento 40% giroide · bico 240 °C · mesa 75-80 °C
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: caixa, alca, moldura_lcd, passa_fios · COYOTE: painel
+   O suporte de pilhas fica 6 mm mais para trás que antes (longe do
+   canto chanfrado); a janela da chave acompanhou.
+
+ PEÇA            QTD  SUPORTE  OBSERVAÇÃO
+ caixa            1   não      210 x 150 x 82, aberta em cima
+                               (~10-12 h). Cabe na mesa de 220.
+ painel           1   não      é a TAMPA. Imprime com a face de
+                               cima na mesa (o nome sai liso)
+ moldura_lcd      1   não      vai por cima da janela do LCD
+ alca             1   não      parafusa na parede esquerda
+ passa_fios       4   não      um em cada furo de fio do painel
+
+ FERRAGENS (tudo M3 Allen): 4 M3 x 10 (painel) · 4 M3 x 8 (Uno) ·
+ 2 M3 x 12 (alça) · 4 M3 x 8 (moldura) · policarbonato 1 mm
+ de 70 x 22 mm para a janela do LCD.
+
+ ANTES DE IMPRIMIR: meça com paquímetro o LCD, o teclado e o
+ suporte de pilhas e confira as medidas "CONFIRA" no pecas.scad.
+ Depois de imprimir cada peça, me diga ou some no ESTOQUE.js.

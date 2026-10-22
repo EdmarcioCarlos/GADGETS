@@ -1,0 +1,33 @@
+==========================================================
+ 03 - NÍVEL ANTI-CANT · PEÇAS 3D
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+
+ CONFIGURAÇÃO (Creality K1C, PETG, resistente a BB a 10 m+)
+   Camada 0,2 mm · 5 paredes · 5 camadas em cima e embaixo
+   Preenchimento 40% giroide · bico 240 °C · mesa 75-80 °C
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: caixa, pod · COYOTE: tampa, mandibula
+   A tampa agora tem 4 mm (3 úteis + 1 das gravações): conjunto 23 mm.
+
+ PEÇA         QTD  SUPORTE      OBSERVAÇÃO
+ caixa         1   SIM (só      caixa 50 x 30 x 19 com a garra
+                   na garra)    FIXA do trilho embaixo. Use
+                                "suporte só tocando a mesa".
+ tampa         1   não          fecha a caixa (4 parafusos M3)
+ mandibula     1   não          garra MÓVEL: o outro lado que
+                                trava no trilho Picatinny
+ pod           1   não          anel no tubo de 30 mm + os
+                                3 LEDs de 3 mm
+
+ COMO TRAVA NO TRILHO: garra fixa de um lado, mandíbula do
+ outro, e um parafuso M3 x 30 atravessado (passa pela fenda
+ do trilho) com a porca escondida na mandíbula. Aperte firme.
+
+ FERRAGENS (tudo M3 Allen): 1 M3 x 30 + porca · 4 M3 x 10
+ (tampa) · 1 M3 x 16 + porca (aperto do pod).
+
+ ANTES DE IMPRIMIR: confira TUBO_D no pecas.scad (30 mm; use
+ 25.4 para tubo de 1"). Depois de imprimir, some no ESTOQUE.js.

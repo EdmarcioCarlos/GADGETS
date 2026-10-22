@@ -1,0 +1,39 @@
+================================================================
+ 09 - ALVO ACIONADOR DE LÂMPADA · PEÇAS 3D (1 conjunto = alvo + acionador)
+================================================================
+ Arquivo-fonte: pecas.scad (OpenSCAD). Cada peça já está em stl\
+ na posição de impressão. montagem.scad = desenhos da prévia.
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só)
+   PRETO:  caixa_alvo, trava_piezo, caixa_acionador
+   COYOTE: alvo (placa), tampa_alvo (com o emblema e o nome BLACK BIRD,
+           a única marca do projeto), tampa_acionador (com o aviso de
+           127 V), capa_botao
+
+ PEÇA              QTD  SUPORTE  OBS.
+ caixa_alvo         1   não      em pé, aberta para cima
+ tampa_alvo         1   não      de cara na mesa
+ alvo               1   não      de cara na mesa (anéis e faixa da fita)
+ trava_piezo        1   não      a barra na mesa
+ caixa_acionador    1   não      em pé, aberta para cima
+ tampa_acionador    1   não      de cara na mesa (o aviso fica por fora)
+ capa_botao         1   não      cabeça na mesa
+
+ FERRAGENS (tudo M3 Allen + porca, sem cola):
+   Alvo: 4 M3 x 12 + 4 porcas (placa-alvo) · 2 M3 x 10 (trava do piezo)
+         · 2 M3 x 8 (suporte da 18650) · 4 M3 x 10 (tampa) · 2 M2 x 6
+         (placa ilhada). Velcro 25 mm: 2 fitas de ~60 cm.
+   Acionador: 6 M3 x 8 (relé e fonte, nos pinos da parede de trás)
+         · 4 M3 x 10 (tampa) · 2 M2 x 6 (placa ilhada) · 2 parafusos
+         de 4 mm + buchas (orelhas, para a parede) ou 2 fitas de velcro.
+
+ CONFIGURAÇÃO (PETG): 0,2 mm · 5 perímetros · 5 camadas topo/fundo ·
+ 40% giroide. Ficam na chuva e o alvo leva BB: não use PLA.
+ A caixa do acionador também é PETG (aguenta o calor da fonte e do relé).
+
+ CONFIRA ANTES DE IMPRIMIR (topo do pecas.scad):
+   SUP_A = [77, 21, 20]       suporte da 18650 (e SUP_FUROS_X)
+   TP = [17.5, 28, 1.6]       TP4056 USB-C
+   RELE_FUROS = [20, 44]      furos do seu módulo relé (em pé)
+   HLK_FUROS = [32, 20]       furos da plaquinha da fonte HLK-PM01
+   PRENSA_D = 12.6            furo do prensa-cabo PG7

@@ -1,0 +1,32 @@
+================================================================
+ 05 - AMPLIFICADOR DE REDE · PEÇAS 3D (1 conjunto por rádio)
+================================================================
+ Arquivo-fonte: pecas.scad (OpenSCAD). Cada peça já está em stl\
+ na posição de impressão. montagem.scad = desenho da prévia.
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só)
+   PRETO:  caixa
+   COYOTE: tampa (com o emblema e o nome BLACK BIRD, a única marca
+           do projeto), tampão da antena
+
+ PEÇA            QTD  SUPORTE  OBS.
+ caixa            1   não      em pé, aberta para cima (≈ 1 h)
+ tampa            1   não      de cara na mesa (os pinos para cima)
+ tampao_antena    1   não      só se usar a placa SEM antena externa
+
+ Um rádio por tablet + 1 ou 2 repetidores (rádio sem tablet) onde o
+ sinal não chega. Ex.: 5 tablets + 1 repetidor = 6 conjuntos.
+
+ FERRAGENS (tudo M3 Allen): 2 M3 x 10 na tampa. Sem cola.
+ Velcro 25 mm: 1 tira de ~60 cm no túnel de trás.
+ A ESP32-C3 desce nas 2 guias com o USB-C para baixo; a tampa e os
+ 2 pinos de canto seguram ela em cima (não precisa de parafuso).
+ LEDs 3 mm: entram por dentro nos furos da frente.
+
+ CONFIGURAÇÃO (PETG): 0,2 mm · 5 perímetros · 5 camadas topo/fundo ·
+ 40% giroide. Nada de metal perto da antena.
+
+ CONFIRA ANTES DE IMPRIMIR (topo do pecas.scad):
+   C3    = [18, 22.5, 1.6]  sua ESP32-C3 (largura x altura x espessura)
+   USB_Y = 15.6             centro do USB-C
+   ANT_D = 6.6              rosca da RP-SMA de painel (1/4")

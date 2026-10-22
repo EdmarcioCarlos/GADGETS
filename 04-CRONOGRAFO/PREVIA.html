@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cronógrafo de Consistência</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-3v3{stroke:#f0a03a}.w-gnd{stroke:#b9c2c7}.w-scl{stroke:#c58cff}.w-sda{stroke:#ffd84a}.w-sig{stroke:#ff7ad9}.w-ana{stroke:#5fd17a}.w-ir{stroke:#4fa3ff}
+.pin{fill:#e2b04a}
+.tagv{fill:#2a2010;stroke:#f0a03a}.tagt{font:600 10px Consolas,monospace;fill:#f0a03a;text-anchor:middle}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+.screens{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.scr{text-align:center}
+.scr .frame{display:inline-block;background:#000;padding:8px;border-radius:6px;border:1px solid #2c3337}
+.scr svg{display:block}
+.scr p{color:var(--muted);font-size:13px;margin-top:6px;max-width:280px}
+.part{fill:#3b4147;stroke:#7f8a90;stroke-width:.35}
+.part2{fill:#2e3439;stroke:#7f8a90;stroke-width:.35}
+.metal{fill:#5a6268;stroke:#9aa4aa;stroke-width:.25}
+.dark{fill:#08090a;stroke:#5a6268;stroke-width:.2}
+.pcbb{fill:#1d3f73;stroke:#4c78b8;stroke-width:.25}
+.pcbd{fill:#1a1d20;stroke:#59636a;stroke-width:.25}
+.batt{fill:#3a3120;stroke:#e2b04a;stroke-width:.25}
+.ghost{fill:none;stroke:#7f8a90;stroke-width:.3;stroke-dasharray:1.2 .8}
+.dim{stroke:#e2b04a;stroke-width:.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}
+.ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}
+.lead{stroke:#8a959b;stroke-width:.25;fill:none}
+.dt{fill:#e2b04a;font:600 3.2px Consolas,monospace;text-anchor:middle}
+.lb{fill:#cfd6da;font:3.2px "Segoe UI",system-ui,sans-serif}
+.sm{font-size:2.5px}
+.mut{fill:#8a959b}
+.o{fill:#bfe9ff;font-family:Consolas,"Courier New",monospace}
+.beam{stroke:#ff4a33;stroke-width:.5;stroke-dasharray:1 .8}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.4" markerHeight="2.4" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+    <g id="gsym"><path d="M0,-10 V0 M-9,0 H9 M-6,4 H6 M-3,8 H3" fill="none" stroke="#b9c2c7" stroke-width="2.4" stroke-linecap="round"/></g>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PROJETO 04 · INICIANTE/INTERMEDIÁRIO</div>
+    <h1>Cronógrafo com Análise de Consistência</h1>
+    <p class="sub">Túnel com 2 barreiras infravermelhas a 100 mm uma da outra. Mede a velocidade de cada BB e mostra m/s, fps, joules, média, desvio padrão e variação da série. Para um DMR, consistência vale mais que potência. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>160 × 44 × 92</b><span>túnel impresso com o visor da tela (mm), furo de Ø 25</span></div>
+      <div class="tile"><b>100 mm</b><span>entre as 2 barreiras</span></div>
+      <div class="tile"><b>≈ 0,1%</b><span>erro de tempo a 120 m/s (1 µs em 833 µs)</span></div>
+      <div class="tile"><b>≈ 30 h</b><span>com uma 18650 (estimativa)</span></div>
+      <div class="tile"><b>R$ 270–353</b><span>comprando os kits inteiros; só as peças gastas aqui, R$ 115–163 (o resto fica para 07, 08, 10 e 14)</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="tw"><table>
+      <tr><th>Situação</th><th>Resultado</th></tr>
+      <tr><td>BB passa pela 1ª barreira</td><td>Interrompe o feixe infravermelho; o comparador LM393 gera um pulso e o ESP32 anota o tempo em microssegundos</td></tr>
+      <tr><td>BB passa pela 2ª barreira</td><td>Velocidade = 0,100 m ÷ tempo. Ex.: 1.060 µs = 94,3 m/s (309 fps)</td></tr>
+      <tr><td>Cada tiro</td><td>Mostra m/s, fps e joules (com o peso da BB escolhido) e atualiza a série</td></tr>
+      <tr><td>Série</td><td>Média, desvio padrão (DP), mínimo, máximo e variação (ES = máx − mín). DP abaixo de 1 m/s = DMR bem regulado</td></tr>
+      <tr><td>Botão <b>PESO</b></td><td>Troca o peso da BB: 0,20 · 0,25 · 0,28 · 0,30 · 0,32 · 0,36 · 0,40 · 0,45 g</td></tr>
+      <tr><td>Segurar <b>ZERAR</b> 2 s</td><td>Começa uma série nova. Clique curto mostra os tiros da série um a um</td></tr>
+      <tr><td>Erro de leitura</td><td>Se só a 1ª barreira disparar (ou a velocidade sair de 30–200 m/s), mostra "ERRO" e não conta na série</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>O aparelho</h2>
+    <p class="hint">A <b>tela fica num visor inclinado em cima da entrada do túnel</b>, virada para quem está atirando. Assim você lê o resultado de cada disparo sem sair da posição de tiro.</p>
+    <div class="fig">
+      <svg viewBox="0 0 212 316.99" data-mm="212" data-zoom="4.43" class="vistas3d">
+        <style>.vistas3d .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}.vistas3d .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">DE TRÁS DA ARMA (atirador)</text>
+        <image href="3D/img/vistas_esquerda.png" x="12" y="9" width="44.99" height="97"/>
+        <line x1="12" y1="106" x2="12" y2="113.5" class="ext"/><line x1="56.99" y1="106" x2="56.99" y2="113.5" class="ext"/>
+        <line x1="12" y1="112" x2="56.99" y2="112" class="dim"/><text x="34.5" y="117.2" class="dt">45</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="106" x2="12" y2="106" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="106" class="dim"/><text x="4.2" y="57.5" class="dt" transform="rotate(-90 4.2 57.5)">97</text>
+        <text x="12" y="130" class="lb">LATERAL</text>
+        <image href="3D/img/vistas_frente.png" x="12" y="134" width="188" height="97"/>
+        <line x1="12" y1="231" x2="12" y2="238.5" class="ext"/><line x1="200" y1="231" x2="200" y2="238.5" class="ext"/>
+        <line x1="12" y1="237" x2="200" y2="237" class="dim"/><text x="106" y="242.2" class="dt">188</text>
+        <line x1="4.5" y1="134" x2="12" y2="134" class="ext"/><line x1="4.5" y1="231" x2="12" y2="231" class="ext"/>
+        <line x1="6" y1="134" x2="6" y2="231" class="dim"/><text x="4.2" y="182.5" class="dt" transform="rotate(-90 4.2 182.5)">97</text>
+        <text x="12" y="255" class="lb">DE CIMA</text>
+        <image href="3D/img/vistas_topo.png" x="12" y="259" width="188" height="44.99"/>
+        <line x1="12" y1="303.99" x2="12" y2="311.49" class="ext"/><line x1="200" y1="303.99" x2="200" y2="311.49" class="ext"/>
+        <line x1="12" y1="309.99" x2="200" y2="309.99" class="dim"/><text x="106" y="315.19" class="dt">188</text>
+        <line x1="4.5" y1="259" x2="12" y2="259" class="ext"/><line x1="4.5" y1="303.99" x2="12" y2="303.99" class="ext"/>
+        <line x1="6" y1="259" x2="6" y2="303.99" class="dim"/><text x="4.2" y="281.5" class="dt" transform="rotate(-90 4.2 281.5)">45</text>
+      </svg>
+      <div class="cap">De trás da arma você vê a boca do túnel e, logo acima dela, a tela com o último disparo (velocidade grande no meio, fps, joules, média e desvio padrão embaixo). Os botões PESO e ZERAR ficam em cima do visor, um de cada lado, e o liga/desliga e o USB-C na lateral direita.</div>
+    </div>
+    <div class="fig">
+      <svg viewBox="0 0 212 119" data-mm="212" data-zoom="4.43" class="vistas3d">
+        <style>.vistas3d .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}.vistas3d .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">CORTE PELO MEIO DO TÚNEL</text>
+        <image href="3D/img/corte_tras_CORTEtrue.png" x="12" y="9" width="188" height="97"/>
+        <text x="142" y="37.9" class="nm">LED IR</text>
+        <text x="42" y="37.9" class="nm">LED IR</text>
+        <text x="142" y="79.9" class="nm">fototransistor</text>
+        <text x="42" y="79.9" class="nm">fototransistor</text>
+        <text x="92" y="57.9" class="nm">túnel da BB</text>
+        <text x="94" y="91.9" class="nm">suporte 18650</text>
+        <text x="151" y="96.9" class="nm">ESP32-C3</text>
+        <text x="38" y="96.9" class="nm">LM393</text>
+        <text x="157" y="21.9" class="nm">visor (tela)</text>
+        <line x1="12" y1="106" x2="12" y2="113.5" class="ext"/><line x1="200" y1="106" x2="200" y2="113.5" class="ext"/>
+        <line x1="12" y1="112" x2="200" y2="112" class="dim"/><text x="106" y="117.2" class="dt">188</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="106" x2="12" y2="106" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="106" class="dim"/><text x="4.2" y="57.5" class="dt" transform="rotate(-90 4.2 57.5)">97</text>
+      </svg>
+      <div class="cap">Corte pelo meio do túnel, com o atirador do lado esquerdo. O <b>visor</b> fica em cima da entrada, com a tela inclinada para trás (para o atirador) e os 2 botões no topo. A BB atravessa as 2 barreiras: cada uma tem um LED infravermelho em cima e um fototransistor embaixo, num furo de 3 mm (o feixe fica fino e a BB corta ele inteiro). O túnel é impresso em PETG <b>preto fosco</b> por dentro, para a luz do sol não chegar nos receptores. Embaixo do túnel vão a placa, o LM393, o carregador e a 18650. Na entrada cabe um adaptador impresso para encostar na boca do cano, ou o túnel vai num tripé à frente da arma.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Telas</h2>
+    <p class="hint">O que aparece na tela do visor (OLED 0,96″ de 128 × 64 pixels). Depois de cada disparo, ela mostra a 1ª tela; o clique curto em ZERAR alterna para a estatística da série.</p>
+    <div class="fig"><div class="screens" id="screens"></div></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas deste projeto, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. As tampas aparecem viradas para cima, como ficam no uso. Arquivos em <b>3D/stl</b>; quantidades, suportes e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do projeto em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Túnel preto chanfrado (preto também ajuda os sensores infravermelhos) com nervuras em V, emblema e painel hexagonal; visor coyote; tampa de baixo e adaptador de boca pretos.</div>
+  </section>
+  <section>
+    <h2><span class="n">05</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>ESP32-C3 SuperMini (kit de 5; as outras 4 vão para o speedloader, 07, a granada, 08, e o traçante, 10)</td><td class="mm">22,5 × 18</td><td>Mede o tempo entre as barreiras com interrupção, em µs</td></tr>
+      <tr><td>2 LEDs infravermelhos 940 nm + 2 fototransistores (TIL78)</td><td class="mm">Ø 5</td><td>As 2 barreiras de luz</td></tr>
+      <tr><td>LM393 (comparador duplo) + trimpot 10 kΩ</td><td class="mm">DIP-8</td><td>Transforma o sinal do fototransistor num pulso digital limpo; o trimpot ajusta o ponto de disparo</td></tr>
+      <tr><td>OLED 0,96″ (kit de 2; o outro vai para o scanner, 11)</td><td class="mm">27 × 27</td><td>Mostra os dados de cada disparo; fica no visor inclinado em cima da entrada</td></tr>
+      <tr><td>18650 + suporte + TP4056 USB-C</td><td class="mm">Ø 18 × 65</td><td>Bateria e carga</td></tr>
+      <tr><td>2 botões 6×6 + chave SS12D00</td><td class="mm">—</td><td>PESO, ZERAR, liga/desliga</td></tr>
+      <tr><td>Resistores 100 Ω (LEDs) e 10 kΩ (pull-ups)</td><td class="mm">¼ W</td><td>Sobras do kit da bomba (01)</td></tr>
+      <tr><td>Túnel, visor da tela, tampas e adaptador de boca (impressos)</td><td class="mm">160 × 44 × 92</td><td>PETG preto fosco</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Ligação elétrica</h2>
+    <p class="hint">Sem escala. As etiquetas 3V3 e os símbolos de terra indicam o mesmo fio da placa. A energia (18650 → TP4056 → chave → 5V) é igual à do anti-cant (03).</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 420">
+        <!-- barreiras -->
+        <rect x="20" y="40" width="190" height="130" rx="8" class="blk"/><text x="115" y="32" class="ttl c">Barreira 1</text>
+        <rect x="20" y="230" width="190" height="130" rx="8" class="blk"/><text x="115" y="222" class="ttl c">Barreira 2</text>
+        <g class="pt" style="font-size:11px"><text x="30" y="70">LED IR (A) ← 100 Ω ← 3V3</text><text x="30" y="92">LED IR (K) → GND</text><text x="30" y="125">foto (C) → 10k → 3V3</text><text x="30" y="147">foto (E) → GND</text>
+        <text x="30" y="260">LED IR (A) ← 100 Ω ← 3V3</text><text x="30" y="282">LED IR (K) → GND</text><text x="30" y="315">foto (C) → 10k → 3V3</text><text x="30" y="337">foto (E) → GND</text></g>
+        <!-- LM393 -->
+        <rect x="300" y="80" width="170" height="250" rx="8" class="brd"/><text x="385" y="210" class="ttl c">LM393</text>
+        <g class="pt" style="font-size:11px"><text x="308" y="124">IN1−</text><text x="308" y="164">IN1+ (trimpot)</text><text x="308" y="270">IN2−</text><text x="308" y="300">IN2+ (trimpot)</text></g>
+        <g class="pt e" style="font-size:11px"><text x="462" y="124">OUT1</text><text x="462" y="270">OUT2</text></g>
+        <rect x="230" y="150" width="50" height="22" rx="4" fill="#3a3f44" stroke="#c9d1d5"/><text x="255" y="165" class="pt c" style="font-size:9px">10k</text>
+        <!-- C3 -->
+        <rect x="560" y="60" width="160" height="320" rx="8" class="brd"/><text x="640" y="230" class="ttl c">ESP32-C3</text><text x="640" y="248" class="ttl c">SuperMini</text>
+        <g class="pt"><text x="568" y="124">GPIO3</text><text x="568" y="274">GPIO4</text></g>
+        <g class="pt e"><text x="712" y="94">GPIO8 SDA</text><text x="712" y="119">GPIO9 SCL</text><text x="712" y="174">GPIO5</text><text x="712" y="204">GPIO6</text><text x="712" y="344">GPIO1 ADC</text></g>
+        <rect x="770" y="70" width="110" height="60" rx="8" class="blk"/><text x="825" y="105" class="ttl c">OLED</text>
+        <rect x="770" y="160" width="110" height="28" rx="6" class="blk"/><text x="825" y="179" class="pt c" style="font-size:11px">PESO</text>
+        <rect x="770" y="192" width="110" height="28" rx="6" class="blk"/><text x="825" y="211" class="pt c" style="font-size:11px">ZERAR</text>
+        <rect x="770" y="320" width="110" height="40" rx="6" class="blk"/><text x="825" y="345" class="pt c" style="font-size:10px">2×100k da bateria</text>
+        <!-- fios -->
+        <path class="wr w-ana" d="M210,120 H300"/><path class="wr w-ana" d="M210,266 H300"/>
+        <path class="wr w-3v3" d="M255,150 V160 H300" /><path class="wr w-3v3" d="M255,172 V296 H300"/>
+        <path class="wr w-sig" d="M470,120 H560"/><path class="wr w-sig" d="M470,270 H560"/>
+        <path class="wr w-sda" d="M720,90 H770"/><path class="wr w-scl" d="M720,115 H770"/>
+        <path class="wr w-sig" d="M720,170 H770 M720,200 H750 V206 H770"/>
+        <path class="wr w-ana" d="M720,340 H770"/>
+        <g><rect x="510" y="96" width="38" height="16" rx="3" class="tagv"/><text x="529" y="108" class="tagt">10k↑</text></g>
+        <g><rect x="510" y="246" width="38" height="16" rx="3" class="tagv"/><text x="529" y="258" class="tagt">10k↑</text></g>
+        <g class="pin"><circle cx="210" cy="120" r="4"/><circle cx="210" cy="266" r="4"/><circle cx="300" cy="120" r="4"/><circle cx="300" cy="160" r="4"/><circle cx="300" cy="266" r="4"/><circle cx="300" cy="296" r="4"/><circle cx="470" cy="120" r="4"/><circle cx="470" cy="270" r="4"/><circle cx="560" cy="120" r="4"/><circle cx="560" cy="270" r="4"/><circle cx="720" cy="90" r="4"/><circle cx="720" cy="115" r="4"/><circle cx="720" cy="170" r="4"/><circle cx="720" cy="200" r="4"/><circle cx="720" cy="340" r="4"/></g>
+        <text x="20" y="405" class="pt" style="font-size:11px;fill:#8a959b">"10k↑" = resistor de 10 kΩ do pino até o 3V3 (o LM393 tem saída de coletor aberto). Botões entre o GPIO e o GND.</text>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Protoboard:</b> uma barreira de cada vez. Com o LED IR aceso e o fototransistor de frente, gire o trimpot até a saída do LM393 mudar quando você passa um palito no feixe.</li>
+      <li><b>Imprima</b> o túnel em PETG preto fosco (0,2 mm, 4 paredes). Os furos dos LEDs e fototransistores têm 5 mm por fora e 3 mm na boca, para o feixe ficar fino.</li>
+      <li><b>Barreiras:</b> encaixe os LEDs em cima e os fototransistores embaixo, alinhados. Cole por fora com cola quente.</li>
+      <li><b>Visor da tela:</b> imprima o visor separado e parafuse em cima da entrada do túnel. A OLED vai presa por 4 parafusos M2 na face inclinada, e os botões PESO e ZERAR no topo. O cabo de 4 fios da tela desce para a eletrônica por um furo atrás do visor.</li>
+      <li><b>Eletrônica embaixo do túnel:</b> C3, LM393 numa placa perfurada pequena com os 2 trimpots, TP4056 e suporte da 18650.</li>
+      <li><b>Calibre</b> com uma régua: a distância entre os centros das barreiras precisa ser 100,0 mm. Se der diferente, coloque a medida real no código.</li>
+      <li><b>Teste</b> com BB de 0,25 g e compare com um cronógrafo de campo, se tiver acesso a um.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Custo de produção</h2>
+    <p class="hint">Preços pesquisados em out/2026 no Mercado Livre e em lojas nacionais, sem frete. Só produtos novos: os links do Mercado Livre já abrem com o filtro "Novo". Peças impressas não entram. Este é o 1º projeto com ESP32-C3, então é aqui que entram os kits que os próximos projetos reaproveitam (coluna "fica para").</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td><b>Conjunto:</b> kit 5 ESP32-C3 SuperMini (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/esp32-c3_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>07, 08, 10</td><td class="r">R$ 79,63</td><td class="r">R$ 97,75</td></tr>
+      <tr><td><b>Conjunto:</b> kit 2 OLED 0,96″ I2C (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/display-oled-i2c_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>11 (scanner)</td><td class="r">R$ 49,90</td><td class="r">R$ 55,90</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 TP4056 USB-C (usa 1)</td><td><a href="https://www.mercadolivre.com.br/kit-10-modulo-tp4056-carregador-de-bateria-usb-tipo-c-5v-1a/up/MLBU1741803625">Mercado Livre</a></td><td>08, 10, 14</td><td class="r">R$ 33,77</td><td class="r">R$ 47,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 100 botões 6×6 (usa 2)</td><td><a href="https://lista.mercadolivre.com.br/push-button-6x6_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>07, 11, 14</td><td class="r">R$ 25,84</td><td class="r">R$ 31,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 chaves SS12D00 (usa 1)</td><td><a href="https://www.mercadolivre.com.br/micro-interruptor-chave-ss12d00g4-4mm-10/p/MLB44598138">Mercado Livre</a></td><td>07, 10, 14</td><td class="r">R$ 11,64</td><td class="r">R$ 12,58</td></tr>
+      <tr><td><b>Conjunto:</b> 10 LEDs IR 940 nm + 10 fototransistores (usa 2 pares)</td><td><a href="https://lista.mercadolivre.com.br/kit-led-infravermelho-receptor_ITEM*CONDITION_2230284">Mercado Livre</a> · <a href="https://lista.mercadolivre.com.br/led-emissor-receptor-infravermelho_ITEM*CONDITION_2230284">outros</a></td><td>07 (speedloader), reserva</td><td class="r">R$ 14,98</td><td class="r">R$ 32,70</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 CI LM393 DIP-8 (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/lm393_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>07, reserva</td><td class="r">R$ 15,00</td><td class="r">R$ 21,96</td></tr>
+      <tr><td><b>Conjunto:</b> kit 2 baterias 18650 (usa 1)</td><td><a href="https://www.mercadolivre.com.br/kit-2-baterias-de-litio-recarregavel-modelo-18650-2600mah-37v-elgin/p/MLB26869470">Mercado Livre</a></td><td>07 (speedloader)</td><td class="r">R$ 26,00</td><td class="r">R$ 32,00</td></tr>
+      <tr><td>Suporte 18650 com fios (estimativa)</td><td><a href="https://eletronicos.mercadolivre.com.br/suporte-bateria-18650-3.7v_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 5,00</td><td class="r">R$ 10,00</td></tr>
+      <tr><td>Kit trimpots 10 kΩ (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/kit-trimpot_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>07, reserva</td><td class="r">R$ 8,00</td><td class="r">R$ 12,00</td></tr>
+      <tr><td>Resistores 100 Ω e 10 kΩ</td><td>sobras do kit da bomba (01)</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="tot"><td colspan="3">Total comprando os kits inteiros (peças impressas não entram)</td><td class="r">≈ R$ 270</td><td class="r">≈ R$ 353</td></tr>
+      <tr class="reuse"><td colspan="3">Custo só das peças gastas neste projeto (o resto fica para os próximos)</td><td class="r">≈ R$ 115</td><td class="r">≈ R$ 163</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">09</span>Pontos de atenção</h2>
+    <div class="note">Sol forte entrando pelo túnel pode cegar os fototransistores. Por isso o túnel é preto fosco por dentro e os receptores ficam no fundo de um furo de 3 mm. Se ainda assim der leitura falsa ao ar livre, use o cronógrafo na sombra.</div>
+    <div class="note">Nunca olhe dentro do túnel com a arma apontada. Use sempre óculos de proteção e trave a arma ao ajustar o cronógrafo.</div>
+    <div class="note ok"><b>Extra:</b> o ESP32-C3 tem Wi-Fi. Uma versão futura do código pode abrir uma página no celular com o histórico das séries, para comparar marcas e pesos de BB.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var NS='http://www.w3.org/2000/svg', KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function el(tag,attrs,txt){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(txt!=null)e.textContent=txt;return e}
+  var telas=[
+    {cap:'Último tiro: m/s, fps e joules', l:[[0,10,'TIRO 7   0.25g',1],[0,34,'94.3',2],[70,34,'m/s',1],[0,48,'309 fps',1],[0,60,'1.11 J',1]]},
+    {cap:'Estatística da série', l:[[0,10,'SERIE  n=10',1],[0,24,'MED 93.8 m/s',1],[0,36,'DP  0.9',1],[0,48,'MIN 92.4 MAX 95.5',1],[0,60,'ES  3.1',1]]},
+    {cap:'Botão PESO: escolha da BB', l:[[0,10,'PESO DA BB',1],[0,38,'0.28 g',2],[0,58,'PESO = proximo',1]]}
+  ], box=$('#screens');
+  telas.forEach(function(t){
+    var d=document.createElement('div'); d.className='scr';
+    var f=document.createElement('div'); f.className='frame';
+    var s=el('svg',{viewBox:'0 0 128 64','data-mm':'21.7','data-zoom':'12'});
+    s.appendChild(el('rect',{width:128,height:64,fill:'#000'}));
+    t.l.forEach(function(a){ s.appendChild(el('text',{x:a[0],y:a[1],class:'o','font-size':a[3]==2?22:8.6,'font-weight':a[3]==2?700:400},a[2].replace(/ /g,' '))); });
+    f.appendChild(s); d.appendChild(f);
+    var p=document.createElement('p'); p.textContent=t.cap; d.appendChild(p); box.appendChild(d);
+  });
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

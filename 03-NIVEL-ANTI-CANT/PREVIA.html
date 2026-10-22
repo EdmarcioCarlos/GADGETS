@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nível Anti-Cant</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+a{color:var(--accent)}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-3v3{stroke:#f0a03a}.w-gnd{stroke:#b9c2c7}.w-tx{stroke:#4fa3ff}.w-rx{stroke:#5fd17a}.w-scl{stroke:#c58cff}.w-sda{stroke:#ffd84a}.w-int{stroke:#ff7ad9}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+/* SVG */
+.part{fill:#3b4147;stroke:#7f8a90;stroke-width:.35}
+.metal{fill:#5a6268;stroke:#9aa4aa;stroke-width:.25}
+.dark{fill:#08090a;stroke:#5a6268;stroke-width:.2}
+.rail{fill:#2b3034;stroke:#6c767c;stroke-width:.3}
+.hg{fill:#202529;stroke:#40484e;stroke-width:.3}
+.scope{fill:#1b1f22;stroke:#59636a;stroke-width:.35}
+.band{fill:none;stroke:#9aa4aa;stroke-width:.6}
+.grip{stroke:#2a2f33;stroke-width:.4}
+.pcbb{fill:#1d3f73;stroke:#4c78b8;stroke-width:.2}
+.pcbd{fill:#1a1d20;stroke:#59636a;stroke-width:.2}
+.batt{fill:#3a3120;stroke:#e2b04a;stroke-width:.25;stroke-dasharray:1 .7}
+.ghost{fill:none;stroke:#7f8a90;stroke-width:.3;stroke-dasharray:1.2 .8}
+.dim{stroke:#e2b04a;stroke-width:.22;fill:none;marker-start:url(#arr);marker-end:url(#arr)}
+.ext{stroke:#e2b04a;stroke-width:.15;opacity:.55}
+.lead{stroke:#8a959b;stroke-width:.2;fill:none}
+.dt{fill:#e2b04a;font:600 3px Consolas,monospace;text-anchor:middle}
+.lb{fill:#cfd6da;font:3px "Segoe UI",system-ui,sans-serif}
+.sm{font-size:2.2px}
+.mut{fill:#8a959b}
+.cable{fill:none;stroke:#0a0a0a;stroke-width:2.5;stroke-linecap:round}
+.cable-hi{fill:none;stroke:#3a3f44;stroke-width:.7;stroke-linecap:round}
+.ctx .dim{stroke-width:.35;marker-start:url(#arrL);marker-end:url(#arrL)}
+.ctx .ext{stroke-width:.25}
+.ctx .lead{stroke-width:.35}
+.ctx .dt,.ctx .lb{font-size:5px}
+.led-r{fill:#ff4a33;filter:url(#glow)}
+.led-g{fill:#47ff6a;filter:url(#glow)}
+.off-r{fill:#4a1d18}
+.off-g{fill:#1b3a22}
+.ret{stroke:#9aa4aa;stroke-width:.25}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.2" markerHeight="2.2" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+    <marker id="arrL" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="3.6" markerHeight="3.6" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+    <radialGradient id="glass" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#1c3346"/><stop offset="1" stop-color="#05090d"/></radialGradient>
+    <filter id="glow" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <g id="ret">
+      <g fill="#c9d1d5">
+        <rect x="-17" y="-.55" width="9" height="1.1"/><rect x="8" y="-.55" width="9" height="1.1"/>
+        <rect x="-.55" y="9.5" width="1.1" height="7.5"/>
+      </g>
+      <g stroke="#c9d1d5" stroke-width=".18" fill="none">
+        <line x1="-8" y1="0" x2="-1.9" y2="0"/><line x1="1.9" y1="0" x2="8" y2="0"/>
+        <line x1="0" y1="-17" x2="0" y2="-1.9"/><line x1="0" y1="1.9" x2="0" y2="9.5"/>
+        <line x1="-6" y1="-.5" x2="-6" y2=".5"/><line x1="-4.5" y1="-.4" x2="-4.5" y2=".4"/><line x1="-3" y1="-.5" x2="-3" y2=".5"/>
+        <line x1="3" y1="-.5" x2="3" y2=".5"/><line x1="4.5" y1="-.4" x2="4.5" y2=".4"/><line x1="6" y1="-.5" x2="6" y2=".5"/>
+        <line x1="-1.1" y1="2.6" x2="1.1" y2="2.6"/><line x1="-1" y1="3.9" x2="1" y2="3.9"/><line x1="-.9" y1="5.2" x2=".9" y2="5.2"/><line x1="-.8" y1="6.5" x2=".8" y2="6.5"/><line x1="-.7" y1="7.8" x2=".7" y2="7.8"/>
+        <line x1=".9" y1="10.5" x2="1.6" y2="10.5"/><line x1=".9" y1="11.5" x2="1.6" y2="11.5"/><line x1=".9" y1="12.5" x2="1.6" y2="12.5"/><line x1=".9" y1="13.5" x2="1.6" y2="13.5"/>
+        <rect x="7" y="-8.5" width="2.2" height="2.2"/><line x1="7" y1="-7.4" x2="9.2" y2="-7.4"/>
+      </g>
+      <path d="M-1.1,1.1 A1.55,1.55 0 1 1 1.1,1.1" fill="none" stroke="#ff4a33" stroke-width=".35"/>
+      <circle r=".3" fill="#ff4a33"/>
+      <g fill="#ff4a33"><circle cx="-1.6" cy="2.6" r=".14"/><circle cx="1.6" cy="2.6" r=".14"/></g>
+    </g>
+</defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PROJETO 03</div>
+    <h1>Nível Eletrônico Anti-Cant</h1>
+    <p class="sub">Prévia visual com medidas reais em milímetros. Os LEDs na ocular avisam quando o rifle está inclinado.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>48 × 28 × 22</b><span>unidade principal (mm)</span></div>
+      <div class="tile"><b>16 × 8 × 22</b><span>pod de LEDs vertical (mm)</span></div>
+      <div class="tile"><b>≈ 35 g</b><span>peso total estimado</span></div>
+      <div class="tile"><b>≈ 8 h+</b><span>autonomia estimada (250 mAh)</span></div>
+      <div class="tile"><b>≈ 0,2°</b><span>precisão prática</span></div>
+      <div class="tile"><b>R$ 116–176</b><span>custo de produção (sem frete)</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Montado no rifle</h2>
+    <p class="hint">Vista lateral esquerda da sua Rossi Shadow com a <b>Red Win 1-6×24</b> na montagem <b>Geissele Super Precision de perfil alto</b> (centro da luneta a 1,93″ ≈ 49 mm do trilho).</p>
+    <div class="fig">
+      <svg class="ctx" viewBox="0 0 340 165" data-mm="340" data-zoom="2.7">
+        <rect x="0" y="109.5" width="122" height="20.5" class="hg"/>
+        <rect x="122" y="109.5" width="218" height="20.5" class="hg" style="fill:#262b30"/>
+        <text x="231" y="123" class="lb mut" text-anchor="middle">receptor M4</text>
+        <text x="4" y="126" class="lb mut" style="font-size:4px">Rossi Shadow MK16 · guarda-mão URG-I 13.5″</text>
+        <rect x="0" y="100" width="340" height="9.5" class="rail"/>
+        <g data-slots="3,34,100,3,5.23,10.01" fill="#0e1113"></g>
+        <!-- Geissele SP: base + pernas -->
+        <rect x="86" y="91" width="108" height="9" rx="1.5" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <polygon points="96,71 114,71 118,91 92,91" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <polygon points="166,71 184,71 188,91 162,91" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <circle cx="100" cy="96" r="3.5" class="dark"/><circle cx="180" cy="96" r="3.5" class="dark"/>
+        <!-- luneta Red Win 1-6x24 (250 mm) -->
+        <polygon points="40,34 66,34 78,36 78,66 66,68 40,68" class="scope"/>
+        <rect x="40" y="34" width="3" height="34" class="scope"/>
+        <rect x="78" y="36" width="127" height="30" class="scope"/>
+        <rect x="129" y="22" width="22" height="14" rx="1" class="scope"/>
+        <circle cx="140" cy="51" r="11" class="scope"/>
+        <text x="140" y="52.5" class="lb mut" style="font-size:3px" text-anchor="middle">ilum.</text>
+        <polygon points="205,36 222,29 290,29 290,73 222,73 205,66" class="scope"/>
+        <line x1="230" y1="30" x2="230" y2="72" class="grip"/><line x1="234" y1="30" x2="234" y2="72" class="grip"/><line x1="238" y1="30" x2="238" y2="72" class="grip"/>
+        <!-- anéis Geissele -->
+        <rect x="96" y="31" width="18" height="40" rx="3" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <rect x="166" y="31" width="18" height="40" rx="3" class="metal" style="fill:#7a5b35;stroke:#b08a55"/>
+        <!-- unidade principal (trilho do guarda-mão, sob a objetiva) -->
+        <rect x="30" y="78" width="48" height="18" rx="2" class="part"/>
+        <rect x="30" y="96" width="48" height="4" class="metal"/>
+        <rect x="44" y="100" width="20" height="6.4" class="metal"/>
+        <circle cx="54" cy="103.2" r="5" class="metal"/><circle cx="54" cy="103.2" r="1.5" class="dark"/>
+        <rect x="37" y="84" width="6" height="6" rx=".8" class="metal"/>
+        <rect x="62" y="85.2" width="8.5" height="3.6" rx=".6" class="dark"/>
+        <!-- cabo -->
+        <path d="M78,86 C92,86 104,80 122,76 S170,70 186,64 S192,58 195,57" class="cable"/>
+        <path d="M78,86 C92,86 104,80 122,76 S170,70 186,64 S192,58 195,57" class="cable-hi"/>
+        <!-- pod (lateral esquerda, 9 h) -->
+        <rect x="196" y="34.8" width="6" height="32.4" class="band"/>
+        <rect x="195" y="40" width="8" height="22" rx="1.2" class="part"/>
+        <rect x="203" y="42.5" width="1" height="3" class="off-r"/>
+        <rect x="203" y="49.5" width="1" height="3" class="led-g"/>
+        <rect x="203" y="56.5" width="1" height="3" class="off-r"/>
+        <!-- cotas -->
+        <line x1="30" y1="100" x2="30" y2="141" class="ext"/><line x1="78" y1="100" x2="78" y2="141" class="ext"/>
+        <line x1="30" y1="138" x2="78" y2="138" class="dim"/><text x="54" y="136" class="dt">48</text>
+        <line x1="78" y1="68" x2="86" y2="68" class="ext"/><line x1="78" y1="78" x2="86" y2="78" class="ext"/>
+        <line x1="83" y1="68" x2="83" y2="78" class="dim"/><text x="88" y="75" class="dt" style="text-anchor:start">10</text>
+        <line x1="290" y1="51" x2="328" y2="51" class="ext"/><line x1="290" y1="100" x2="328" y2="100" class="ext"/>
+        <line x1="324" y1="51" x2="324" y2="100" class="dim"/><text x="321.6" y="75.5" class="dt" transform="rotate(-90 321.6 75.5)">49</text>
+        <!-- rótulos -->
+        <text x="40" y="20" class="lb">Red Win 1-6×24</text>
+        <text x="214" y="20" class="lb">Pod de LEDs (lateral esquerda)</text>
+        <line x1="220" y1="21.5" x2="201" y2="48" class="lead"/>
+        <text x="236" y="88" class="lb mut">cabo Ø2,5 (~25 cm)</text>
+        <line x1="235" y1="86.5" x2="170" y2="70" class="lead"/>
+        <text x="200" y="98" class="lb mut" style="font-size:4px">Geissele SP alta (1,93″)</text>
+        <line x1="199" y1="96.5" x2="192" y2="94" class="lead"/>
+        <text x="54" y="149" class="lb" text-anchor="middle">Unidade principal</text>
+        <text x="54" y="155" class="lb mut" text-anchor="middle" style="font-size:4px">(trilho de cima, à frente da Geissele)</text>
+        <text x="4" y="161" class="lb mut">◄ CANO</text>
+        <text x="336" y="161" class="lb mut" text-anchor="end">ATIRADOR ►</text>
+      </svg>
+      <div class="cap">A base da Geissele ocupa o trilho entre os anéis, então a unidade principal vai no <b>trilho de cima do guarda-mão, logo à frente da base da Geissele, embaixo da objetiva</b>. Com a montagem alta (eixo a 49 mm), sobram uns 10 mm entre a unidade e a objetiva. O cabo, agora com uns 25 cm, corre pela lateral esquerda da luneta até o pod de LEDs, que abraça o tubo logo à frente do anel de zoom, na lateral esquerda (9 h). O topo da luneta fica livre para o telêmetro. Como o sensor mede a inclinação do trilho e não a da luneta, o botão ZERAR compensa qualquer diferença entre os dois.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>Unidade principal</h2>
+    <div class="fig">
+      <svg viewBox="0 0 176 126.2" data-mm="176" data-zoom="4.5" class="vistas3d">
+        <style>.vistas3d .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vistas3d .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">VISTA DE CIMA</text>
+        <image href="3D/img/unidade_topo_PARTEunidade.png" x="12" y="9" width="64" height="38.1"/>
+        <line x1="19" y1="45.59" x2="19" y2="54.6" class="ext"/><line x1="69" y1="45.59" x2="69" y2="54.6" class="ext"/>
+        <line x1="19" y1="53.1" x2="69" y2="53.1" class="dim"/><text x="44" y="58.3" class="dt">50</text>
+        <line x1="4.5" y1="9" x2="19" y2="9" class="ext"/><line x1="4.5" y1="45.59" x2="19" y2="45.59" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="45.59" class="dim"/><text x="4.2" y="27.3" class="dt" transform="rotate(-90 4.2 27.3)">37</text>
+        <text x="100" y="5" class="lb">VISTA TRASEIRA (atirador)</text>
+        <image href="3D/img/unidade_direita_PARTEunidade.png" x="100" y="9" width="38.1" height="32.4"/>
+        <line x1="101.51" y1="38.4" x2="101.51" y2="48.9" class="ext"/><line x1="138.1" y1="38.4" x2="138.1" y2="48.9" class="ext"/>
+        <line x1="101.51" y1="47.4" x2="138.1" y2="47.4" class="dim"/><text x="119.81" y="52.6" class="dt">37</text>
+        <line x1="92.5" y1="9" x2="101.51" y2="9" class="ext"/><line x1="92.5" y1="38.4" x2="101.51" y2="38.4" class="ext"/>
+        <line x1="94" y1="9" x2="94" y2="38.4" class="dim"/><text x="92.2" y="23.7" class="dt" transform="rotate(-90 92.2 23.7)">29</text>
+        <text x="12" y="71.1" class="lb">VISTA LATERAL ESQUERDA</text>
+        <image href="3D/img/unidade_frente_PARTEunidade.png" x="12" y="75.1" width="64" height="32.4"/>
+        <line x1="19" y1="104.5" x2="19" y2="115" class="ext"/><line x1="69" y1="104.5" x2="69" y2="115" class="ext"/>
+        <line x1="19" y1="113.5" x2="69" y2="113.5" class="dim"/><text x="44" y="118.7" class="dt">50</text>
+        <line x1="4.5" y1="75.1" x2="19" y2="75.1" class="ext"/><line x1="4.5" y1="104.5" x2="19" y2="104.5" class="ext"/>
+        <line x1="6" y1="75.1" x2="6" y2="104.5" class="dim"/><text x="4.2" y="89.8" class="dt" transform="rotate(-90 4.2 89.8)">29</text>
+        <text x="100" y="71.1" class="lb">INTERIOR (sem tampa)</text>
+        <image href="3D/img/unidade_topo_PARTEunidade_SEM_TAMPAtrue.png" x="100" y="75.1" width="64" height="38.1"/>
+        <text x="122" y="95.6" class="nm">MPU6050</text>
+        <text x="142.5" y="95.6" class="nm">C3 + TP4056</text>
+        <text x="132" y="84" class="nm">bateria (embaixo)</text>
+        <line x1="107" y1="111.69" x2="107" y2="120.7" class="ext"/><line x1="157" y1="111.69" x2="157" y2="120.7" class="ext"/>
+        <line x1="107" y1="119.2" x2="157" y2="119.2" class="dim"/><text x="132" y="124.4" class="dt">50</text>
+        <line x1="92.5" y1="75.1" x2="107" y2="75.1" class="ext"/><line x1="92.5" y1="111.69" x2="107" y2="111.69" class="ext"/>
+        <line x1="94" y1="75.1" x2="94" y2="111.69" class="dim"/><text x="92.2" y="93.4" class="dt" transform="rotate(-90 92.2 93.4)">37</text>
+      </svg>
+      <div class="cap">Caixa impressa em 3D (PETG) com trava Picatinny de parafuso. O MPU6050 e a ESP32-C3 SuperMini ficam lado a lado, a bateria embaixo e o carregador TP4056 empilhado por cima, com o USB-C dele saindo na face traseira. O botão ZERAR e a chave liga/desliga ficam no lado esquerdo, que é o da mão de apoio de um atirador destro.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Pod de LEDs</h2>
+    <div class="fig">
+      <svg viewBox="0 0 137.8 58.4" data-mm="137.8" data-zoom="4.5" class="vistas3d">
+        <style>.vistas3d .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vistas3d .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">POD (visto ao longo do tubo)</text>
+        <image href="3D/img/pod_topo_PARTEpod.png" x="12" y="9" width="53.4" height="36.4"/>
+        <text x="17" y="14.6" class="nm">LEDs 3 mm</text>
+        <line x1="12" y1="45.4" x2="12" y2="52.9" class="ext"/><line x1="65.4" y1="45.4" x2="65.4" y2="52.9" class="ext"/>
+        <line x1="12" y1="51.4" x2="65.4" y2="51.4" class="dim"/><text x="38.7" y="56.6" class="dt">53</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="45.4" x2="12" y2="45.4" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="45.4" class="dim"/><text x="4.2" y="27.2" class="dt" transform="rotate(-90 4.2 27.2)">36</text>
+        <text x="89.4" y="5" class="lb">POD (de lado)</text>
+        <image href="3D/img/pod_esquerda_PARTEpod.png" x="89.4" y="9" width="36.4" height="20"/>
+        <line x1="89.4" y1="23" x2="89.4" y2="36.5" class="ext"/><line x1="125.8" y1="23" x2="125.8" y2="36.5" class="ext"/>
+        <line x1="89.4" y1="35" x2="125.8" y2="35" class="dim"/><text x="107.6" y="40.2" class="dt">36</text>
+        <line x1="81.9" y1="15" x2="89.4" y2="15" class="ext"/><line x1="81.9" y1="23" x2="89.4" y2="23" class="ext"/>
+        <line x1="83.4" y1="15" x2="83.4" y2="23" class="dim"/><text x="81.6" y="19" class="dt" transform="rotate(-90 81.6 19)">8</text>
+      </svg>
+      <div class="cap">O pod é uma coluna vertical na lateral esquerda do tubo (9 h), com os 3 LEDs empilhados, e deixa o topo livre. Ele se projeta 16 mm para fora do tubo, então os LEDs ficam logo ao lado da ocular, na sua visão periférica, sem tirar o olho da luneta. A leitura é física: se o rifle cai para a esquerda, o pod desce e acende o LED de baixo; se cai para a direita, o pod sobe e acende o de cima. A abraçadeira aperta com um parafuso M3 × 16 e porca, com as orelhas <b>sempre do lado oposto aos LEDs (3 h)</b>. Assim o topo do tubo fica livre para o telêmetro (12). Ela serve para tubo de 30 mm; para 1″ (25,4 mm), mude <code>TUBO_D</code> no <code>pecas.scad</code>.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Como funciona</h2>
+    <div class="fig">
+      <svg viewBox="0 0 190 86" data-mm="190" data-zoom="4.6">
+        <g transform="translate(42,48)">
+          <rect x="-23" y="-3" width="7" height="6" class="part"/><rect x="-31" y="-11" width="8" height="22" rx="1.5" class="part"/>
+          <circle cx="-27" cy="-7" r="1.5" class="off-r"/><circle cx="-27" cy="0" r="1.5" class="led-g"/><circle cx="-27" cy="7" r="1.5" class="off-r"/>
+          <circle r="22" class="scope"/><circle r="17" fill="url(#glass)"/>
+          <use href="#ret"/>
+        </g>
+        <g transform="translate(104,48) rotate(-3)">
+          <rect x="-23" y="-3" width="7" height="6" class="part"/><rect x="-31" y="-11" width="8" height="22" rx="1.5" class="part"/>
+          <circle cx="-27" cy="-7" r="1.5" class="off-r"/><circle cx="-27" cy="0" r="1.5" class="off-g"/><circle cx="-27" cy="7" r="1.5" class="led-r"/>
+          <circle r="22" class="scope"/><circle r="17" fill="url(#glass)"/>
+          <use href="#ret"/>
+        </g>
+        <g transform="translate(166,48) rotate(3)">
+          <rect x="-23" y="-3" width="7" height="6" class="part"/><rect x="-31" y="-11" width="8" height="22" rx="1.5" class="part"/>
+          <circle cx="-27" cy="-7" r="1.5" class="led-r"/><circle cx="-27" cy="0" r="1.5" class="off-g"/><circle cx="-27" cy="7" r="1.5" class="off-r"/>
+          <circle r="22" class="scope"/><circle r="17" fill="url(#glass)"/>
+          <use href="#ret"/>
+        </g>
+        <text x="33.5" y="78" class="lb" text-anchor="middle">NIVELADO</text>
+        <text x="33.5" y="83.5" class="lb sm mut" text-anchor="middle">até 0,5° · verde</text>
+        <text x="95.5" y="78" class="lb" text-anchor="middle">INCLINADO À ESQUERDA</text>
+        <text x="95.5" y="83.5" class="lb sm mut" text-anchor="middle">−3° · acende o LED de baixo</text>
+        <text x="157.5" y="78" class="lb" text-anchor="middle">INCLINADO À DIREITA</text>
+        <text x="157.5" y="83.5" class="lb sm mut" text-anchor="middle">+3° · acende o LED de cima</text>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>Situação</th><th>O que os LEDs fazem</th></tr>
+      <tr><td>Inclinação até 0,5°</td><td>Verde aceso</td></tr>
+      <tr><td>Rifle caído para a esquerda</td><td>Acende o LED de <b>baixo</b> (o pod desceu). Gire o rifle para a direita até voltar o verde.</td></tr>
+      <tr><td>Rifle caído para a direita</td><td>Acende o LED de <b>cima</b> (o pod subiu). Gire o rifle para a esquerda até voltar o verde.</td></tr>
+      <tr><td>Entre 0,5° e 2° / acima de 2°</td><td>Vermelho piscando / vermelho fixo</td></tr>
+      <tr><td>Parado por 2 min</td><td>Apaga e dorme; acorda sozinho quando o rifle se mexe</td></tr>
+      <tr><td>Segurar ZERAR por 2 s</td><td>Grava a posição atual como "nivelado" (faça com o rifle nivelado na bancada)</td></tr>
+      <tr><td>Clique curto no ZERAR</td><td>Troca o brilho entre 3 níveis (o mais baixo é o modo noturno, para não denunciar posição)</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas deste projeto, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. As tampas aparecem viradas para cima, como ficam no uso. Arquivos em <b>3D/stl</b>; quantidades, suportes e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do projeto em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Caixa preta chanfrada com moldura de 8 lados protegendo o ZERAR e painel hexagonal na lateral; tampa coyote com nervuras em V, nome e emblema; mandíbula coyote; pod de LEDs preto.</div>
+  </section>
+  <section>
+    <h2><span class="n">06</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>ESP32-C3 SuperMini</td><td class="mm">22,5 × 18 × 3,5</td><td>Cérebro: lê o sensor e acende os LEDs</td></tr>
+      <tr><td>Carregador TP4056 USB-C com proteção</td><td class="mm">≈ 26 × 17 × 4</td><td>Carrega a bateria (a SuperMini não tem carregador)</td></tr>
+      <tr><td>MPU6050 (módulo GY-521)</td><td class="mm">≈ 21 × 16 × 3</td><td>Acelerômetro e giroscópio, mede a inclinação</td></tr>
+      <tr><td>Bateria LiPo 502030 3,7 V ~250 mAh</td><td class="mm">30 × 20 × 5</td><td>Alimentação</td></tr>
+      <tr><td>LEDs 3 mm (2 vermelhos, 1 verde)</td><td class="mm">Ø3</td><td>Indicação no pod</td></tr>
+      <tr><td>Botão tátil 6×6</td><td class="mm">6 × 6 × 5</td><td>ZERAR e trocar brilho</td></tr>
+      <tr><td>Chave deslizante mini</td><td class="mm">8,5 × 3,6</td><td>Liga e desliga</td></tr>
+      <tr><td>3 resistores 330 Ω</td><td class="mm">¼ W</td><td>Limitam a corrente dos LEDs</td></tr>
+      <tr><td>Cabo 4 vias Ø2,5 (~25 cm)</td><td class="mm">Ø2,5</td><td>Liga o pod à unidade (3 LEDs + GND)</td></tr>
+      <tr><td>Caixa impressa 3D + trava Picatinny</td><td class="mm">48 × 28 × 22</td><td>Unidade principal</td></tr>
+      <tr><td>Pod impresso 3D + abraçadeira</td><td class="mm">16 × 8 × 22</td><td>Vertical, na lateral esquerda do tubo (30 mm ou 25,4 mm)</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Ligação elétrica</h2>
+    <p class="hint">Esquema de ligação, sem escala. Cada bolinha amarela é um pino ou terminal onde vai uma solda; os pontos maiores marcam onde dois fios se unem.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 560">
+        <!-- TP4056: USB-C numa ponta; na outra ponta, de cima para baixo: OUT+, B+, B−, OUT− -->
+        <rect x="192" y="380" width="10" height="40" rx="3" fill="#5a6268"/>
+        <text x="186" y="396" class="pt e" style="font-size:10px;fill:#8a959b">USB-C</text><text x="186" y="410" class="pt e" style="font-size:10px;fill:#8a959b">(carga)</text>
+        <rect x="200" y="335" width="130" height="140" rx="8" class="brd"/>
+        <text x="255" y="410" class="ttl c">TP4056</text>
+        <text x="320" y="359" class="pt e">OUT+</text><text x="320" y="394" class="pt e">B+</text>
+        <text x="320" y="429" class="pt e">B−</text><text x="320" y="464" class="pt e">OUT−</text>
+        <!-- bateria -->
+        <rect x="380" y="370" width="100" height="74" rx="8" class="blk"/>
+        <text x="440" y="402" class="ttl c">LiPo</text>
+        <text x="440" y="420" class="pt c" style="font-size:10px">250 mAh</text>
+        <text x="390" y="394" class="pt">+</text><text x="390" y="429" class="pt">−</text>
+        <!-- chave -->
+        <rect x="380" y="146" width="90" height="48" rx="6" class="blk"/>
+        <text x="425" y="166" class="pt c" style="font-size:11px">CHAVE</text>
+        <text x="425" y="182" class="pt c" style="font-size:10px;fill:#8a959b">liga/desliga</text>
+        <!-- SuperMini -->
+        <rect x="520" y="120" width="160" height="300" rx="8" class="brd"/>
+        <text x="600" y="272" class="ttl c">ESP32-C3</text><text x="600" y="290" class="ttl c">SuperMini</text>
+        <text x="530" y="174" class="pt">5V</text><text x="530" y="214" class="pt">GND</text><text x="530" y="254" class="pt">3V3</text>
+        <text x="670" y="174" class="pt e">GPIO5</text><text x="670" y="209" class="pt e">GPIO6</text><text x="670" y="244" class="pt e">GPIO7</text>
+        <text x="670" y="334" class="pt e">SDA · GPIO8</text><text x="670" y="359" class="pt e">SCL · GPIO9</text><text x="670" y="404" class="pt e">GPIO10</text>
+        <!-- resistores -->
+        <text x="719" y="152" class="pt c" style="font-size:10px;fill:#8a959b">3× 330 Ω</text>
+        <rect x="702" y="164" width="34" height="12" rx="2" fill="#3a3f44" stroke="#c9d1d5"/>
+        <rect x="702" y="199" width="34" height="12" rx="2" fill="#3a3f44" stroke="#c9d1d5"/>
+        <rect x="702" y="234" width="34" height="12" rx="2" fill="#3a3f44" stroke="#c9d1d5"/>
+        <!-- cabo -->
+        <rect x="748" y="156" width="36" height="128" rx="6" fill="none" stroke="#8a959b" stroke-dasharray="5 4"/>
+        <text x="766" y="300" class="pt c" style="font-size:10px;fill:#8a959b">cabo 4 vias</text>
+        <!-- pod -->
+        <text x="840" y="122" class="ttl c">Pod de LEDs</text>
+        <rect x="790" y="130" width="100" height="160" rx="10" class="blk"/>
+        <circle cx="840" cy="170" r="8" fill="#ff4a33"/><circle cx="840" cy="205" r="8" fill="#47ff6a"/><circle cx="840" cy="240" r="8" fill="#ff4a33"/>
+        <text x="878" y="174" class="pt" style="font-size:10px">▲</text><text x="878" y="244" class="pt" style="font-size:10px">▼</text>
+        <path d="M848,170 H866 V272 H790 M848,205 H866 M848,240 H866" fill="none" stroke="#b9c2c7" stroke-width="2"/>
+        <text x="800" y="286" class="pt" style="font-size:9px;fill:#8a959b">catodos (perna curta)</text>
+        <!-- MPU -->
+        <rect x="760" y="318" width="130" height="122" rx="8" class="brd"/>
+        <text x="825" y="432" class="ttl c">MPU6050</text>
+        <text x="770" y="334" class="pt">SDA</text><text x="770" y="359" class="pt">SCL</text><text x="770" y="384" class="pt">VCC</text><text x="770" y="409" class="pt">GND</text>
+        <!-- botão ZERAR -->
+        <rect x="560" y="452" width="80" height="36" rx="6" class="blk"/>
+        <text x="600" y="474" class="pt c">ZERAR</text>
+        <!-- fios: energia -->
+        <path class="wr w-pwr" d="M330,390 H380"/>
+        <path class="wr w-gnd" d="M330,425 H380"/>
+        <path class="wr w-pwr" d="M330,355 H355 V170 H380"/>
+        <path class="wr w-pwr" d="M470,170 H520"/>
+        <path class="wr w-gnd" d="M330,460 H490"/>
+        <path class="wr w-gnd" d="M520,210 H490 V505 H755 V272 H790"/>
+        <path class="wr w-gnd" d="M755,405 H760"/>
+        <path class="wr w-gnd" d="M560,470 H490"/>
+        <path class="wr w-3v3" d="M520,250 H500 V515 H740 V380 H760"/>
+        <!-- fios: LEDs -->
+        <path class="wr w-int" d="M680,170 H702 M736,170 H832"/>
+        <path class="wr w-rx" d="M680,205 H702 M736,205 H832"/>
+        <path class="wr w-tx" d="M680,240 H702 M736,240 H832"/>
+        <!-- fios: I2C e botão -->
+        <path class="wr w-sda" d="M680,330 H760"/>
+        <path class="wr w-scl" d="M680,355 H760"/>
+        <path class="wr" style="stroke:#7fd0d8" d="M680,400 H700 V470 H640"/>        <!-- emendas -->
+        <circle cx="490" cy="460" r="5" fill="#b9c2c7"/><circle cx="490" cy="470" r="5" fill="#b9c2c7"/><circle cx="755" cy="405" r="5" fill="#b9c2c7"/>
+        <!-- pinos -->
+        <g class="pin">
+          <circle cx="330" cy="355" r="4"/><circle cx="330" cy="390" r="4"/><circle cx="330" cy="425" r="4"/><circle cx="330" cy="460" r="4"/><circle cx="380" cy="390" r="4"/><circle cx="380" cy="425" r="4"/>
+          <circle cx="380" cy="170" r="4"/><circle cx="470" cy="170" r="4"/>
+          <circle cx="520" cy="170" r="4"/><circle cx="520" cy="210" r="4"/><circle cx="520" cy="250" r="4"/>
+          <circle cx="680" cy="170" r="4"/><circle cx="680" cy="205" r="4"/><circle cx="680" cy="240" r="4"/><circle cx="680" cy="330" r="4"/><circle cx="680" cy="355" r="4"/><circle cx="680" cy="400" r="4"/>
+          <circle cx="790" cy="272" r="4"/><circle cx="760" cy="330" r="4"/><circle cx="760" cy="355" r="4"/><circle cx="760" cy="380" r="4"/><circle cx="760" cy="405" r="4"/>
+          <circle cx="560" cy="470" r="4"/><circle cx="640" cy="470" r="4"/>
+        </g>
+        <!-- legenda -->
+        <g class="pt" style="font-size:11px">
+          <line x1="20" y1="535" x2="44" y2="535" class="wr w-pwr"/><text x="50" y="539">bateria / 5V</text>
+          <line x1="150" y1="535" x2="174" y2="535" class="wr w-3v3"/><text x="180" y="539">3,3 V</text>
+          <line x1="240" y1="535" x2="264" y2="535" class="wr w-gnd"/><text x="270" y="539">GND</text>
+          <line x1="320" y1="535" x2="344" y2="535" class="wr w-int"/><line x1="348" y1="535" x2="372" y2="535" class="wr w-rx"/><line x1="376" y1="535" x2="400" y2="535" class="wr w-tx"/><text x="406" y="539">LEDs (cima, meio, baixo)</text>
+          <line x1="590" y1="535" x2="614" y2="535" class="wr w-sda"/><line x1="618" y1="535" x2="642" y2="535" class="wr w-scl"/><text x="648" y="539">I2C do sensor</text>
+          <text x="20" y="556" style="fill:#8a959b">Fios que se cruzam sem ponto não estão ligados. O INT do MPU (opcional) está só na tabela.</text>
+        </g>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Bateria + / −</td><td>TP4056 B+ / B−</td><td>Vermelho no +</td></tr>
+      <tr><td>TP4056 OUT+</td><td>Chave liga/desliga → SuperMini <b>5V</b></td><td>O regulador da placa transforma a bateria em 3,3 V</td></tr>
+      <tr><td>TP4056 OUT−</td><td>SuperMini GND</td><td></td></tr>
+      <tr><td>SuperMini 3V3 / GND</td><td>MPU6050 VCC / GND</td><td></td></tr>
+      <tr><td>GPIO8 / GPIO9</td><td>MPU6050 SDA / SCL</td><td>I2C padrão da SuperMini</td></tr>
+      <tr><td>GPIO5 → resistor 330 Ω</td><td>LED de <b>cima</b> (vermelho), perna longa</td><td>Fio 1 do cabo</td></tr>
+      <tr><td>GPIO6 → resistor 330 Ω</td><td>LED do <b>meio</b> (verde), perna longa</td><td>Fio 2 do cabo</td></tr>
+      <tr><td>GPIO7 → resistor 330 Ω</td><td>LED de <b>baixo</b> (vermelho), perna longa</td><td>Fio 3 do cabo</td></tr>
+      <tr><td>Pernas curtas dos 3 LEDs (unidas)</td><td>GND</td><td>Fio 4 do cabo</td></tr>
+      <tr><td>GPIO10</td><td>Botão ZERAR → GND</td><td>Usa o pull-up interno, sem resistor</td></tr>
+      <tr><td><i>Opcional:</i> MPU6050 INT</td><td>GPIO4</td><td>Acorda a placa quando o rifle se mexe (economiza bateria)</td></tr>
+    </table></div>
+    <div class="note"><b>Resistores:</b> os 3 de 330 Ω ficam dentro da unidade principal, soldados em série no fio de cada GPIO, com termorretrátil por cima. Custam centavos (kit com 10). O brilho final é ajustado no código (PWM), então dá para deixar o LED bem fraco à noite.</div>
+    <div class="note red"><b>Atenção:</b> para gravar o código pelo USB da SuperMini, desligue a chave antes. Se a bateria e o USB alimentarem a placa ao mesmo tempo, um briga com o outro e pode queimar o TP4056.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Imprima as peças em PETG</b> (camada de 0,2 mm, 4 paredes, 40% de preenchimento): a caixa e a tampa, a mandíbula móvel da trava Picatinny, o pod e a abraçadeira do pod para o tubo de 30 mm (ou 25,4 mm).</li>
+      <li><b>Teste na bancada antes de soldar.</b> Ligue o MPU6050, os 3 LEDs (com os resistores) e o botão na SuperMini usando jumpers, alimentando só pelo USB. Grave o código e incline a placa com a mão: os LEDs precisam responder.</li>
+      <li><b>Monte o pod:</b> coloque os LEDs nos 3 furos, de cima para baixo vermelho, verde e vermelho, com as pernas curtas viradas para o mesmo lado. Una as 3 pernas curtas e solde no fio 4 do cabo. Solde cada perna longa num dos fios 1, 2 e 3. Os LEDs entram justos nos furos de 3,1 mm. Passe o cabo pelo furo de saída do pod e prenda com uma abraçadeira de nylon no tubo da luneta (sem cola, para dar para desmontar).</li>
+      <li><b>Aperto do pod:</b> encaixe o anel no tubo com os LEDs na lateral esquerda (9 h). As orelhas do aperto ficam do lado direito (3 h), e o topo fica livre para o telêmetro. Aperte com o parafuso M3 × 16 e a porca.</li>
+      <li><b>MPU6050 bem firme:</b> parafuse o sensor plano em 2 pinos com parafusos M3 que sobem do fundo da caixa, ao lado da bateria, com a placa paralela à base da trava. Não use espuma embaixo do sensor: qualquer folga vira erro de leitura.</li>
+      <li><b>Energia:</b> solde a bateria no B+ e no B− do TP4056 (vermelho no +). Ligue o OUT+ na chave e da chave no pino 5V da SuperMini, e o OUT− no GND. Cole a bateria no fundo com fita dupla face.</li>
+      <li><b>Placas:</b> encaixe a SuperMini ao lado do MPU. Coloque o TP4056 por cima, com o USB-C alinhado ao furo traseiro. Entre as duas placas vai um pedaço de <b>fita kapton</b> (fita fina cor de âmbar, que isola e aguenta o calor do ferro de solda), para os pontos de solda de uma não encostarem na outra e darem curto. Na falta dela, serve fita isolante comum, de 2 voltas.</li>
+      <li><b>Resistores e cabo:</b> solde os resistores de 330 Ω entre os GPIO5, 6 e 7 e os fios 1, 2 e 3 do cabo, com termorretrátil. O fio 4 vai no GND. Passe o cabo pela saída traseira e dê um nó por dentro para aliviar a tensão.</li>
+      <li><b>Lateral esquerda:</b> encaixe a chave liga/desliga e o botão ZERAR (GPIO10 e GND) nos furos.</li>
+      <li><b>Feche com cuidado:</b> confira com o multímetro que não há curto entre 5V/3V3 e GND e feche a tampa.</li>
+      <li><b>No rifle:</b> coloque a unidade no trilho de cima do guarda-mão, logo à frente da base da Geissele (embaixo da objetiva), e aperte a trava. Prenda o pod no tubo, na lateral esquerda, logo à frente do anel de zoom. Fixe o cabo na luneta com abraçadeira de nylon ou velcro.</li>
+      <li><b>Calibre:</b> nivele o rifle na bancada com um nível de bolha em cima do trilho ou da luneta e segure o botão ZERAR por 2 s.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">09</span>Custo de produção</h2>
+    <p class="hint">Preços pesquisados em out/2026 no Mercado Livre e em lojas nacionais, sem frete. Só produtos novos: os links do Mercado Livre já abrem com o filtro "Novo". Vários itens só são vendidos em kit, então sobram peças para os próximos projetos.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>ESP32-C3 SuperMini</td><td><a href="https://www.usinainfo.com.br/esp32/esp32-c3-super-mini-com-wifi-e-bluetooth-com-usb-c-outlet-9251.html">Usinainfo</a> · <a href="https://curtocircuito.com.br/placa-super-mini-esp32-c3.html">Curto Circuito</a> · <a href="https://lista.mercadolivre.com.br/esp32-c3-super-mini_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 24,24</td><td class="r">R$ 44,12</td></tr>
+      <tr><td>Carregador TP4056 USB-C</td><td><a href="https://www.makerhero.com/produto/modulo-carregador-de-bateria-de-litio-tp4056/">MakerHero</a> · <a href="https://www.eletrogate.com/modulo-carregador-de-baterias-de-litio-tp4056-com-protecao-usb-c">Eletrogate</a> · <a href="https://lista.mercadolivre.com.br/tp4056-usb-c_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 3,70</td><td class="r">R$ 13,12</td></tr>
+      <tr><td>MPU6050 GY-521</td><td><a href="https://lista.mercadolivre.com.br/mpu-6050_ITEM*CONDITION_2230284">Mercado Livre</a> · <a href="https://www.makerhero.com/produto/acelerometro-e-giroscopio-3-eixos-6-dof-mpu-6050/">MakerHero</a> · <a href="https://www.usinainfo.com.br/acelerometro/acelerometro-e-giroscopio-mpu-6050-modulo-gy521-3-eixos-6-dof-3895.html">Usinainfo</a></td><td class="r">R$ 17,90</td><td class="r">R$ 29,83</td></tr>
+      <tr><td>LiPo 3,7 V 250 mAh (502030)</td><td><a href="https://lista.mercadolivre.com.br/bateria-3.7v-250mah_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 24,00</td><td class="r">R$ 39,00</td></tr>
+      <tr><td>LEDs 3 mm vermelho + verde (kits de 10)</td><td><a href="https://www.usinainfo.com.br/leds-difuso/led-vermelho-3mm-difuso-kit-com-10-unidades-3346.html">Usinainfo</a></td><td class="r">R$ 6,52</td><td class="r">R$ 6,52</td></tr>
+      <tr><td>Botão tátil 6×6 (kit 5)</td><td><a href="https://www.eletrogate.com/push-button-chave-tactil-6x6x5mm">Eletrogate</a> · Usinainfo</td><td class="r">R$ 2,90</td><td class="r">R$ 2,90</td></tr>
+      <tr><td>Chave deslizante SS12D00 (kit 5–10)</td><td><a href="https://www.mercadolivre.com.br/micro-interruptor-chave-ss12d00g4-4mm-10/p/MLB44598138">Mercado Livre</a> · Eletrogate</td><td class="r">R$ 11,64</td><td class="r">R$ 12,58</td></tr>
+      <tr><td>Cabo manga 4 vias 26 AWG (1 m)</td><td><a href="https://lista.mercadolivre.com.br/cabo-manga-4-vias-26awg_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 18,37</td><td class="r">R$ 21,42</td></tr>
+      <tr><td>Parafuso M3 × 30 e porca da trava (estimativa; do kit M3 Allen)</td><td><a href="https://lista.mercadolivre.com.br/kit-parafusos-m3_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 5,00</td><td class="r">R$ 5,00</td></tr>
+      <tr><td>3 resistores 330 Ω (kit; estimativa)</td><td><a href="https://lista.mercadolivre.com.br/resistor-330-ohms_ITEM*CONDITION_2230284">Mercado Livre</a> · lojas BR</td><td class="r">R$ 2,00</td><td class="r">R$ 2,00</td></tr>
+      <tr class="tot"><td>Total (peças impressas na sua impressora não entram)</td><td>sem frete</td><td class="r">≈ R$ 116</td><td class="r">≈ R$ 176</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>Pontos de atenção</h2>
+    <div class="note">As medidas dos módulos são as nominais dos modelos mais comuns. Confira as do lote que você comprar antes de modelar a caixa, porque podem variar 1 a 2 mm.</div>
+    <div class="note">A folga de uns 10 mm até a objetiva vale para a Geissele de perfil alto (eixo a 49 mm do trilho). A unidade não pode ficar entre os anéis, porque a base da Geissele ocupa o trilho ali. Antes de imprimir a caixa, meça a distância real entre o trilho e o centro da luneta, porque réplicas podem ter alguns milímetros de diferença.</div>
+    <div class="note">O sensor mede a inclinação da caixa, não da luneta. A trava precisa ficar firme no trilho, e é por isso que existe o botão ZERAR: ele compensa qualquer diferença de montagem.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  document.querySelectorAll('[data-slots]').forEach(function(g){
+    var a=g.getAttribute('data-slots').split(',').map(Number);
+    for(var k=0;k<a[1];k++){
+      var r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x',a[0]+k*a[5]); r.setAttribute('y',a[2]);
+      r.setAttribute('width',a[4]); r.setAttribute('height',a[3]);
+      g.appendChild(r);
+    }
+  });
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

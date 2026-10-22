@@ -1,0 +1,41 @@
+================================================================
+ 02 - POWERBANK DOS TABLETS · PEÇAS 3D (1 conjunto por tablet)
+================================================================
+ Arquivo-fonte: pecas.scad (OpenSCAD). Cada peça já está em stl\
+ na posição de impressão. montagem.scad = desenho da prévia.
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só)
+   PRETO:  caixa, cartucho
+   COYOTE: tampa (com o emblema e o nome BLACK BIRD, a única marca
+           do projeto), 2 botões de aperto
+
+ PEÇA            QTD  SUPORTE  OBS.
+ caixa            1   não      em pé, aberta para cima (≈ 3 h)
+ tampa            1   não      de cara na mesa (os pinos para cima)
+ cartucho         1+  não      deitado; faça 1 a mais por tablet
+                               para ter um cartucho carregado de reserva
+ botao_aperto     2   não      topo facetado na mesa
+
+ FERRAGENS (tudo M3 Allen): 2 M3 x 16 (presos nos botões de aperto,
+ seguram a tampa). Sem cola em nada.
+ Velcro 25 mm: 2 tiras de ~60 cm (passam nos túneis de trás e
+ abraçam o poste/árvore) + 2 tiras de ~22 cm por cartucho
+ (abraçam baterias e suportes nos rebaixos).
+
+ CONFIGURAÇÃO (PETG): 0,2 mm · 5 perímetros · 5 camadas topo/fundo ·
+ 40% giroide. A caixa fica na chuva e pode levar BB: não use PLA.
+
+ BOTÃO DE APERTO: empurre a cabeça do parafuso M3 x 16 no sextavado
+ de baixo (aperto justo; se ficar folgado, um pingo de calor com o
+ ferro de solda na cabeça do parafuso derrete o plástico em volta,
+ sem cola). Aperta e solta com a mão.
+
+ CONFIRA ANTES DE IMPRIMIR (topo do pecas.scad):
+   PLACA  = [57, 28, 1.6]   comprimento x altura x espessura da sua
+                            placa de power bank (as guias seguram 2 mm
+                            de cada ponta)
+   PORTAS = [52, 9]         abertura embaixo para os plugues
+   TELA_Z = 20              altura do centro da tela de carga
+   SUP    = [77, 21.6, 20]  suporte de 1 bateria 18650
+ Escolha uma placa com as 2 saídas USB-A e a entrada de carga TODAS
+ na mesma borda (ela fica em pé, com essa borda para baixo).

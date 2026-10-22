@@ -1,0 +1,37 @@
+==========================================================
+ 12 - TELÊMETRO COM ZONA DE ENGAJAMENTO · PEÇAS 3D
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+
+ CONFIGURAÇÃO (Creality K1C, PETG, resistente a BB a 10 m+)
+   Camada 0,2 mm · 5 paredes · 5 camadas em cima e embaixo
+   Preenchimento 40% giroide · bico 240 °C · mesa 75-80 °C
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: corpo, grade, berco_laser · COYOTE: tampa, tampa_anel, capa_botao
+   Moldura facetada na boca do capuz (sai 2 mm para a frente) e
+   tampa de 4 mm: o telêmetro fica 1 mm mais alto (22 mm).
+   A grade: PETG PRETO fosco, camada 0,12 mm.
+
+ PEÇA          QTD  SUPORTE  OBSERVAÇÃO
+ corpo          1   não      com capuz anti-BB na frente
+ tampa          1   não      é a TAMPA. Face de cima na mesa.
+ grade          1   não      favos de 3 mm na boca do capuz
+ berco_laser    1   não      segura o módulo laser
+ capa_botao     1   não      botão liga/desliga 8 x 8
+ tampa_anel     1   não      troca a metade de cima do anel
+                             dianteiro da Geissele. Impressa
+                             de cabeça para baixo.
+
+ FUROS DE ROMPER: a lateral esquerda e a tampa têm furos fechados
+ por 0,6 mm de plástico, de reserva para um botão ou acessório no
+ futuro. Pode ignorar.
+
+ FERRAGENS (tudo M3 Allen): 3 M3 x 10 (tampa) · 2 M3 x 8 (corpo na
+ tampa do anel) · 2 M3 com mola (deriva e elevação do laser) ·
+ os 4 parafusos originais do anel da Geissele.
+
+ ANTES DE IMPRIMIR: meça o anel da sua Geissele (PARAF_LAT,
+ PARAF_LONG, ANEL_LARG) e ajuste no pecas.scad.
+ Depois de imprimir cada peça, me diga ou some no ESTOQUE.js.

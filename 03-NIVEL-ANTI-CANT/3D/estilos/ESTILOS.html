@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Estilos BLACK BIRD</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--coyote:#8a6a45}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+h2{font-size:18px;margin:36px 0 8px}
+.sub,.hint{color:var(--muted)}
+.hint{font-size:13px}
+.cores{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.cor{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.cor i{width:34px;height:34px;border-radius:6px;border:1px solid #444;display:block}
+.est{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px}
+.est h3{margin:0 0 4px;font-size:19px}
+.est h3 b{font:600 13px Consolas,monospace;color:var(--amber);margin-right:8px}
+.fotos{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;margin:12px 0}
+.fotos figure{margin:0}
+.fotos img{width:100%;border-radius:8px;border:1px solid var(--line);display:block;background:#fff}
+.fotos figcaption{color:var(--muted);font-size:12.5px;margin-top:4px}
+ul{margin:.3em 0;padding-left:20px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.bom li::marker{color:var(--accent)}
+.ruim li::marker{color:#e5533f}
+.rec{border:2px solid var(--amber)}
+.selo{display:inline-block;font:600 11px Consolas,monospace;color:var(--amber);border:1px solid var(--amber);border-radius:20px;padding:2px 8px;margin-left:8px;vertical-align:middle}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="tag">BLACK BIRD | DMR · PRÉVIA DE ESTILO · PROJETO 03</div>
+  <h1>Estilos para as peças 3D</h1>
+  <p class="sub">O mesmo nível anti-cant em três estilos, montado no trilho Picatinny. A caixa por dentro é igual nos três, com paredes de 3 mm: o visual novo vem de material acrescentado por fora, então a resistência a BB continua a mesma ou melhora. As imagens são de prévia, e as letras gravadas saem bem mais nítidas na peça impressa.</p>
+
+  <div class="cores">
+    <div class="cor"><i style="background:#262626"></i><div><b>Preto</b><br><span class="hint">corpo e garra fixa</span></div></div>
+    <div class="cor"><i style="background:#8a6a45"></i><div><b>Coyote</b><br><span class="hint">tampa, mandíbula, botões e detalhes</span></div></div>
+  </div>
+  <p class="hint" style="margin-top:8px">Cada peça sai de <b>uma cor só</b>, então não precisa trocar filamento no meio da impressão: imprime o corpo em PETG preto e a tampa em PETG coyote (marrom-areia).</p>
+
+  <section class="est rec">
+    <h3><b>A</b>Tático facetado <span class="selo">MINHA RECOMENDAÇÃO</span></h3>
+    <p class="hint">Cantos chanfrados a 45°, tampa coyote facetada com nervuras em V, moldura de 8 lados protegendo o botão ZERAR e painel hexagonal em relevo na lateral direita.</p>
+    <div class="fotos">
+      <figure><img src="img/estilo_A_frente.png" alt="Estilo A, lado esquerdo"><figcaption>Lado esquerdo: botão ZERAR na moldura, chave liga/desliga</figcaption></figure>
+      <figure><img src="img/estilo_A_tras.png" alt="Estilo A, lado direito"><figcaption>Lado direito: painel hexagonal e mandíbula coyote embaixo</figcaption></figure>
+    </div>
+    <div class="cols">
+      <ul class="bom"><li>Faces inclinadas fazem a BB ricochetear em vez de bater de frente</li><li>A moldura evita apertar o ZERAR sem querer e protege o botão</li><li>Combina com equipamento militar; chanfro de 45° imprime limpo, sem suporte</li></ul>
+      <ul class="ruim"><li>O painel hexagonal junta um pouco de poeira e barro (sai com escova)</li></ul>
+    </div>
+  </section>
+
+  <section class="est">
+    <h3><b>B</b>Arredondado liso</h3>
+    <p class="hint">Cantos com raio de 6 mm, tampa coyote boleada com o emblema e o nome gravados, e anel liso em volta do botão.</p>
+    <div class="fotos">
+      <figure><img src="img/estilo_B_frente.png" alt="Estilo B, lado esquerdo"><figcaption>Lado esquerdo</figcaption></figure>
+      <figure><img src="img/estilo_B_tras.png" alt="Estilo B, lado direito"><figcaption>Lado direito: liso</figcaption></figure>
+    </div>
+    <div class="cols">
+      <ul class="bom"><li>Visual limpo, de eletrônico comercial; fácil de limpar</li><li>Sem quina para enganchar na bandoleira ou na roupa</li></ul>
+      <ul class="ruim"><li>A borda boleada da tampa imprime com "degraus" de camada visíveis</li><li>Destoa um pouco do resto do equipamento tático</li></ul>
+    </div>
+  </section>
+
+  <section class="est">
+    <h3><b>C</b>Rugged (misto)</h3>
+    <p class="hint">Corpo preto chanfrado e tampa coyote arredondada, com cantoneiras que descem e abraçam os 4 cantos da caixa, como capa de celular reforçada.</p>
+    <div class="fotos">
+      <figure><img src="img/estilo_C_frente.png" alt="Estilo C, lado esquerdo"><figcaption>Lado esquerdo: cantoneiras coyote e anel no botão</figcaption></figure>
+      <figure><img src="img/estilo_C_tras.png" alt="Estilo C, lado direito"><figcaption>Lado direito</figcaption></figure>
+    </div>
+    <div class="cols">
+      <ul class="bom"><li>As cantoneiras levam as pancadas (quina é onde a caixa costuma rachar)</li><li>Visual "à prova de tudo", com bastante coyote aparecendo</li></ul>
+      <ul class="ruim"><li>Tampa maior e um pouco mais pesada (+ ~6 g)</li><li>As cantoneiras cobrem parte das laterais; nos outros projetos é preciso desviar de telas e conectores</li></ul>
+    </div>
+  </section>
+
+  <h2>Comparação rápida</h2>
+  <div class="tw"><table>
+    <tr><th></th><th>A · Tático facetado</th><th>B · Arredondado</th><th>C · Rugged</th></tr>
+    <tr><td>Proteção contra BB</td><td>★★★ desvia o tiro</td><td>★★ igual à atual</td><td>★★★ protege as quinas</td></tr>
+    <tr><td>Impressão</td><td>Fácil, sem suporte</td><td>Fácil; borda com degraus</td><td>Fácil, sem suporte</td></tr>
+    <tr><td>Combina com airsoft</td><td>Muito</td><td>Pouco</td><td>Muito</td></tr>
+    <tr><td>Serve para todos os projetos</td><td>Sim</td><td>Sim</td><td>Quase (atenção a telas e portas nas laterais)</td></tr>
+  </table></div>
+
+  <div class="note" style="border-color:var(--accent)"><b>Escolhido: A · Tático facetado.</b> Já aplicado nas peças de verdade da bomba (01), do anti-cant (03), do cronógrafo (04) e do telêmetro (12), para o conjunto da luneta combinar.</div>
+  <div class="note"><b>Como foi feito:</b> o estilo A virou um conjunto de peças-padrão na biblioteca comum (caixa chanfrada, tampa facetada, moldura de botão, painel hexagonal, nervuras em V e o emblema). Assim todos os projetos ficam com a mesma cara, e as medidas internas, furos e encaixes continuam os mesmos de antes.</div>
+</div>
+</body>
+</html>

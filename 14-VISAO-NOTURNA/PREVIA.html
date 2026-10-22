@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visão Noturna Clip-on</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-sig{stroke:#ff7ad9}.w-ana{stroke:#5fd17a}.w-sda{stroke:#ffd84a}.w-scl{stroke:#c58cff}.w-ir{stroke:#4fa3ff}.w-gnd{stroke:#b9c2c7}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+.optica{display:block;width:100%;max-width:900px;margin:0 auto;height:auto}
+.sim{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:12px}
+.simvista{flex:0 1 480px;max-width:100%}
+.simvista canvas{width:100%;max-width:480px;height:auto;display:block;border-radius:50%;background:#000}
+.simrot{color:var(--muted);font:12px Consolas,monospace;text-align:center;margin-top:6px}
+.simctl{flex:1 1 260px}
+.simctl .grupo{margin-bottom:12px}
+.simctl .grupo b{display:block;font-size:13px;margin-bottom:4px}
+.simctl button{padding:5px 10px;margin:0 4px 4px 0}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PROJETO 14 · AVANÇADO</div>
+    <h1>Visão Noturna Clip-on</h1>
+    <p class="sub">Funciona como um magnificador de mira holográfica, só que de visão noturna: fica na frente da luneta, <b>não tem zoom</b> (1x) e tem <b>dois jeitos de fixar</b>: <b>basculante</b> (vira para o lado esquerdo numa dobradiça com trava quando você não precisa dele) ou <b>fixa</b>, num elevador maciço, sempre na frente da luneta. A luneta continua fazendo o zoom dela; este aparelho só deixa você enxergar os alvos no escuro. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>1x</b><span>sem zoom: o tamanho das coisas é o real; o zoom continua sendo o da luneta</span></div>
+      <div class="tile"><b>76 × 46 × 47</b><span>unidade (mm), compacta: do tamanho de um magnificador de holo; topo a 74 mm do trilho</span></div>
+      <div class="tile"><b>80–100 m</b><span>ver uma pessoa no escuro com a lanterna IR 850 nm no trilho; só com os LEDs do aparelho, 15–25 m (estimativa)</span></div>
+      <div class="tile"><b>≈ 2–3 h</b><span>LiPo 1000 mAh (menos com o IR no alto; estimativa). Leve a recarga no bolso</span></div>
+      <div class="tile"><b>R$ 253–440</b><span>com a lanterna IR montada (80 m), reaproveitando kits; sem a lanterna, R$ 195–345</span></div>
+    </div>
+    <div class="note" style="margin-top:12px"><b>Funciona e é realista, mas não é um tubo intensificador militar.</b> É uma visão noturna <b>digital</b>, do tipo das clip-on baratas: câmera + LED infravermelho + telinha. Ela mostra bem pessoas e alvos a 15–25 m no escuro total, e mais longe com luar ou luz de cidade. Com a luneta no zoom alto (4x a 6x) a imagem fica "quadriculada", porque a tela tem 240 × 240 pontos. Ela rende mais com a luneta em <b>1x a 3x</b>.</div>
+    <div class="note ok" style="margin-top:10px"><b>Alcance para DMR (você precisa de 80 m):</b> o que limita não é a tela, é a <b>luz</b>. Os 4 LEDs do aparelho iluminam só uns 15–25 m. Para 80 m, use junto a <b>lanterna IR montada</b> (caixa no M-LOK direito, LED 3 W com lente de 5°, feixe estreito): com ela, uma pessoa a 80 m aparece como uma silhueta de ~10 pontos de altura na tela, o que dá para <b>ver e acertar</b>, mas não para reconhecer o rosto ou a cor do braçal. Contra mato ela pode sumir (folha reflete muito infravermelho e fica clara como a roupa); contra campo aberto ou céu aparece bem. Na luneta, use <b>3x a 4x</b>: em 6x os quadradinhos ficam grandes demais. Teste na <b>simulação</b> abaixo (alvo a 80 m, com e sem a lanterna).</div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="fig">
+      <svg class="optica" viewBox="0 0 900 230">
+        <rect x="0" y="0" width="900" height="230" fill="#161a1d"/>
+        <g font-family="Segoe UI,system-ui,sans-serif" font-size="13" fill="#cfd6da">
+          <rect x="40" y="85" width="150" height="60" rx="8" fill="#262b30" stroke="#59636a"/><text x="115" y="112" text-anchor="middle">LUNETA</text><text x="115" y="130" text-anchor="middle" fill="#8a959b" font-size="11">zoom 1–6x normal</text>
+          <ellipse cx="250" cy="115" rx="8" ry="34" fill="#9fd3ff" opacity=".7"/><text x="250" y="170" text-anchor="middle" font-size="11">lente 25 mm</text><text x="250" y="185" text-anchor="middle" font-size="11" fill="#8a959b">(foco 45 mm)</text>
+          <rect x="340" y="88" width="10" height="54" fill="#2a4d8f"/><text x="345" y="170" text-anchor="middle" font-size="11">tela 1,3"</text>
+          <rect x="400" y="80" width="90" height="70" rx="6" fill="#14243d" stroke="#4c78b8"/><text x="445" y="112" text-anchor="middle">ESP32-CAM</text><text x="445" y="130" text-anchor="middle" font-size="11" fill="#8a959b">câmera sem filtro IR</text>
+          <rect x="400" y="30" width="90" height="34" rx="6" fill="#1d2226" stroke="#59636a"/><text x="445" y="52" text-anchor="middle" font-size="12">4 LEDs IR 850 nm</text>
+          <path d="M490 47 L760 20 M490 47 L760 74" stroke="#e5533f" stroke-dasharray="6 5" fill="none"/>
+          <text x="610" y="22" fill="#e5533f" font-size="11">luz infravermelha (invisível)</text>
+          <circle cx="800" cy="115" r="22" fill="none" stroke="#cfd6da"/><text x="800" y="160" text-anchor="middle">alvo</text>
+          <path d="M760 110 L492 110" stroke="#9cc35a" stroke-width="2" marker-end="url(#arr)"/><text x="620" y="102" fill="#9cc35a" font-size="11">o alvo reflete o IR → câmera</text>
+          <path d="M340 115 L262 115" stroke="#9cc35a" stroke-width="2"/><path d="M240 115 L195 115" stroke="#9cc35a" stroke-width="2"/>
+          <text x="300" y="70" text-anchor="middle" font-size="11" fill="#e2b04a">45 mm</text><path d="M252 76 L338 76" stroke="#e2b04a" marker-start="url(#arr)" marker-end="url(#arr)"/>
+        </g>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>Parte</th><th>O que faz</th></tr>
+      <tr><td><b>4 LEDs IR 850 nm</b></td><td>Embutidos na frente, embaixo da câmera, iluminam com luz infravermelha. Olho humano não vê (quem estiver de frente pode ver pontinhos vermelhos fracos). No alto alcançam uns 20–25 m; no baixo, gastam menos e denunciam menos</td></tr>
+      <tr><td><b>Câmera OV2640 sem filtro IR</b></td><td>Câmera comum enxerga infravermelho quando não tem o filtro. Ela filma a frente em tons de cinza</td></tr>
+      <tr><td><b>ESP32-CAM</b></td><td>Pega o meio da imagem do tamanho certo para dar <b>1x</b>, aumenta o contraste sozinha e pinta de verde (ou branco ou vermelho)</td></tr>
+      <tr><td><b>Tela 1,3" + lente de 45 mm</b></td><td>A tela fica exatamente no foco da lente. Assim a lente "joga a imagem para o infinito", e a luneta foca nela como se fosse a paisagem, sem precisar mexer no foco da luneta</td></tr>
+      <tr><td><b>Fixação 2: elevador fixo</b></td><td>Para jogo noturno: o casco senta direto num bloco maciço preso no trilho (como um riser de luneta). A orelha da dobradiça entra num encaixe do bloco e 2 parafusos M3 × 50 atravessam tudo: não vira, não tem folga e não perde o zero</td></tr>
+      <tr><td><b>Fixação 1: dobradiça com trava (lado esquerdo do AEG)</b></td><td>Igual a um magnificador de holo, a unidade vira 90° para a esquerda. Em pé, ela apoia num <b>batente</b> da base, e o peso fica nele. Um <b>pino de trava</b> com mola entra num furo da orelha, nas duas posições, e trava de verdade: nem tranco, nem peso, nem esbarrão soltam. Para mudar de posição, <b>puxe para trás o botão</b> (a cabeça do parafuso que sai do lado esquerdo da base), gire e solte: o pino entra sozinho e trava. Na outra articulação, uma BB com molinha só tira a folga. Em cima não tem nada: o laser do telêmetro (12) passa livre por cima</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">SIM</span>Simulação: olhando pela luneta</h2>
+    <p class="hint">Uma noite simulada com 4 pessoas: a <b>15 m</b> (esquerda), a <b>25 m</b> (direita do centro), a <b>40 m</b> (direita) e a <b>80 m</b> (logo à esquerda do centro, numa clareira, acima dos tambores). Tem também uma pilha de tambores a 20 m e uma linha de árvores a 120 m, vistas pela ocular da Red Win com o retículo BDC. A imagem passa pelo mesmo caminho do aparelho: a câmera com ganho automático e ruído, o contraste automático do código, a tela de 240 × 240 pontos e o zoom da luneta. É uma <b>estimativa</b> para dar a ideia; a imagem real depende da câmera, do campo e da lua.</p>
+    <div class="sim">
+      <div class="simvista">
+        <canvas id="simOcular" width="480" height="480"></canvas>
+        <div class="simrot" id="simRot"></div>
+      </div>
+      <div class="simctl">
+        <div class="grupo"><b>Zoom da luneta</b><div id="cZoom"></div></div>
+        <div class="grupo"><b>Visão noturna</b><div id="cNV"></div></div>
+        <div class="grupo"><b>LEDs IR do aparelho</b><div id="cIR"></div></div>
+        <div class="grupo"><b>Lanterna IR 850 nm no trilho (para 80 m)</b><div id="cExt"></div></div>
+        <div class="grupo"><b>Luz do ambiente</b><div id="cAmb"></div></div>
+        <div class="grupo"><b>Cor da tela</b><div id="cCor"></div></div>
+        <div class="grupo"><b>Brilho da tela</b><div id="cBri"></div></div>
+        <p class="hint">Repare: em 1x a imagem é lisinha; a partir de 4x os quadradinhos da tela aparecem, porque a luneta amplia a tela junto com a imagem. Com o IR desligado no escuro total, sobra só chuvisco: a câmera não tem o que enxergar. Tire a lanterna e veja: só com os LEDs do aparelho, a pessoa a 80 m some.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>A unidade</h2>
+    <div class="fig">
+      <svg viewBox="0 0 317.5 447.37" data-mm="317.5" data-zoom="2.96" class="vistas3d">
+        <style>.vistas3d .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vistas3d .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vistas3d .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vistas3d .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vistas3d .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">LADO DIREITO (tampa)</text>
+        <image href="3D/img/vistas_tras.png" x="12" y="9" width="200" height="85.99"/>
+        <line x1="62.01" y1="91.99" x2="62.01" y2="102.49" class="ext"/><line x1="150" y1="91.99" x2="150" y2="102.49" class="ext"/>
+        <line x1="62.01" y1="100.99" x2="150" y2="100.99" class="dim"/><text x="106.01" y="106.19" class="dt">88</text>
+        <line x1="4.5" y1="9" x2="62.01" y2="9" class="ext"/><line x1="4.5" y1="91.99" x2="62.01" y2="91.99" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="91.99" class="dim"/><text x="4.2" y="50.5" class="dt" transform="rotate(-90 4.2 50.5)">83</text>
+        <text x="236" y="5" class="lb">FRENTE (câmera e LEDs IR)</text>
+        <image href="3D/img/vistas_direita_SEM_TAMPAfalse.png" x="236" y="9" width="69.5" height="85.99"/>
+        <text x="282.5" y="24.99" class="nm">câmera</text>
+        <text x="282.5" y="46.49" class="nm">4 LEDs IR</text>
+        <line x1="237.5" y1="91.99" x2="237.5" y2="102.49" class="ext"/><line x1="305.5" y1="91.99" x2="305.5" y2="102.49" class="ext"/>
+        <line x1="237.5" y1="100.99" x2="305.5" y2="100.99" class="dim"/><text x="271.5" y="106.19" class="dt">68</text>
+        <line x1="228.5" y1="9" x2="237.5" y2="9" class="ext"/><line x1="228.5" y1="91.99" x2="237.5" y2="91.99" class="ext"/>
+        <line x1="230" y1="9" x2="230" y2="91.99" class="dim"/><text x="228.2" y="50.5" class="dt" transform="rotate(-90 228.2 50.5)">83</text>
+        <text x="12" y="118.99" class="lb">TRÁS (lente, virada para a luneta)</text>
+        <image href="3D/img/vistas_esquerda_SEM_TAMPAfalse.png" x="12" y="122.99" width="69.5" height="85.99"/>
+        <text x="35" y="151.48" class="nm">lente 25 mm</text>
+        <line x1="12" y1="205.98" x2="12" y2="216.48" class="ext"/><line x1="80" y1="205.98" x2="80" y2="216.48" class="ext"/>
+        <line x1="12" y1="214.98" x2="80" y2="214.98" class="dim"/><text x="46" y="220.18" class="dt">68</text>
+        <line x1="4.5" y1="122.99" x2="12" y2="122.99" class="ext"/><line x1="4.5" y1="205.98" x2="12" y2="205.98" class="ext"/>
+        <line x1="6" y1="122.99" x2="6" y2="205.98" class="dim"/><text x="4.2" y="164.48" class="dt" transform="rotate(-90 4.2 164.48)">83</text>
+        <text x="105.5" y="118.99" class="lb">INTERIOR (sem a tampa)</text>
+        <image href="3D/img/vistas_tras_SEM_TAMPAtrue.png" x="105.5" y="122.99" width="200" height="85.99"/>
+        <text x="232.5" y="151.48" class="nm">lente</text>
+        <text x="185.5" y="136.48" class="nm">tela 1,3"</text>
+        <text x="171.5" y="148.48" class="nm">ESP32-CAM</text>
+        <text x="199.5" y="167.48" class="nm">LiPo 1000 mAh</text>
+        <text x="214.5" y="148.48" class="nm">carga + 5 V</text>
+        <text x="162.5" y="160.48" class="nm">LEDs IR</text>
+        <text x="203.5" y="134.48" class="nm">botões</text>
+        <text x="200.5" y="180.48" class="nm">batente</text>
+        <line x1="155.51" y1="205.98" x2="155.51" y2="216.48" class="ext"/><line x1="243.5" y1="205.98" x2="243.5" y2="216.48" class="ext"/>
+        <line x1="155.51" y1="214.98" x2="243.5" y2="214.98" class="dim"/><text x="199.51" y="220.18" class="dt">88</text>
+        <line x1="98" y1="122.99" x2="155.51" y2="122.99" class="ext"/><line x1="98" y1="205.98" x2="155.51" y2="205.98" class="ext"/>
+        <line x1="99.5" y1="122.99" x2="99.5" y2="205.98" class="dim"/><text x="97.7" y="164.48" class="dt" transform="rotate(-90 97.7 164.48)">83</text>
+        <text x="12" y="232.98" class="lb">LADO ESQUERDO (dobradiça e botão da trava)</text>
+        <image href="3D/img/vistas_frente_SEM_TAMPAfalse.png" x="12" y="236.98" width="200" height="85.99"/>
+        <text x="98" y="304.47" class="nm">botão da trava</text>
+        <text x="117" y="297.47" class="nm">dobradiça</text>
+        <line x1="74" y1="319.97" x2="74" y2="330.47" class="ext"/><line x1="161.99" y1="319.97" x2="161.99" y2="330.47" class="ext"/>
+        <line x1="74" y1="328.97" x2="161.99" y2="328.97" class="dim"/><text x="118" y="334.17" class="dt">88</text>
+        <line x1="4.5" y1="236.98" x2="74" y2="236.98" class="ext"/><line x1="4.5" y1="319.97" x2="74" y2="319.97" class="ext"/>
+        <line x1="6" y1="236.98" x2="6" y2="319.97" class="dim"/><text x="4.2" y="278.47" class="dt" transform="rotate(-90 4.2 278.47)">83</text>
+        <text x="12" y="346.97" class="lb">VIRADO PARA O LADO (travado)</text>
+        <image href="3D/img/vistas_esquerda_VIRADOtrue.png" x="12" y="350.97" width="113.19" height="83.4"/>
+        <line x1="12" y1="431.37" x2="12" y2="441.87" class="ext"/><line x1="125.19" y1="431.37" x2="125.19" y2="441.87" class="ext"/>
+        <line x1="12" y1="440.37" x2="125.19" y2="440.37" class="dim"/><text x="68.6" y="445.57" class="dt">113</text>
+        <line x1="4.5" y1="350.97" x2="12" y2="350.97" class="ext"/><line x1="4.5" y1="431.37" x2="12" y2="431.37" class="ext"/>
+        <line x1="6" y1="350.97" x2="6" y2="431.37" class="dim"/><text x="4.2" y="391.17" class="dt" transform="rotate(-90 4.2 391.17)">80</text>
+      </svg>
+      <div class="cap">Escala real. A unidade (76 × 46 × 47 mm) fica no trilho do guarda-mão, com a traseira uns 5–10 mm na frente da objetiva (a luneta e o trilho aparecem em cinza só como referência). Por dentro, de trás para a frente: a lente de 25 mm; a LiPo deitada no fundo; a placa de carga em pé na parede esquerda; a tela a 45 mm da lente (focada pelos rasgos do suporte); e a ESP32-CAM em pé na frente, com a câmera em cima e os 4 LEDs IR embaixo. Os botões IR e TELA ficam em cima, e a dobradiça à esquerda. Estas vistas mostram a <b>base basculante</b>; na última, a unidade aparece virada para o lado. Os desenhos do <b>elevador fixo</b> estão logo abaixo.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">FX</span>Dois jeitos de fixar: basculante ou elevador fixo</h2>
+    <p class="hint">O casco e todas as outras peças são iguais. Você imprime <b>uma</b> das duas bases (as duas usam a mesma garra e mandíbula no trilho do guarda-mão) e pode trocar depois.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">
+      <div class="fig" style="padding:8px;margin:0"><img src="3D/img/flip_3d.png" alt="Base basculante, unidade virada" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"><div class="cap"><b>1 · BASCULANTE</b> (<code>base_flip</code>): vira para a esquerda como um magnificador de holo; de dia a luneta fica livre</div></div>
+      <div class="fig" style="padding:8px;margin:0"><img src="3D/img/fixa_3d.png" alt="Elevador fixo com 2 parafusos atravessados" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"><div class="cap"><b>2 · ELEVADOR FIXO</b> (<code>base_fixa</code>): bloco maciço do trilho até o casco, com painel hexagonal e janela de alívio; 2 parafusos M3 × 50 atravessam o bloco e a orelha</div></div>
+    </div>
+    <div class="fig">
+      <svg viewBox="0 0 316 107.99" data-mm="316" data-zoom="2.97" class="vistas3d vvistas268b64">
+        <style>.vvistas268b64 .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vvistas268b64 .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vvistas268b64 .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vvistas268b64 .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vvistas268b64 .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">LADO ESQUERDO · ELEVADOR FIXO</text>
+        <image href="3D/img/vistas_frente_FIXAtrue.png" x="12" y="9" width="200" height="85.99"/>
+        <text x="117" y="73.49" class="nm">2 parafusos M3 x 50</text>
+        <text x="117" y="82.49" class="nm">elevador</text>
+        <line x1="74" y1="91.99" x2="74" y2="102.49" class="ext"/><line x1="161.99" y1="91.99" x2="161.99" y2="102.49" class="ext"/>
+        <line x1="74" y1="100.99" x2="161.99" y2="100.99" class="dim"/><text x="118" y="106.19" class="dt">88</text>
+        <line x1="4.5" y1="9" x2="74" y2="9" class="ext"/><line x1="4.5" y1="91.99" x2="74" y2="91.99" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="91.99" class="dim"/><text x="4.2" y="50.5" class="dt" transform="rotate(-90 4.2 50.5)">83</text>
+        <text x="236" y="5" class="lb">LADO DIREITO · ELEVADOR FIXO</text>
+        <image href="3D/img/vistas_direita_FIXAtrue.png" x="236" y="9" width="68" height="85.99"/>
+        <text x="295" y="73.49" class="nm">elevador</text>
+        <line x1="236" y1="91.99" x2="236" y2="102.49" class="ext"/><line x1="304" y1="91.99" x2="304" y2="102.49" class="ext"/>
+        <line x1="236" y1="100.99" x2="304" y2="100.99" class="dim"/><text x="270" y="106.19" class="dt">68</text>
+        <line x1="228.5" y1="9" x2="236" y2="9" class="ext"/><line x1="228.5" y1="91.99" x2="236" y2="91.99" class="ext"/>
+        <line x1="230" y1="9" x2="230" y2="91.99" class="dim"/><text x="228.2" y="50.5" class="dt" transform="rotate(-90 228.2 50.5)">83</text>
+      </svg>
+      <div class="cap">Escala real: a unidade no <b>elevador fixo</b>. O bloco tem 50 mm de comprimento (o mesmo trecho de trilho da basculante) e leva o casco à mesma altura: o centro da lente continua no eixo da luneta (49 mm). Os 2 parafusos entram por trás (cabeça embutida) e a porca fica embutida na frente.</div>
+    </div>
+    <div class="tw"><table>
+      <tr><th></th><th>1 · Basculante (<code>base_flip</code>)</th><th>2 · Elevador fixo (<code>base_fixa</code>)</th></tr>
+      <tr><td>Uso</td><td>Joga de dia e de noite: vira para o lado quando não precisa</td><td>Jogo noturno inteiro, ou se você tirar a unidade do trilho de dia</td></tr>
+      <tr><td>Como prende</td><td>Pino com mola de caneta + botão (parafuso M3 × 12) para soltar; batente segura o peso; BB na articulação da frente</td><td>Bloco maciço; a orelha encaixa nele e 2 parafusos M3 × 50 atravessam tudo</td></tr>
+      <tr><td>Folga / zero</td><td>Mínima</td><td>Nenhuma: o melhor para não perder o alinhamento</td></tr>
+      <tr><td>Ferragens</td><td>1 M3 × 50 + porca, 1 M3 × 12, mola de caneta, 1 BB</td><td>2 M3 × 50 + 2 porcas</td></tr>
+      <tr><td>Peças impressas</td><td><code>base_flip</code> + <code>pino_trava</code></td><td><code>base_fixa</code></td></tr>
+      <tr><td>Impressão</td><td>Garra para baixo, suporte só tocando a mesa</td><td>Igual (o bloco é maciço: 40% de preenchimento basta)</td></tr>
+    </table></div>
+    <div class="note ok">Dá para trocar depois: desparafuse a garra do trilho e tire o(s) parafuso(s) da dobradiça. O casco já sai com o furo do 2º parafuso, que não atrapalha a trava da basculante.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas deste projeto, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. Arquivos em <b>3D/stl</b>; quantidades, suportes e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D da visão noturna em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">O casco preto é chanfrado em octógono, tem um painel hexagonal na lateral esquerda, a moldura da câmera e a viseira dos 4 LEDs na frente. A tampa lateral coyote leva o emblema, o nome BLACK BIRD (a única marca do projeto) e as nervuras em V apontando para o cano. O capuz coyote da lente segura a lente e corta a luz de lado. Completam o conjunto o suporte da tela com rasgos de foco, as <b>duas bases</b> (a basculante, com as 2 articulações da dobradiça, e o elevador fixo maciço com painel hexagonal), a mandíbula coyote da garra Picatinny, as capas dos botões e o pino de trava coyote. A <b>lanterna IR</b> é a caixa preta comprida, com a tampa coyote de nervuras em V e as 2 porcas M-LOK impressas.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>ESP32-CAM (AI-Thinker) + base programadora ESP32-CAM-MB</td><td class="mm">27 × 40,5</td><td>Lê a câmera e desenha a tela (a base MB só serve para gravar o código)</td></tr>
+      <tr><td>Câmera OV2640 sem filtro IR ("night vision", 850 nm)</td><td class="mm">8 × 8 + cabo</td><td>Troca a câmera que vem com a placa. Também dá para tirar o filtro da câmera original, mas é delicado</td></tr>
+      <tr><td>Tela IPS 1,3" 240 × 240 ST7789 (7 pinos)</td><td class="mm">≈ 27 × 33</td><td>Mostra a imagem; desliza no trilho do suporte</td></tr>
+      <tr><td>Lente biconvexa 25 mm, foco 45 mm (a do Google Cardboard)</td><td class="mm">Ø25</td><td>Joga a tela para o infinito (1x)</td></tr>
+      <tr><td>4 LEDs infravermelhos 5 mm 850 nm + 4 resistores 68 Ω</td><td class="mm">Ø5</td><td>Iluminador, embutido na frente</td></tr>
+      <tr><td>MOSFET IRLZ44N + 220 Ω + 100 kΩ</td><td class="mm">—</td><td>Liga os LEDs IR com 3 níveis (≈ 0,2 A no alto)</td></tr>
+      <tr><td>LiPo 503450 3,7 V 1000 mAh + módulo carregador com saída 5 V</td><td class="mm">50 × 34 × 5,5 · 30 × 25</td><td>Energia: a LiPo deita no fundo; o módulo (o mesmo das 18650, serve para LiPo) carrega por USB-C e dá 5 V</td></tr>
+      <tr><td><b>Lanterna IR para 80 m (montada por você):</b> LED 3 W 850 nm em estrela + lente colimadora 20 mm de <b>5°</b> + driver 7135 (17 mm, 350–700 mA) + 18650 no suporte + carga TP4056 USB-C + botão com trava 8 × 8</td><td class="mm">caixa 112 × 28 × 30 (+8 do capuz)</td><td>Iluminador de longe, numa caixa tática no M-LOK direito. A lente de 5° fecha o feixe e leva a luz a 80–100 m. Os LEDs do aparelho ficam para o perto (até 25 m)</td></tr>
+      <tr><td>2 botões 6 × 6 (numa plaquinha) + chave SS12D00</td><td class="mm">—</td><td>IR e TELA; liga/desliga</td></tr>
+      <tr><td>Parafusos M3 Allen: 1× 30, 6× 10, 4× 8 + porcas · <b>basculante:</b> 1× 50, 1× 12, 1 BB e 2 molinhas de caneta · <b>elevador fixo:</b> 2× 50 + 2 porcas</td><td class="mm">—</td><td>Garra, tampa, capuz e suportes; dobradiça e trava, ou os 2 parafusos do elevador</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Ligação elétrica</h2>
+    <p class="hint">Sem escala. Todos os GND juntos. A tela usa o SPI dos pinos IO14/IO13 (o cartão de memória da placa não é usado).</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 380">
+        <rect x="360" y="40" width="180" height="300" rx="8" class="brd"/><text x="450" y="180" class="ttl c">ESP32-CAM</text><text x="450" y="198" class="ttl c">(AI-Thinker)</text>
+        <g class="pt"><text x="368" y="84">5V</text><text x="368" y="124">GND</text><text x="368" y="164">3V3</text><text x="368" y="284">IO12</text><text x="368" y="314">IO3 (U0R)</text></g>
+        <g class="pt e"><text x="532" y="84">IO14 SCL</text><text x="532" y="114">IO13 SDA</text><text x="532" y="144">IO2 DC</text><text x="532" y="234">IO1 (U0T)</text></g>
+        <rect x="620" y="50" width="150" height="110" rx="8" class="blk"/><text x="695" y="100" class="pt c" style="font-size:11px">Tela 1,3" ST7789</text><text x="695" y="120" class="pt c" style="font-size:10px;fill:#8a959b">RES e BLK no 3V3</text>
+        <rect x="620" y="200" width="150" height="80" rx="8" class="blk"/><text x="695" y="230" class="pt c" style="font-size:11px">MOSFET IRLZ44N</text><text x="695" y="250" class="pt c" style="font-size:10px;fill:#8a959b">4 LEDs IR (68 Ω cada)</text>
+        <rect x="40" y="50" width="220" height="90" rx="8" class="blk"/><text x="150" y="40" class="ttl c">Energia</text>
+        <text x="150" y="90" class="pt c" style="font-size:11px">LiPo → módulo 5 V → chave</text><text x="150" y="114" class="pt c" style="font-size:11px">5 V: placa + LEDs IR</text>
+        <rect x="40" y="260" width="220" height="70" rx="8" class="blk"/><text x="150" y="290" class="pt c" style="font-size:11px">Botões IR e TELA</text><text x="150" y="310" class="pt c" style="font-size:10px;fill:#8a959b">ao GND</text>
+        <path class="wr w-pwr" d="M260 80 H360"/><path class="wr w-gnd" d="M260 120 H360"/>
+        <path class="wr w-scl" d="M540 80 H620"/><path class="wr w-sda" d="M540 110 H620"/><path class="wr w-sig" d="M540 140 H620"/>
+        <path class="wr w-ir" d="M540 230 H620"/><path class="wr w-ana" d="M260 280 H360 M260 310 H360"/>
+        <g class="pin"><circle cx="260" cy="80" r="4"/><circle cx="360" cy="80" r="4"/><circle cx="260" cy="120" r="4"/><circle cx="360" cy="120" r="4"/><circle cx="540" cy="80" r="4"/><circle cx="540" cy="110" r="4"/><circle cx="540" cy="140" r="4"/><circle cx="540" cy="230" r="4"/><circle cx="360" cy="280" r="4"/><circle cx="360" cy="310" r="4"/></g>
+        <text x="40" y="365" class="pt" style="font-size:11px;fill:#8a959b">O LED branco da placa (IO4) fica sempre apagado pelo código. Não segure o botão IR (IO12) enquanto liga.</text>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Tela SCL / SDA / DC</td><td>IO14 / IO13 / IO2</td><td>VCC, RES e BLK no 3V3; GND no GND</td></tr>
+      <tr><td>Botão IR</td><td>IO12 e GND</td><td>Não segurar ao ligar (a placa lê o IO12 na partida)</td></tr>
+      <tr><td>Botão TELA</td><td>IO3 (U0R) e GND</td><td>Por isso não dá para usar o monitor serial</td></tr>
+      <tr><td>Porta do MOSFET</td><td>IO1 (U0T) por 220 Ω; 100 kΩ até o GND</td><td>O LED pisca um instante ao ligar (é normal)</td></tr>
+      <tr><td>4 LEDs IR (em paralelo)</td><td>5 V → 68 Ω → LED (+), um resistor por LED; LED (−) → dreno; fonte → GND</td><td>≈ 50 mA por LED no nível alto</td></tr>
+      <tr><td>LiPo → módulo → chave</td><td>5V e GND da ESP32-CAM</td><td>O mesmo módulo do speedloader (07) e do scanner (11)</td></tr>
+      <tr><td><b>Lanterna IR</b> (circuito separado)</td><td>18650 → TP4056 (B+/B−) · OUT+ → botão com trava → driver 7135 (+) · driver (−) → OUT− · driver → LED 3 W. <b>Acionador remoto:</b> o encaixe do plugue SF fica ligado <b>em paralelo</b> com o botão com trava (mola do meio num lado, lâmina do corpo no outro)</td><td>Tem bateria e botão próprios; não liga na visão noturna. O driver segura a corrente certa no LED (350–700 mA). Com o botão desligado, o acionador do guarda-mão acende enquanto você aperta</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Meça no rifle:</b> a altura do centro da luneta acima do trilho (Geissele alta = 49 mm) e quanto trilho livre sobra na frente da objetiva (a unidade tem 76 mm e a base precisa de 50 mm). Ajuste <code>EIXO</code> no <code>3D/pecas.scad</code> se for diferente.</li>
+      <li><b>Teste na mesa:</b> grave <code>VISAO_NOTURNA/VISAO_NOTURNA.ino</code> (veja o <code>CODIGO-LEIA-ME.txt</code>), ligue a tela e veja a imagem. Num quarto escuro, ligue os LEDs IR: a imagem tem que aparecer.</li>
+      <li><b>Lente:</b> encaixe a lente de 25 mm por trás, no rebaixo do casco, e prenda com o capuz coyote (2 × M3 × 10).</li>
+      <li><b>Por dentro:</b> LiPo deitada no fundo, entre o batente de trás e o ressalto da frente; placa de carga em pé nas guias da parede esquerda (USB-C para cima); tela deslizada de cima no suporte, e o suporte preso na parede com 2 × M3 × 8 nos rasgos (o batente dele segura a LiPo); ESP32-CAM em pé no rasgo da frente, com a câmera na moldura; plaquinha dos botões nos 2 pinos do teto.</li>
+      <li><b>LEDs IR:</b> os 4 LEDs entram justos nos furos de 5,1 mm da viseira, por dentro. Solde um resistor de 68 Ω em cada um e os 4 juntos no MOSFET.</li>
+      <li><b>Elevador fixo (se escolheu a fixa):</b> encaixe a orelha do casco no recorte do bloco, passe os 2 M3 × 50 por trás (cabeça embutida) e aperte nas porcas da frente até não ter folga nenhuma. Pule o passo seguinte.</li>
+      <li><b>Dobradiça e trava (se escolheu a basculante):</b> na articulação de trás, coloque uma molinha de caneta e o pino de trava (ponta chanfrada para fora); rosqueie o M3 × 12 no pino pelo rasgo da esquerda (é o botão). Na articulação da frente, coloque uma molinha e uma BB. Puxe o botão, encaixe a orelha do casco entre as articulações, passe o M3 × 50 com a porca e aperte até girar sem folga. Teste: em pé ela deve apoiar no batente e travar; puxe o botão, vire para a esquerda e solte: tem que travar de novo.</li>
+      <li><b>Lanterna IR (para 80 m), montagem:</b> parafuse o LED de 3 W (estrela) no driver 7135 e encaixe a estrela no anel da parede da frente, com a lente de 5° por cima (ela encosta na parede da frente). Suporte 18650 deitado no fundo, TP4056 por cima da bateria (com fita kapton) com o USB-C no furo de trás, e o botão com trava 8 × 8 no furo quadrado de trás. Ligação: 18650 → TP4056 (B+/B−) → OUT+ → botão → driver (+); driver (−) → OUT−; driver → LED. Feche a tampa coyote (2 × M3 × 10).</li>
+      <li><b>Lanterna IR no rifle:</b> coloque as 2 porcas M-LOK impressas em 2 rasgos do lado direito do guarda-mão, perto da ponta (40 mm de distância entre elas), gire 90° e aperte os 2 × M3 × 12 por dentro da caixa. De noite, com a visão noturna ligada, mire num ponto a ~80 m e veja se o feixe cai em volta do retículo; se precisar, coloque uma arruela atrás de uma das porcas para apontar.</li>
+      <li><b>Tampa lateral</b> coyote com 4 × M3 × 10, e a garra no trilho (M3 × 30), com a traseira da unidade uns 5–10 mm na frente da objetiva.</li>
+      <li><b>Foco e 1x (de dia):</b> deslize o suporte da tela até a imagem ficar nítida na luneta. Depois faça o AJUSTE no código (os 2 botões por 3 s): tamanho igual ao real, depois lado e altura até o retículo cair no mesmo ponto com e sem a visão noturna.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Custo de produção</h2>
+    <p class="hint">Preços pesquisados em out/2026 no Mercado Livre e em lojas nacionais, sem frete. Só produtos novos: os links do Mercado Livre já abrem com o filtro "Novo". Onde está escrito "estimativa", não achei um anúncio nacional com a medida exata. Peças impressas não entram.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td><b>Conjunto:</b> ESP32-CAM com OV2640 + base ESP32-CAM-MB</td><td><a href="https://www.institutodigital.com.br/produto/modulo-esp32-cam-camera-ov2640/">Instituto Digital</a> · <a href="https://lista.mercadolivre.com.br/esp32-cam-mb_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>a câmera original sobra (reserva)</td><td class="r">R$ 60,00</td><td class="r">R$ 120,00</td></tr>
+      <tr><td>Câmera OV2640 sem filtro IR, 850 nm (estimativa; ou tire o filtro da original)</td><td><a href="https://lista.mercadolivre.com.br/ov2640-850nm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 25,00</td><td class="r">R$ 45,00</td></tr>
+      <tr><td>Tela IPS 1,3" 240 × 240 ST7789 (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/display-1.3-st7789-240x240_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 30,00</td><td class="r">R$ 45,00</td></tr>
+      <tr><td><b>Conjunto:</b> par de lentes 25 mm / foco 45 mm (Cardboard) (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/lente-google-cardboard-25mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>1 de reserva</td><td class="r">R$ 15,00</td><td class="r">R$ 30,00</td></tr>
+      <tr><td><b>Conjunto:</b> 10 LEDs IR 5 mm 850 nm (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/led-infravermelho-850nm-5mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>6 de reserva</td><td class="r">R$ 10,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td>MOSFET IRLZ44N</td><td><a href="https://lista.mercadolivre.com.br/irlz44n_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 5,00</td><td class="r">R$ 10,00</td></tr>
+      <tr><td>LiPo 503450 3,7 V 1000 mAh (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/bateria-3.7v-1000mah_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 35,00</td><td class="r">R$ 50,00</td></tr>
+      <tr><td>Módulo carregador com saída 5 V (estimativa; serve para LiPo)</td><td><a href="https://lista.mercadolivre.com.br/modulo-carregador-18650-saida-5v_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td><b>Lanterna IR · Conjunto:</b> 2 LEDs IR 3 W 850 nm em estrela</td><td><a href="https://lista.mercadolivre.com.br/led-ir-850nm-3w_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>1 de reserva</td><td class="r">R$ 19,90</td><td class="r">R$ 19,90</td></tr>
+      <tr><td><b>Lanterna IR:</b> lente colimadora 20 mm de 5° com suporte (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/lente-led-20mm-5-graus_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 5,00</td><td class="r">R$ 15,00</td></tr>
+      <tr><td><b>Lanterna IR:</b> driver de lanterna 17 mm com AMC7135 (estimativa)</td><td><a href="https://lista.mercadolivre.com.br/driver-lanterna-17mm-7135_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 8,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td><b>Lanterna IR:</b> bateria 18650 + suporte 18650 (estimativa; mesma do cronógrafo)</td><td><a href="https://www.mercadolivre.com.br/kit-2-baterias-de-litio-recarregavel-modelo-18650-2600mah-37v-elgin/p/MLB26869470">Mercado Livre</a></td><td>—</td><td class="r">R$ 25,00</td><td class="r">R$ 40,00</td></tr>
+      <tr><td>Botões 6×6, chave SS12D00, resistores 68 Ω / 220 Ω / 100 kΩ, parafusos M3</td><td>kits dos projetos anteriores</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="reuse"><td colspan="3">Total reaproveitando os kits (com a lanterna montada, para 80 m)</td><td class="r">≈ R$ 253</td><td class="r">≈ R$ 440</td></tr>      <tr class="tot"><td colspan="3">Total do zero (comprando também os kits de botões, chaves, TP4056 e resistores)</td><td class="r">≈ R$ 298</td><td class="r">≈ R$ 500</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Pontos de atenção</h2>
+    <div class="note red"><b>Regras do campo:</b> visão noturna e iluminador IR costumam ser liberados no airsoft, mas alguns campos e jogos noturnos têm regra própria (por exemplo, proibir iluminador IR forte ou exigir que ele fique desligado em área fechada). Confirme antes do jogo.</div>
+    <div class="note">Quem também usa visão noturna enxerga os seus LEDs IR e a lanterna IR como uma lanterna comum. Ligue a lanterna só na hora de procurar ou de atirar no alvo longe. Use o nível baixo ou desligado sempre que der: a câmera ainda vê bem com luar ou luz de cidade. Para longe, use a lanterna IR montada (caixa no M-LOK direito, lente de 5°): ela leva a luz a 80–100 m.</div>
+    <div class="note">O código ainda não foi compilado aqui no PC (não há Arduino instalado). Se aparecer erro ao gravar, me mande a mensagem.</div>
+    <div class="note">Projeto avançado: a parte difícil não é a eletrônica, e sim a óptica. A tela precisa ficar no foco da lente (os rasgos dão ±5 mm), e o tamanho e o "zero" se ajustam no AJUSTE do código. Faça de dia, com calma, apoiado num saco de areia.</div>
+    <div class="note"><b>Elevador fixo:</b> ele deixa a unidade sempre na frente da luneta, então não dá para tirar do caminho de dia sem soltar a garra. Aperte bem os 2 M3 × 50: qualquer folga na orelha mexe a imagem e tira o "zero". Imprima com 40% de preenchimento.</div>
+    <div class="note">Medidas para conferir antes de imprimir (topo do <code>pecas.scad</code>): <code>EIXO</code>, <code>TELA_PCB</code>, <code>CAM_Z</code> e <code>LIPO</code>.</div>
+    <div class="note ok"><b>Acionador remoto:</b> a traseira da lanterna IR tem um encaixe para o <b>plugue SF</b> (o cabo de lanterna) do seu acionador duplo de M-LOK; o outro cabo (P2) vai no ANPEQ (06). O encaixe tem uma mola no fundo (contato do meio) e uma lâmina de cobre na lateral (contato do corpo), ligados em paralelo com o botão com trava. <b>Meça o seu plugue</b> (diâmetro e comprimento da ponta) e ajuste <code>SF_D</code> e <code>SF_L</code> no <code>pecas.scad</code>; usei Ø 6,2 × 10 mm. Teste com o multímetro quais partes do plugue fecham quando você aperta o botão.</div>
+    <div class="note ok">Combina com o resto: a garra é a mesma do anti-cant (03), o módulo de 5 V é o mesmo do speedloader (07), e virado para a esquerda ele não bate no pod de LEDs do anti-cant, que fica mais atrás no tubo. Em pé, o laser do telêmetro (12) passa 5 mm acima dele.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+<script>
+// ===== simulação da visão noturna vista pela luneta =====
+(function(){
+  var ocular = document.getElementById('simOcular');
+  if (!ocular || !ocular.getContext) return;
+  var N = 240;                       // pontos da tela (240 x 240)
+  var FOV_TELA = 29;                 // graus que a tela ocupa através da lente de 45 mm
+  var FOV_LUNETA_1X = 19;            // campo de visão da Red Win em 1x (graus, aproximado)
+  var PXG = N / FOV_TELA;            // pontos da tela por grau
+  var ALT_OLHO = 1.5;                // altura da câmera (m)
+  var est = {zoom: 3, nv: true, ir: 3, ext: true, amb: 0, cor: 0, bri: 3};
+
+  // ---------- cena: para cada ponto, distância (m) e refletância no infravermelho ----------
+  var dist = new Float32Array(N * N), refl = new Float32Array(N * N);
+  function ruidoFixo(i) { var x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
+  function alturaArvore(az) {        // linha de árvores irregular a 120 m, com uma clareira atrás da pessoa de 80 m
+    if (az > -3.2 && az < 1.4) return 0;
+    return 9 + 4 * Math.sin(az * 0.9) + 3 * Math.sin(az * 2.3 + 1) + 2 * Math.sin(az * 5.1 + 2);
+  }
+  var PESSOAS = [{d: 15, az: -7}, {d: 25, az: 3}, {d: 40, az: 9}, {d: 80, az: -0.8}];
+  function dentroPessoa(p, az, el) { // silhueta: cabeça + tronco + pernas, 1,75 m de altura
+    var dAz = Math.tan((az - p.az) * Math.PI / 180) * p.d, y = Math.tan(el * Math.PI / 180) * p.d + ALT_OLHO;
+    if (y < 0 || y > 1.75) return false;
+    if (y > 1.5) return (dAz * dAz + (y - 1.62) * (y - 1.62)) < 0.012;            // cabeça
+    if (y > 0.85) return Math.abs(dAz) < 0.24 - (y > 1.35 ? (y - 1.35) * 0.6 : 0); // tronco e ombros
+    return Math.abs(Math.abs(dAz) - 0.1) < 0.08;                                  // pernas
+  }
+  for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+    var az = (i - N / 2 + 0.5) / PXG, el = -(j - N / 2 + 0.5) / PXG, k = j * N + i;
+    var d = Infinity, r = 0;                                              // céu
+    if (el < 0) { d = ALT_OLHO / Math.tan(-el * Math.PI / 180); r = 0.28 + 0.12 * ruidoFixo(k); }   // chão (mato baixo)
+    var topoArv = Math.atan((alturaArvore(az) - ALT_OLHO) / 120) * 180 / Math.PI;
+    if (d > 120 && el <= topoArv) { d = 120; r = 0.45 + 0.2 * ruidoFixo(k * 3); }                     // árvores
+    var dt = 20, yT = Math.tan(el * Math.PI / 180) * dt + ALT_OLHO, xT = Math.tan((az + 2) * Math.PI / 180) * dt;
+    if (d > dt && yT > 0 && yT < 0.9 && Math.abs(xT) < 0.9) { d = dt; r = 0.35; }                     // tambores
+    var dm = 11, ym = Math.tan(el * Math.PI / 180) * dm + ALT_OLHO, xm = Math.tan((az - 11) * Math.PI / 180) * dm;
+    if (d > dm && ym > 0 && (xm * xm) / 1.2 + (ym * ym) / 0.5 < 1) { d = dm; r = 0.5 + 0.15 * ruidoFixo(k * 7); }   // moita
+    for (var q = 0; q < PESSOAS.length; q++) if (d > PESSOAS[q].d && dentroPessoa(PESSOAS[q], az, el)) { d = PESSOAS[q].d; r = 0.6; }
+    dist[k] = d; refl[k] = r;
+  }
+
+  // ---------- luz: LEDs IR (feixe de ~30°) + ambiente ----------
+  var IR_NIVEL = [0, 0.35, 0.65, 1], AMB = [0.0004, 0.02, 0.06], CEU = [0.002, 0.05, 0.12];
+  var BRILHO = [0.12, 0.25, 0.45, 0.70, 1.0];
+  var tela = document.createElement('canvas'); tela.width = N; tela.height = N;
+  var tctx = tela.getContext('2d'), img = tctx.createImageData(N, N);
+  var sinal = new Float32Array(N * N);
+  function gauss() { return (Math.random() + Math.random() + Math.random() - 1.5) * 1.15; }
+
+  function quadro() {
+    var irP = 160 * IR_NIVEL[est.ir], ext = est.ext ? 2600 : 0, amb = AMB[est.amb], soma = 0;
+    for (var k = 0; k < N * N; k++) {
+      var d = dist[k], s;
+      if (d === Infinity) s = CEU[est.amb];
+      else {
+        var i = k % N, j = (k / N) | 0, rx = (i - N / 2) / PXG, ry = (j - N / 2) / PXG;
+        var feixe = Math.exp(-(rx * rx + ry * ry) / 200);
+        var feixeExt = Math.exp(-(rx * rx + ry * ry) / 45);                 // lanterna IR externa: feixe fechado (~10°)
+        s = refl[k] * (amb + (est.nv ? (irP * feixe + ext * feixeExt) / (d * d) : 0));
+      }
+      sinal[k] = s; soma += s;
+    }
+    var p = img.data;
+    if (!est.nv) {                       // olho nu, sem visão noturna
+      for (var k2 = 0; k2 < N * N; k2++) {
+        var v = Math.min(1, sinal[k2] * 9) * 255;
+        p[k2 * 4] = v * 0.8; p[k2 * 4 + 1] = v * 0.85; p[k2 * 4 + 2] = v; p[k2 * 4 + 3] = 255;
+      }
+      tctx.putImageData(img, 0, 0); return;
+    }
+    // câmera: ganho automático (mais ganho = mais chuvisco)
+    var media = soma / (N * N), ganho = Math.max(1, Math.min(600, 0.3 / Math.max(media, 1e-6)));
+    var ruido = 0.012 * Math.sqrt(ganho), cru = new Uint8Array(N * N), mn = 255, mx = 0;
+    for (var k3 = 0; k3 < N * N; k3++) {
+      var c = sinal[k3] * ganho + gauss() * ruido;
+      c = c < 0 ? 0 : c > 1 ? 1 : c;
+      var b = (c * 255) | 0; cru[k3] = b;
+      if ((k3 & 7) === 0) { if (b < mn) mn = b; if (b > mx) mx = b; }
+    }
+    // contraste automático + gama + brilho + cor (igual ao código do aparelho)
+    var faixa = Math.max(24, mx - mn), br = BRILHO[est.bri], pal = new Uint8Array(256 * 3);
+    for (var v2 = 0; v2 < 256; v2++) {
+      var n = Math.min(1, Math.max(0, (v2 - mn) / faixa)), kk = Math.sqrt(n) * br * 255;
+      if (est.cor === 0) { pal[v2 * 3] = kk / 5; pal[v2 * 3 + 1] = kk; pal[v2 * 3 + 2] = kk / 4; }
+      else if (est.cor === 1) { pal[v2 * 3] = kk; pal[v2 * 3 + 1] = kk; pal[v2 * 3 + 2] = kk * 0.9; }
+      else { pal[v2 * 3] = kk; pal[v2 * 3 + 1] = 0; pal[v2 * 3 + 2] = 0; }
+    }
+    for (var k4 = 0; k4 < N * N; k4++) {
+      var e = cru[k4] * 3;
+      p[k4 * 4] = pal[e]; p[k4 * 4 + 1] = pal[e + 1]; p[k4 * 4 + 2] = pal[e + 2]; p[k4 * 4 + 3] = 255;
+    }
+    tctx.putImageData(img, 0, 0);
+  }
+
+  // ---------- ocular: recorte da tela ampliado pelo zoom + retículo BDC da Red Win ----------
+  var octx = ocular.getContext('2d');
+  function desenhar() {
+    quadro();
+    var W = ocular.width, vis = FOV_LUNETA_1X / est.zoom * PXG, x0 = N / 2 - vis / 2, esc = W / vis;
+    octx.fillStyle = '#000'; octx.fillRect(0, 0, W, W);
+    octx.save();
+    octx.beginPath(); octx.arc(W / 2, W / 2, W / 2 - 2, 0, Math.PI * 2); octx.clip();
+    octx.imageSmoothingEnabled = !est.nv;    // olho nu: imagem lisa · visão noturna: os pontos da tela
+    octx.drawImage(tela, x0, x0, vis, vis, 0, 0, W, W);
+    if (est.nv && esc > 7) {             // grade entre os pontos da tela (aparece no zoom alto)
+      octx.strokeStyle = 'rgba(0,0,0,0.35)'; octx.lineWidth = Math.max(1, esc * 0.12);
+      var ini = (Math.ceil(x0) - x0) * esc;
+      for (var g = ini; g < W; g += esc) { octx.beginPath(); octx.moveTo(g, 0); octx.lineTo(g, W); octx.stroke(); octx.beginPath(); octx.moveTo(0, g); octx.lineTo(W, g); octx.stroke(); }
+    }
+    var vin = octx.createRadialGradient(W / 2, W / 2, W * 0.32, W / 2, W / 2, W / 2);
+    vin.addColorStop(0, 'rgba(0,0,0,0)'); vin.addColorStop(1, 'rgba(0,0,0,0.85)');
+    octx.fillStyle = vin; octx.fillRect(0, 0, W, W);
+    // retículo (2º plano focal: mesmo tamanho em qualquer zoom)
+    var c = W / 2, preto = 'rgba(8,8,8,0.95)';
+    octx.fillStyle = preto;
+    octx.fillRect(0, c - 4, c - 70, 8); octx.fillRect(c + 70, c - 4, c - 70, 8); octx.fillRect(c - 4, c + 90, 8, c - 90);   // postes grossos
+    octx.strokeStyle = preto; octx.lineWidth = 1.5;
+    octx.beginPath(); octx.moveTo(c - 70, c); octx.lineTo(c - 20, c); octx.moveTo(c + 20, c); octx.lineTo(c + 70, c);
+    octx.moveTo(c, c + 20); octx.lineTo(c, c + 90); octx.stroke();
+    for (var m = 0; m < 3; m++) { var yy = c + 35 + m * 18, ww = 12 - m * 3; octx.beginPath(); octx.moveTo(c - ww, yy); octx.lineTo(c + ww, yy); octx.stroke(); }   // marcas de queda
+    octx.strokeStyle = 'rgba(255,40,30,0.9)'; octx.lineWidth = 2.2;                      // ferradura vermelha iluminada
+    octx.beginPath(); octx.arc(c, c, 16, Math.PI * 0.62, Math.PI * 2.38); octx.stroke();
+    octx.fillStyle = 'rgba(255,40,30,0.95)'; octx.beginPath(); octx.arc(c, c, 1.8, 0, Math.PI * 2); octx.fill();
+    octx.restore();
+    var px = Math.round(esc * 10) / 10;
+    document.getElementById('simRot').textContent = est.nv
+      ? 'luneta em ' + est.zoom + 'x · cada ponto da tela aparece com ' + px + ' px · campo ≈ ' + (FOV_LUNETA_1X / est.zoom).toFixed(1) + '°'
+      : 'sem visão noturna: o que o olho vê pela luneta';
+  }
+
+  // ---------- botões ----------
+  function grupo(id, chave, opcoes) {
+    var box = document.getElementById(id);
+    opcoes.forEach(function(o) {
+      var b = document.createElement('button'); b.textContent = o[0];
+      b.onclick = function() { est[chave] = o[1]; marcar(); desenhar(); };
+      b.setAttribute('data-v', String(o[1])); box.appendChild(b);
+    });
+    box.setAttribute('data-k', chave);
+  }
+  function marcar() {
+    ['cZoom', 'cNV', 'cIR', 'cExt', 'cAmb', 'cCor', 'cBri'].forEach(function(id) {
+      var box = document.getElementById(id), k = box.getAttribute('data-k');
+      Array.prototype.forEach.call(box.children, function(b) { b.classList.toggle('on', b.getAttribute('data-v') === String(est[k])); });
+    });
+  }
+  grupo('cZoom', 'zoom', [['1x', 1], ['2x', 2], ['3x', 3], ['4x', 4], ['6x', 6]]);
+  grupo('cNV', 'nv', [['ligada', true], ['sem (olho nu)', false]]);
+  grupo('cIR', 'ir', [['desligado', 0], ['baixo', 1], ['médio', 2], ['alto', 3]]);
+  grupo('cExt', 'ext', [['com lanterna', true], ['sem lanterna', false]]);
+  grupo('cAmb', 'amb', [['escuro total', 0], ['luar', 1], ['luz de cidade', 2]]);
+  grupo('cCor', 'cor', [['verde', 0], ['branco', 1], ['vermelho', 2]]);
+  grupo('cBri', 'bri', [['1', 0], ['2', 1], ['3', 2], ['4', 3], ['5', 4]]);
+  marcar(); desenhar();
+  setInterval(function() { if (est.nv) desenhar(); }, 90);   // chuvisco "vivo", como na tela de verdade
+})();
+</script>
+</body>
+</html>

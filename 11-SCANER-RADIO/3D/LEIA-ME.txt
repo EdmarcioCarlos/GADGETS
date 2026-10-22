@@ -1,0 +1,24 @@
+==========================================================
+ 11 - SCANNER DE RÁDIO UHF · PEÇAS 3D
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+
+ CONFIGURAÇÃO (Creality K1C, PETG, resistente a BB a 10 m+)
+   Camada 0,2 mm · 5 paredes · 5 camadas em cima e embaixo
+   Preenchimento 40% giroide · bico 240 °C · mesa 75-80 °C
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: corpo, clipe_molle · COYOTE: tampa_frente
+   A tampa da frente agora tem 4 mm (3 úteis + 1 das gravações).
+
+ PEÇA           QTD  SUPORTE  OBSERVAÇÃO
+ corpo           1   não      62 x 112 x 31, fundo na mesa
+ tampa_frente    1   não      é a TAMPA (tela + botão). Face
+                              de fora na mesa.
+ clipe_molle     1   não      prende em fita MOLLE ou cinto
+
+ FERRAGENS: 4 parafusos M2 x 6 (OLED na tampa) · M3 Allen: M3 x 10 (tampa) · 2 M3 x 8 (clipe) ·
+ policarbonato 1 mm de 28 x 17 mm na janela da tela.
+
+ Depois de imprimir cada peça, me diga ou some no ESTOQUE.js.

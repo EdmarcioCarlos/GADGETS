@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Luneta do DMR</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+a{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:10px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:12px}
+.cardp{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.cardp b{color:var(--accent);font:600 12px Consolas,monospace;letter-spacing:.1em}
+.cardp h3{margin:.3em 0;font-size:16px}
+/* SVG */
+.part{fill:#3b4147;stroke:#7f8a90;stroke-width:.35}
+.metal{fill:#5a6268;stroke:#9aa4aa;stroke-width:.25}
+.gs{fill:#7a5b35;stroke:#b08a55;stroke-width:.25}
+.dark{fill:#08090a;stroke:#5a6268;stroke-width:.2}
+.rail{fill:#2b3034;stroke:#6c767c;stroke-width:.3}
+.hg{fill:#202529;stroke:#40484e;stroke-width:.3}
+.scope{fill:#1b1f22;stroke:#59636a;stroke-width:.35}
+.band{fill:none;stroke:#9aa4aa;stroke-width:.6}
+.grip{stroke:#2a2f33;stroke-width:.4}
+.ghost{fill:none;stroke:#7f8a90;stroke-width:.35;stroke-dasharray:1.4 .9}
+.beam{stroke:#e5533f;stroke-width:.6;stroke-dasharray:3 2;opacity:.85}
+.dim{stroke:#e2b04a;stroke-width:.35;fill:none;marker-start:url(#arrL);marker-end:url(#arrL)}
+.ext{stroke:#e2b04a;stroke-width:.25;opacity:.55}
+.lead{stroke:#8a959b;stroke-width:.35;fill:none}
+.dt{fill:#e2b04a;font:600 5px Consolas,monospace;text-anchor:middle}
+.lb{fill:#cfd6da;font:5px "Segoe UI",system-ui,sans-serif}
+.lb.s{font-size:4px}
+.mut{fill:#8a959b}
+.acc{fill:#9cc35a}
+.tel{fill:#4fa3ff}
+.spt{fill:#e2b04a}
+.hl-s{stroke:#e2b04a;stroke-width:.6;fill:none;stroke-dasharray:2 1.2}
+.cable{fill:none;stroke:#0a0a0a;stroke-width:2.5;stroke-linecap:round}
+.cable-hi{fill:none;stroke:#3a3f44;stroke-width:.7;stroke-linecap:round}
+.led-r{fill:#ff4a33;filter:url(#glow)}
+.led-g{fill:#47ff6a;filter:url(#glow)}
+.off-r{fill:#4a1d18}
+.off-g{fill:#1b3a22}
+.o{fill:#bfe9ff;font-family:Consolas,"Courier New",monospace;font-weight:700}
+.hl-a{stroke:#9cc35a;stroke-width:.6;fill:none;stroke-dasharray:2 1.2}
+.hl-t{stroke:#4fa3ff;stroke-width:.6;fill:none;stroke-dasharray:2 1.2}
+.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:.12}}
+#tilt{transition:transform .35s ease}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arrL" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="3.6" markerHeight="3.6" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+    <radialGradient id="glass" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#1c3346"/><stop offset="1" stop-color="#05090d"/></radialGradient>
+    <radialGradient id="glassL" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#3a1f2a"/><stop offset="1" stop-color="#07080b"/></radialGradient>
+    <radialGradient id="view" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#5f7a52"/><stop offset=".7" stop-color="#3f5538"/><stop offset="1" stop-color="#1e2a1b"/></radialGradient>
+    <filter id="glow" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="hatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1" height="3" fill="#bfe9ff"/></pattern>
+    <pattern id="hex" width="3.6" height="6.235" patternUnits="userSpaceOnUse"><rect width="3.6" height="6.235" fill="#0b0d0f" fill-opacity=".35"/><path d="M0,1.039 L1.8,0 L3.6,1.039 L3.6,3.117 L1.8,4.157 L0,3.117 Z M1.8,4.157 L1.8,6.235 M0,1.039 L0,0 M3.6,1.039 L3.6,0" fill="none" stroke="#4a5258" stroke-width=".6"/></pattern>
+    <g id="ret">
+      <g fill="#c9d1d5">
+        <rect x="-17" y="-.55" width="9" height="1.1"/><rect x="8" y="-.55" width="9" height="1.1"/>
+        <rect x="-.55" y="9.5" width="1.1" height="7.5"/>
+      </g>
+      <g stroke="#c9d1d5" stroke-width=".18" fill="none">
+        <line x1="-8" y1="0" x2="-1.9" y2="0"/><line x1="1.9" y1="0" x2="8" y2="0"/>
+        <line x1="0" y1="-17" x2="0" y2="-1.9"/><line x1="0" y1="1.9" x2="0" y2="9.5"/>
+        <line x1="-6" y1="-.5" x2="-6" y2=".5"/><line x1="-4.5" y1="-.4" x2="-4.5" y2=".4"/><line x1="-3" y1="-.5" x2="-3" y2=".5"/>
+        <line x1="3" y1="-.5" x2="3" y2=".5"/><line x1="4.5" y1="-.4" x2="4.5" y2=".4"/><line x1="6" y1="-.5" x2="6" y2=".5"/>
+        <line x1="-1.1" y1="2.6" x2="1.1" y2="2.6"/><line x1="-1" y1="3.9" x2="1" y2="3.9"/><line x1="-.9" y1="5.2" x2=".9" y2="5.2"/><line x1="-.8" y1="6.5" x2=".8" y2="6.5"/><line x1="-.7" y1="7.8" x2=".7" y2="7.8"/>
+        <line x1=".9" y1="10.5" x2="1.6" y2="10.5"/><line x1=".9" y1="11.5" x2="1.6" y2="11.5"/><line x1=".9" y1="12.5" x2="1.6" y2="12.5"/><line x1=".9" y1="13.5" x2="1.6" y2="13.5"/>
+        <rect x="7" y="-8.5" width="2.2" height="2.2"/><line x1="7" y1="-7.4" x2="9.2" y2="-7.4"/>
+      </g>
+      <path d="M-1.1,1.1 A1.55,1.55 0 1 1 1.1,1.1" fill="none" stroke="#ff4a33" stroke-width=".35"/>
+      <circle r=".3" fill="#ff4a33"/>
+      <g fill="#ff4a33"><circle cx="-1.6" cy="2.6" r=".14"/><circle cx="1.6" cy="2.6" r=".14"/></g>
+    </g>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PRÉVIA GERAL</div>
+    <h1>Luneta do DMR com os gadgets</h1>
+    <p class="sub">Red Win 1-6×24 na Geissele Super Precision alta, sobre a Rossi Shadow MK16 URG-I 13.5, com o <span style="color:var(--accent)">Nível Anti-Cant (03)</span> e o <span style="color:#4fa3ff">Telêmetro com Zona de Engajamento (12)</span> instalados juntos. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Resumo do conjunto</h2>
+    <div class="tiles">
+      <div class="tile"><b>≈ 115 g</b><span>peso somado na luneta e no trilho (35 + 80 g)</span></div>
+      <div class="tile"><b>≈ 93 mm</b><span>altura do topo do telêmetro acima do trilho</span></div>
+      <div class="tile"><b>2 baterias</b><span>uma em cada aparelho, as duas carregam por USB-C</span></div>
+      <div class="tile"><b>R$ 455–598</b><span>custo dos dois juntos (sem frete dos itens BR)</span></div>
+    </div>
+    <div class="cards">
+      <div class="cardp"><b>PROJETO 03</b><h3>Nível Anti-Cant</h3><p class="hint">Unidade no trilho do guarda-mão, embaixo da objetiva; pod de 3 LEDs na lateral esquerda do tubo (9 h), perto da ocular.</p><p><a href="03-NIVEL-ANTI-CANT/PREVIA.html">Abrir prévia completa →</a></p></div>
+      <div class="cardp"><b style="color:#4fa3ff">PROJETO 12</b><h3>Telêmetro com Zona de Engajamento</h3><p class="hint">Em cima do anel dianteiro da Geissele, numa tampa impressa; tela virada para o atirador e capuz com grade anti-BB na frente.</p><p><a href="12-TELEMETRO-ZONA-ENGAJAMENTO/PREVIA.html">Abrir prévia completa →</a></p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Vista lateral esquerda</h2>
+    <div class="fig">
+      <svg viewBox="0 0 340 214" data-mm="340" data-zoom="2.7">
+        <!-- rifle -->
+        <rect x="0" y="159.5" width="122" height="20.5" class="hg"/>
+        <g fill="#14181b"><rect x="10" y="166" width="22" height="7" rx="3.5"/><rect x="40" y="166" width="22" height="7" rx="3.5"/><rect x="70" y="166" width="22" height="7" rx="3.5"/></g>
+        <rect x="122" y="159.5" width="218" height="20.5" class="hg" style="fill:#262b30"/>
+        <text x="61" y="187" class="lb s mut" text-anchor="middle">guarda-mão URG-I 13.5″ (M-LOK)</text>
+        <text x="231" y="173" class="lb mut" text-anchor="middle">receptor M4</text>
+        <rect x="0" y="150" width="340" height="9.5" class="rail"/>
+        <g data-slots="3,34,150,3,5.23,10.01" fill="#0e1113"></g>
+        <!-- Geissele -->
+        <rect x="86" y="141" width="108" height="9" rx="1.5" class="gs"/>
+        <polygon points="96,121 114,121 118,141 92,141" class="gs"/>
+        <polygon points="166,121 184,121 188,141 162,141" class="gs"/>
+        <circle cx="100" cy="146" r="3.5" class="dark"/><circle cx="180" cy="146" r="3.5" class="dark"/>
+        <!-- luneta -->
+        <polygon points="40,84 66,84 78,86 78,116 66,118 40,118" class="scope"/>
+        <rect x="40" y="84" width="3" height="34" class="scope"/>
+        <rect x="78" y="86" width="127" height="30" class="scope"/>
+        <rect x="129" y="72" width="22" height="14" rx="1" class="scope"/>
+        <circle cx="140" cy="101" r="11" class="scope"/>
+        <text x="140" y="102.5" class="lb mut" style="font-size:3px" text-anchor="middle">ilum.</text>
+        <polygon points="205,86 222,79 290,79 290,123 222,123 205,116" class="scope"/>
+        <line x1="230" y1="80" x2="230" y2="122" class="grip"/><line x1="234" y1="80" x2="234" y2="122" class="grip"/><line x1="238" y1="80" x2="238" y2="122" class="grip"/>
+        <!-- anéis: dianteiro com tampa impressa -->
+        <rect x="96" y="101" width="18" height="20" rx="3" class="gs"/>
+        <rect x="96" y="77" width="18" height="24" rx="3" class="part"/>
+        <rect x="166" y="81" width="18" height="40" rx="3" class="gs"/>
+
+        <!-- ===== PROJETO 12: telêmetro ===== -->
+        <line x1="41" y1="68.5" x2="0" y2="68.5" class="beam"/>
+        <text x="2" y="65" class="lb s" style="fill:#e5533f">laser IR 905 nm</text>
+        <rect x="71.5" y="56.5" width="3" height="1.5" class="metal"/>
+        <rect x="41" y="58" width="76" height="19" rx="2.5" class="part"/>
+        <rect x="41" y="59" width="6" height="17" rx="1" fill="url(#hex)" stroke="#7f8a90" stroke-width=".3"/>
+        <rect x="58" y="64.5" width="6" height="6" rx="1" class="metal"/>
+        <text x="100" y="70" class="lb mut" style="font-size:3.5px;letter-spacing:.5px" text-anchor="middle">BLACK BIRD</text>
+        <rect x="38" y="54" width="82" height="26" rx="4" class="hl-t"/>
+
+        <!-- ===== PROJETO 03: anti-cant ===== -->
+        <rect x="30" y="128" width="48" height="18" rx="2" class="part"/>
+        <rect x="30" y="146" width="48" height="4" class="metal"/>
+        <rect x="44" y="150" width="20" height="6.4" class="metal"/>
+        <circle cx="54" cy="153.2" r="5" class="metal"/><circle cx="54" cy="153.2" r="1.5" class="dark"/>
+        <rect x="37" y="134" width="6" height="6" rx=".8" class="metal"/>
+        <rect x="62" y="135.2" width="8.5" height="3.6" rx=".6" class="dark"/>
+        <path d="M78,136 C92,136 104,130 122,126 S170,120 186,114 S192,108 195,107" class="cable"/>
+        <path d="M78,136 C92,136 104,130 122,126 S170,120 186,114 S192,108 195,107" class="cable-hi"/>
+        <rect x="196" y="84.8" width="6" height="32.4" class="band"/>
+        <rect x="195" y="90" width="8" height="22" rx="1.2" class="part"/>
+        <rect x="203" y="92.5" width="1" height="3" class="off-r"/>
+        <rect x="203" y="99.5" width="1" height="3" class="led-g"/>
+        <rect x="203" y="106.5" width="1" height="3" class="off-r"/>
+        <rect x="27" y="125" width="54" height="34" rx="4" class="hl-a"/>
+        <rect x="192" y="87" width="14" height="28" rx="3" class="hl-a"/>
+
+        <!-- cotas -->
+        <line x1="118" y1="58" x2="334" y2="58" class="ext"/><line x1="290" y1="150" x2="334" y2="150" class="ext"/>
+        <line x1="330" y1="58" x2="330" y2="150" class="dim"/><text x="327.8" y="104" class="dt" transform="rotate(-90 327.8 104)">≈ 93 acima do trilho</text>
+        <line x1="290" y1="101" x2="318" y2="101" class="ext"/>
+        <line x1="314" y1="101" x2="314" y2="150" class="dim"/><text x="311.8" y="125.5" class="dt" transform="rotate(-90 311.8 125.5)">49</text>
+        <line x1="78" y1="118" x2="86" y2="118" class="ext"/><line x1="78" y1="128" x2="86" y2="128" class="ext"/>
+        <line x1="83" y1="118" x2="83" y2="128" class="dim"/><text x="88" y="125" class="dt" style="text-anchor:start">10</text>
+
+        <!-- rótulos -->
+        <text x="2" y="24" class="lb tel">12 · Telêmetro (tampa do anel dianteiro)</text>
+        <text x="2" y="30" class="lb s mut">capuz + grade anti-BB na frente · tela virada para o atirador</text>
+        <line x1="20" y1="32" x2="44" y2="58" class="lead"/>
+        <text x="214" y="64" class="lb acc">03 · Pod de LEDs (9 h)</text>
+        <line x1="222" y1="66" x2="204" y2="92" class="lead"/>
+        <text x="252" y="131" class="lb s mut">cabo do anti-cant</text>
+        <line x1="250" y1="130" x2="170" y2="120" class="lead"/>
+        <text x="54" y="199" class="lb acc" text-anchor="middle">03 · Unidade anti-cant</text>
+        <text x="54" y="205" class="lb s mut" text-anchor="middle">(trilho, à frente da Geissele)</text>
+        <text x="222" y="75" class="lb">Red Win 1-6×24</text>
+        <text x="200" y="140" class="lb s mut">Geissele SP alta (1,93″)</text>
+        <text x="4" y="211" class="lb mut">◄ CANO</text>
+        <text x="336" y="211" class="lb mut" text-anchor="end">ATIRADOR ►</text>
+      </svg>
+      <div class="cap">Os dois projetos dividem o espaço sem se encostar. O <b style="color:#4fa3ff">telêmetro</b> fica em cima, na tampa impressa do anel dianteiro, e só ocupa o topo da luneta. O <b style="color:var(--accent)">anti-cant</b> usa a parte de baixo e a lateral esquerda: a unidade vai no trilho, embaixo da objetiva (sobram uns 10 mm), e o pod de LEDs abraça o tubo logo à frente do anel de zoom. O cabo do anti-cant corre pela lateral esquerda e não passa por cima. Nenhum deles encosta nas torres nem no anel de zoom.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>O que o atirador vê</h2>
+    <p class="hint">Vista de trás da luneta, como na posição de tiro. Use os botões para inclinar o rifle e ver o pod reagir.</p>
+    <div class="fig">
+      <div class="seg">
+        <button class="tb on" data-a="0">Nivelado</button>
+        <button class="tb" data-a="-3">Caído à esquerda (−3°)</button>
+        <button class="tb" data-a="3">Caído à direita (+3°)</button>
+        <button class="tb" data-a="perto">Alvo muito perto</button>
+      </div>
+      <svg viewBox="0 0 150 128" data-mm="150" data-zoom="5.2">
+        <g transform="translate(75,62)">
+          <g id="tilt">
+            <!-- trilho e base -->
+            <polygon points="-7.8,49 7.8,49 10.6,51.8 10.6,52.6 8,55.2 8,58.5 -8,58.5 -8,55.2 -10.6,52.6 -10.6,51.8" class="rail"/>
+            <polygon points="-12,49 12,49 9,30 -9,30" class="gs"/>
+            <!-- unidade anti-cant (à frente, aparece embaixo da ocular) -->
+            <rect x="-14" y="27" width="28" height="18" rx="2" class="ghost"/>
+            <rect x="-14" y="45" width="28" height="4" class="ghost"/>
+            <!-- anel traseiro -->
+            <circle r="20" class="gs"/>
+            <!-- ocular -->
+            <circle r="22" class="scope"/>
+            <circle r="18" fill="url(#view)"/>
+            <use href="#ret" transform="scale(1.06)"/>
+            <!-- telêmetro em cima (anel dianteiro, mais à frente) -->
+            <rect x="-10" y="-24" width="20" height="5" class="part"/>
+            <rect x="-22" y="-43" width="44" height="19" rx="2.5" class="part"/>
+            <rect x="-23.5" y="-36" width="1.5" height="6" class="metal"/>
+            <rect x="-15" y="-39.5" width="30" height="10" rx="1" fill="#000" stroke="#9aa4aa" stroke-width=".3"/>
+            <g id="oledOk">
+              <text x="0" y="-32.8" class="o" style="font-size:5px" text-anchor="middle">67.3m</text>
+              <text x="0" y="-30.4" class="o" style="font-size:1.6px" text-anchor="middle">MARCA 2</text>
+            </g>
+            <g id="oledPerto" style="display:none">
+              <text x="-7" y="-32.8" class="o" style="font-size:5px" text-anchor="middle">12.8</text>
+              <g class="blink"><rect x="2" y="-38.6" width="12" height="8.2" fill="#bfe9ff"/>
+              <text x="8" y="-35.4" class="o" style="font-size:2.2px;fill:#000" text-anchor="middle">MUITO</text>
+              <text x="8" y="-32.2" class="o" style="font-size:2.2px;fill:#000" text-anchor="middle">PERTO</text></g>
+            </g>
+            <!-- pod anti-cant (9 h) -->
+            <rect x="-23" y="-3" width="7" height="6" class="part"/>
+            <rect x="-31" y="-11" width="8" height="22" rx="1.5" class="part"/>
+            <circle id="ledT" cx="-27" cy="-7" r="1.5" class="off-r"/>
+            <circle id="ledM" cx="-27" cy="0" r="1.5" class="led-g"/>
+            <circle id="ledB" cx="-27" cy="7" r="1.5" class="off-r"/>
+          </g>
+        </g>
+        <!-- rótulos fixos -->
+        <text x="2" y="8" class="lb tel">12 · tela do telêmetro</text>
+        <line x1="40" y1="10" x2="60" y2="22" class="lead"/>
+        <text x="2" y="44" class="lb acc">03 · pod</text>
+        <text x="2" y="49.5" class="lb s mut">visão periférica</text>
+        <line x1="38" y1="50" x2="44" y2="56" class="lead"/>
+        <text x="148" y="118" class="lb s mut" text-anchor="end">unidade anti-cant (tracejada):</text>
+        <text x="148" y="123" class="lb s mut" text-anchor="end">fica à frente, sob a objetiva</text>
+        <text x="148" y="40" class="lb s mut" text-anchor="end">retículo BDC</text>
+        <text x="148" y="45" class="lb s mut" text-anchor="end">da Red Win</text>
+      </svg>
+      <div class="cap" id="tcap">Rifle nivelado: LED verde aceso. O telêmetro mostra a distância e a marca BDC do retículo a usar.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Vista de frente (cano)</h2>
+    <div class="fig">
+      <svg viewBox="0 0 150 118" data-mm="150" data-zoom="5.2">
+        <g transform="translate(75,58)">
+          <polygon points="-7.8,49 7.8,49 10.6,51.8 10.6,52.6 8,55.2 8,58.5 -8,58.5 -8,55.2 -10.6,52.6 -10.6,51.8" class="rail"/>
+          <!-- unidade anti-cant (na frente, sob a objetiva) -->
+          <rect x="-14" y="27" width="28" height="18" rx="2" class="part"/>
+          <rect x="-14" y="45" width="28" height="4" class="metal"/>
+          <rect x="-19" y="47" width="5" height="10" rx="1" class="metal"/>
+          <!-- anel dianteiro + tampa impressa -->
+          <circle r="20" class="gs"/>
+          <path d="M-20,0 A20,20 0 0 1 20,0 Z" class="part"/>
+          <rect x="-10" y="-24" width="20" height="5" class="part"/>
+          <!-- objetiva -->
+          <circle r="17" class="scope"/>
+          <circle r="12" fill="url(#glassL)"/>
+          <!-- telêmetro de frente: capuz e grade -->
+          <rect x="-22" y="-43" width="44" height="19" rx="2.5" class="part"/>
+          <rect x="22" y="-36" width="1.5" height="6" class="metal"/>
+          <rect x="-20" y="-39.4" width="25" height="13.6" rx="1" class="dark"/>
+          <circle cx="-13.5" cy="-32.6" r="5" fill="url(#glassL)"/>
+          <circle cx="-1.5" cy="-32.6" r="5" fill="url(#glassL)"/>
+          <rect x="-20" y="-39.4" width="25" height="13.6" rx="1" fill="url(#hex)"/>
+          <rect x="-8" y="-39.4" width="1" height="13.6" fill="#3b4147"/>
+          <!-- pod (agora à direita, porque é vista de frente) -->
+          <rect x="16" y="-3" width="7" height="6" class="part"/>
+          <rect x="23" y="-11" width="8" height="22" rx="1.5" class="part"/>
+        </g>
+        <text x="2" y="8" class="lb tel">12 · grade anti-BB do laser</text>
+        <line x1="40" y1="10" x2="62" y2="20" class="lead"/>
+        <text x="110" y="57" class="lb acc">03 · pod</text>
+        <text x="110" y="62" class="lb s mut">(lado esquerdo do rifle)</text>
+        <text x="2" y="96" class="lb acc">03 · unidade anti-cant</text>
+        <text x="148" y="112" class="lb s mut" text-anchor="end">objetiva Red Win ≈ Ø34</text>
+      </svg>
+      <div class="cap">De frente, quem fica exposto aos tiros é a grade do telêmetro (sem vidro nem acrílico, para não enganar o laser) e a frente da unidade anti-cant, que não tem nada frágil na face dianteira. A objetiva da luneta continua livre para uma kill flash ou protetor de lente da própria luneta.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Espaços e interferências</h2>
+    <div class="tw"><table>
+      <tr><th>Ponto</th><th>Medida</th><th>Situação</th></tr>
+      <tr><td>Unidade anti-cant até a objetiva</td><td class="mm">≈ 10</td><td>OK com a Geissele alta (eixo a 49 mm do trilho)</td></tr>
+      <tr><td>Topo do telêmetro acima do trilho</td><td class="mm">≈ 93</td><td>OK; termina antes das torres, não atrapalha o ajuste de elevação</td></tr>
+      <tr><td>Pod de LEDs para fora do tubo (9 h)</td><td class="mm">16</td><td>OK; fica longe do telêmetro, que está em cima</td></tr>
+      <tr><td>Laser acima do eixo da luneta</td><td class="mm">≈ 32</td><td>Desprezível: alinhado a 50 m, o erro a 20 m é de uns 2 cm</td></tr>
+      <tr><td>Cabo do anti-cant</td><td class="mm">≈ 250</td><td>Corre pela lateral esquerda, abaixo do pod; não cruza o topo</td></tr>
+      <tr><td>Peso extra na luneta</td><td class="mm">≈ 80 g</td><td>Telêmetro (≈ 80 g) no anel. O anti-cant (≈ 35 g) fica quase todo no trilho</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Custo somado</h2>
+    <div class="tw"><table>
+      <tr><th>Projeto</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>03 · Nível anti-cant</td><td class="r">R$ 116</td><td class="r">R$ 176</td></tr>
+      <tr><td>12 · Telêmetro (laser opção A, importado)</td><td class="r">R$ 339</td><td class="r">R$ 422</td></tr>
+      <tr class="tot"><td>Total (peças impressas não entram)</td><td class="r">≈ R$ 455</td><td class="r">≈ R$ 598</td></tr>
+    </table></div>
+    <div class="note"><b>Para economizar comprando juntos:</b> anti-cant e telêmetro usam ESP32-C3 SuperMini e TP4056 USB-C, que saem mais baratos em kits.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  document.querySelectorAll('[data-slots]').forEach(function(g){
+    var a=g.getAttribute('data-slots').split(',').map(Number);
+    for(var k=0;k<a[1];k++){
+      var r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x',a[0]+k*a[5]); r.setAttribute('y',a[2]);
+      r.setAttribute('width',a[4]); r.setAttribute('height',a[3]);
+      g.appendChild(r);
+    }
+  });
+  // inclinação do rifle (vista do atirador)
+  var caps={
+    '0':'Rifle nivelado: LED verde aceso. O telêmetro mostra a distância e a marca BDC do retículo a usar.',
+    '-3':'Rifle caído para a esquerda: o pod desce e acende o LED de baixo. Gire o rifle para a direita até voltar o verde.',
+    '3':'Rifle caído para a direita: o pod sobe e acende o LED de cima. Gire o rifle para a esquerda até voltar o verde.',
+    'perto':'Alvo abaixo da distância mínima de engajamento: o telêmetro pisca "MUITO PERTO".'
+  };
+  function setState(a){
+    var ang=(a==='perto')?0:+a;
+    $('#tilt').setAttribute('transform','rotate('+ang+')');
+    $('#ledT').setAttribute('class', ang>0?'led-r':'off-r');
+    $('#ledB').setAttribute('class', ang<0?'led-r':'off-r');
+    $('#ledM').setAttribute('class', ang===0?'led-g':'off-g');
+    $('#oledOk').style.display=(a==='perto')?'none':'';
+    $('#oledPerto').style.display=(a==='perto')?'':'none';
+    $('#tcap').textContent=caps[a];
+    document.querySelectorAll('.tb').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-a')===a)});
+  }
+  document.querySelectorAll('.tb').forEach(function(b){b.onclick=function(){setState(b.getAttribute('data-a'))}});
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

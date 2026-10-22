@@ -1,0 +1,12 @@
+# Gerados no build (recriados pelo gerar_apk.ps1)
+build/
+*.idsig
+# Chaves de assinatura: nunca publicar (o gerar_apk.ps1 cria uma nova se faltar)
+*.keystore
+*.jks
+# Python / IDE
+__pycache__/
+*.pyc
+.idea/
+# Registros de partidas
+registros/

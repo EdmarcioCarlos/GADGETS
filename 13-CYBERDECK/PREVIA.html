@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cyberdeck BLACK BIRD</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f;--mag:#ff3df2;--cia:#22e8ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+h1 .g{color:var(--mag);text-shadow:-2px 0 var(--cia)}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.phase{display:flex;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin-top:8px}
+.phase .n{font:600 16px Consolas,monospace;color:var(--accent);width:22px}
+.phase div{flex:1}
+.st{font:600 11px Consolas,monospace;padding:3px 8px;border-radius:4px;border:1px solid var(--line)}
+.st.now{color:var(--accent);border-color:var(--accent)}
+.st.next{color:var(--muted)}
+/* ---------- simulador ---------- */
+.sim{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.sim{grid-template-columns:1fr}}
+.pnl{background:#6b5236;border:3px solid #222;border-radius:10px;padding:14px;position:relative;font-family:Consolas,monospace}
+.row{display:flex;gap:12px;justify-content:space-around;align-items:flex-end;margin:10px 0}
+.ctl{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;color:#1b130b;font-weight:700;letter-spacing:.05em}
+.sw{width:30px;height:54px;background:#1a1a1a;border-radius:4px;position:relative;cursor:pointer;border:2px solid #111}
+.sw .lev{position:absolute;left:11px;width:8px;height:24px;background:#b8bec2;border-radius:3px;bottom:4px;transition:.15s}
+.sw.on .lev{bottom:24px}
+.sw .cap{position:absolute;inset:-4px;background:#b3261e;border-radius:5px;transition:.2s;transform-origin:top;opacity:.95}
+.sw.aberta .cap{transform:scaleY(.15)}
+.arc{width:44px;height:44px;border-radius:50%;border:4px solid #151515;cursor:pointer;box-shadow:inset 0 -4px 0 rgba(0,0,0,.35);filter:brightness(.55)}
+.arc.aceso{filter:brightness(1.25);box-shadow:0 0 14px currentColor}
+.man{width:26px;height:90px;background:#151515;border-radius:4px;position:relative;cursor:pointer}
+.man .k{position:absolute;left:-7px;width:40px;height:22px;background:#8a6a45;border:2px solid #222;border-radius:4px;bottom:4px;transition:.2s}
+.man.mil .k{bottom:62px}
+.seg7{background:#050505;border:2px solid #333;border-radius:4px;color:#ff2a2a;font:700 28px/1 Consolas,monospace;letter-spacing:.18em;padding:6px 10px;text-shadow:0 0 6px #ff2a2a;min-width:118px;text-align:center}
+.neon{display:flex;gap:3px;margin-top:10px}
+.neon i{flex:1;height:7px;border-radius:2px;background:#1a1a1a}
+.tela{background:#000;border:6px solid #1a1a1a;border-radius:8px;min-height:300px;position:relative;overflow:hidden;font-family:Consolas,monospace;color:#5aff8c;padding:14px}
+.tela .gl{font:700 34px Consolas,monospace;color:#fff;text-shadow:-3px 0 var(--mag),3px 0 var(--cia)}
+.tela .ln{font-size:13px;margin:3px 0}
+.log{font:12px Consolas,monospace;color:var(--muted);margin-top:8px;min-height:18px}
+@keyframes tremer{0%{transform:translate(0)}20%{transform:translate(-3px,1px)}40%{transform:translate(3px,-1px)}60%{transform:translate(-1px,2px)}80%{transform:translate(2px,0)}}
+.treme{animation:tremer .25s infinite}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DEDSEC OPS · PROJETO 13 · AVANÇADO</div>
+    <h1>Cyberdeck <span class="g">BLACK BIRD</span></h1>
+    <p class="sub">Um computador de campo numa maleta impressa, com cara de painel militar e alma DedSec: Raspberry Pi 4, monitor de <b>15,6″ Full HD</b> na tampa e mini teclado, rodando os seus jogos em Python num menu de missões com glitch neon. Ele <b>não liga com um botão</b>: liga com uma <b>sequência de partida de caça</b>, com alavancas com capa, APU, motores, manete e START. Desliga com a sequência inversa, sem corromper o cartão. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>410 × 310 × 135</b><span>maleta fechada, toda impressa (mm)</span></div>
+      <div class="tile"><b>7 passos</b><span>para ligar: BAT · MASTER ARM · APU · ENG 1 · ENG 2 · MANETE · START</span></div>
+      <div class="tile"><b>15,6″ Full HD</b><span>monitor portátil ocupando a tampa inteira</span></div>
+      <div class="tile"><b>≈ 4 h</b><span>de uso com o power bank de 20.000 mAh 65 W (estimativa)</span></div>
+      <div class="tile"><b>neon RGB</b><span>barra de glitch magenta/ciano que reage à partida</span></div>
+      <div class="tile"><b>R$ 1.921–2.552</b><span>com o kit Raspberry Pi 4 completo (o maior gasto)</span></div>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Duas placas:</b> uma <b>ESP32-C3</b> (a "aviônica"), sempre alimentada por uma 18650 própria, cuida do painel e decide quando o <b>Raspberry Pi</b> pode ligar (por um relé). Depois de ligado, o painel vira controle dos jogos e conversa com o Pi pela serial.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>A partida de caça (teste aqui)</h2>
+    <p class="hint">Clique nos controles na ordem. Alavanca com capa: o 1º clique levanta a capa, o 2º liga. START: clique e segure 1 s. Errou a ordem = ABORT (desligue o MASTER ARM para recomeçar).</p>
+    <div class="fig">
+      <div class="sim">
+        <div class="pnl" id="pnl">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div class="seg7" id="d7">----</div>
+            <span style="font:700 11px Consolas;color:#1b130b">// SISTEMA DE PARTIDA</span>
+          </div>
+          <div class="row">
+            <div class="ctl"><div class="arc" data-b="APU" style="background:#d4a017;color:#ffd84a"></div>APU</div>
+            <div class="ctl"><div class="arc" data-b="ENG1" style="background:#2e6fd1;color:#4fa3ff"></div>ENG 1</div>
+            <div class="ctl"><div class="arc" data-b="ENG2" style="background:#2f9e44;color:#5fd17a"></div>ENG 2</div>
+            <div class="ctl"><div class="arc" data-b="START" style="background:#c0392b;color:#ff4a4a"></div>START</div>
+          </div>
+          <div class="row">
+            <div class="ctl"><div class="man" id="man"><div class="k"></div></div>IDLE / MIL</div>
+            <div class="ctl"><div class="sw" data-s="BAT"><div class="lev"></div><div class="cap"></div></div>BAT</div>
+            <div class="ctl"><div class="sw" data-s="ARM"><div class="lev"></div><div class="cap"></div></div>MASTER ARM</div>
+            <div class="ctl"><div class="sw" data-s="NEON"><div class="lev"></div><div class="cap"></div></div>NEON</div>
+          </div>
+          <div class="neon" id="neon"></div>
+          <div class="log" id="log" style="color:#1b130b">painel desligado: comece pela BAT</div>
+        </div>
+        <div class="tela" id="tela"><div class="ln" style="color:#333">[ tela apagada: o Raspberry Pi está sem energia ]</div></div>
+      </div>
+    </div>
+    <div class="tw"><table>
+      <tr><th>Passo</th><th>Controle</th><th>O que acontece</th></tr>
+      <tr><td>1</td><td><b>BAT</b> (alavanca com capa)</td><td>A ESP32-C3 acorda: auto-teste (todos os segmentos, LEDs e neon acendem), bipe duplo, display <code>bAt</code>, neon ciano "respirando"</td></tr>
+      <tr><td>2</td><td><b>MASTER ARM</b> (alavanca com capa)</td><td>Display <code>Arn</code>: sistemas armados</td></tr>
+      <tr><td>3</td><td><b>APU</b> (amarelo)</td><td>O APU "gira": <code>A 0</code> → <code>A100</code> em 3 s, bipes cada vez mais rápidos, LED amarelo piscando e depois fixo, neon magenta enchendo</td></tr>
+      <tr><td>4</td><td><b>ENG 1</b> (azul)</td><td>Motor 1 até 60% (<code>1 60</code>)</td></tr>
+      <tr><td>5</td><td><b>ENG 2</b> (verde)</td><td>Motor 2 até 60% (<code>2 60</code>); o display pede a manete: <code>thr</code></td></tr>
+      <tr><td>6</td><td><b>MANETE</b> para MIL</td><td>A microchave fecha: <code>PUSH</code> e o START começa a piscar</td></tr>
+      <tr><td>7</td><td><b>START</b> (vermelho, segure 1 s)</td><td>Bipe longo, relé liga o Raspberry Pi: <code>boot</code> e neon em glitch. Quando o Pi termina de ligar, ele avisa (<code>on</code>) e abre o menu de missões com a abertura DedSec</td></tr>
+    </table></div>
+    <div class="note"><b>Regras:</b> qualquer controle fora de ordem = <code>Abrt</code>, alarme e neon vermelho; desligue o MASTER ARM e comece de novo pelo passo 2. Voltar a manete para IDLE antes do START volta um passo. 1 minuto parado num passo também volta ao começo. A alavanca NEON liga/desliga a fita a qualquer hora (não faz parte da ordem).</div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>Desligar: sequência inversa</h2>
+    <ol class="steps">
+      <li><b>MANETE em IDLE.</b></li>
+      <li><b>MASTER ARM desligado:</b> a ESP32-C3 manda "DESLIGAR" para o Pi; o Pi responde e desliga sozinho (o display conta <code>SH25</code> … <code>SH 0</code>). Só então o relé corta a energia: <code>OFF</code>. Assim o cartão de memória nunca corrompe.</li>
+      <li><b>BAT desligada:</b> o painel apaga e a ESP32-C3 dorme (gasta quase nada).</li>
+    </ol>
+    <div class="note ok">Se você desligar a BAT direto com o Pi ligado, a placa faz o desligamento seguro do mesmo jeito antes de apagar. Se tirar o MASTER ARM com a manete em MIL, o display pede <code>IdLE</code>.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>O cyberdeck</h2>
+    <div class="fig" style="padding:8px"><img src="3D/img/cyberdeck_3d.png" alt="Cyberdeck aberto: tela na tampa, teclado e painel de partida" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Aberto e ligado: o monitor de 15,6″ ocupando a tampa, preso por 4 cantoneiras pretas, com o menu de missões e a caveira glitch, o mini teclado com touchpad no rebaixo do painel, o display mostrando <code>on</code>, os LEDs de status, a manete, os 4 botões arcade, as 3 alavancas com capa e a barra de glitch neon acesa.</div>
+    <div class="fig" style="padding:8px;margin-top:12px"><img src="3D/img/cyberdeck_interior.png" alt="Por dentro da maleta, sem o painel" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Por dentro, sem o painel: o power bank atrás, à esquerda; o Raspberry Pi 4 atrás, à direita, embaixo da ventilação; o relé entre os dois; a aviônica (ESP32-C3, MCP23017 e ULN2003) à direita; a bateria 18650 da aviônica e o módulo de 5 V na frente; a base da manete no meio e os 2 trilhos da fita neon embaixo da barra de glitch. A tampa abre para trás e para nos 105°.</div>
+    <div class="tw"><table>
+      <tr><th>Onde</th><th>O que vai</th><th>Medidas (mm)</th></tr>
+      <tr><td>Tampa</td><td>Monitor portátil 15,6″ Full HD (mini HDMI + USB-C), apoiado nas nervuras da tampa e preso por 4 cantoneiras impressas (1 M3 cada); as entradas dele ficam livres nas laterais</td><td class="mm">≈ 357 × 223 × 9</td></tr>
+      <tr><td>Painel, à esquerda</td><td>Mini teclado sem fio com touchpad, solto no rebaixo (a tampa fechada segura)</td><td class="mm">≈ 145 × 92 × 14</td></tr>
+      <tr><td>Painel, à esquerda (frente)</td><td>Entradas de painel USB-A (pendrive) e USB-C (carga); área do RFID (futuro)</td><td class="mm">—</td></tr>
+      <tr><td>Painel, no meio</td><td>Manete com a base e a microchave por baixo</td><td class="mm">rasgo 8,5 × 62</td></tr>
+      <tr><td>Painel, à direita</td><td>4 botões arcade (APU, ENG 1, ENG 2, START) e 3 alavancas MTS-102 com capa (BAT, MASTER ARM, NEON)</td><td class="mm">Ø 30 · Ø 6</td></tr>
+      <tr><td>Painel, atrás</td><td>Display TM1637 no suporte, 3 LEDs de status, buzzer, ventilação do Pi</td><td class="mm">—</td></tr>
+      <tr><td>Painel, na frente</td><td>Barra de glitch vazada com a fita WS2812 nos 2 trilhos por baixo</td><td class="mm">≈ 240 × 12</td></tr>
+      <tr><td>Fundo, atrás à esquerda</td><td>Power bank 20.000 mAh (energia do Pi)</td><td class="mm">≈ 150 × 70 × 28</td></tr>
+      <tr><td>Fundo, atrás à direita</td><td>Raspberry Pi 4 no case com ventoinha; relé ao lado</td><td class="mm">≈ 88 × 60 × 22</td></tr>
+      <tr><td>Fundo, à direita</td><td>Aviônica: ESP32-C3, MCP23017, ULN2003</td><td class="mm">—</td></tr>
+      <tr><td>Fundo, na frente</td><td>Bateria 18650 da aviônica no suporte + módulo de 5 V</td><td class="mm">77 × 21 · 30 × 25</td></tr>
+    </table></div>
+    <div class="fig">
+      <svg viewBox="0 0 482 1079" data-mm="482" data-zoom="1.95" class="vistas3d vvistasbc2ac9">
+        <style>.vvistasbc2ac9 .lb{font:10.2px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vvistasbc2ac9 .dt{font:600 10.2px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vvistasbc2ac9 .dim{stroke:#e2b04a;stroke-width:0.75;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vvistasbc2ac9 .ext{stroke:#e2b04a;stroke-width:0.45;opacity:.55}.vvistasbc2ac9 .nm{font:600 7.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:2.1px;stroke-linejoin:round}</style>
+        <text x="36" y="15" class="lb">O PAINEL (de cima)</text>
+        <image href="3D/img/vistas_topo_PARTEaberta_TAMPA_ANG90.png" x="36" y="27" width="410" height="355"/>
+        <text x="136" y="197.7" class="nm">mini teclado</text>
+        <text x="251" y="232.7" class="nm">manete</text>
+        <text x="271" y="144.7" class="nm">APU</text>
+        <text x="316" y="144.7" class="nm">ENG 1</text>
+        <text x="361" y="144.7" class="nm">ENG 2</text>
+        <text x="406" y="144.7" class="nm">START</text>
+        <text x="286" y="274.7" class="nm">BAT</text>
+        <text x="338" y="274.7" class="nm">MASTER ARM</text>
+        <text x="390" y="274.7" class="nm">NEON</text>
+        <text x="306" y="352.7" class="nm">barra de glitch neon</text>
+        <text x="201" y="89.7" class="nm">display</text>
+        <text x="84" y="89.7" class="nm">LEDs</text>
+        <line x1="36" y1="382" x2="36" y2="404.5" class="ext"/><line x1="446" y1="382" x2="446" y2="404.5" class="ext"/>
+        <line x1="36" y1="400" x2="446" y2="400" class="dim"/><text x="241" y="415.6" class="dt">410</text>
+        <line x1="13.5" y1="27" x2="36" y2="27" class="ext"/><line x1="13.5" y1="382" x2="36" y2="382" class="ext"/>
+        <line x1="18" y1="27" x2="18" y2="382" class="dim"/><text x="12.6" y="204.5" class="dt" transform="rotate(-90 12.6 204.5)">355</text>
+        <text x="36" y="454" class="lb">POR DENTRO (sem o painel)</text>
+        <image href="3D/img/vistas_topo_PARTEaberta_TAMPA_ANG90_INTERIORtrue.png" x="36" y="466" width="410" height="355"/>
+        <text x="131" y="552.7" class="nm">power bank 20.000 mAh</text>
+        <text x="368" y="553.7" class="nm">Raspberry Pi 4</text>
+        <text x="266" y="562.7" class="nm">relé</text>
+        <text x="387" y="714.7" class="nm">ESP32-C3</text>
+        <text x="396" y="688.7" class="nm">MCP23017</text>
+        <text x="353" y="657.7" class="nm">ULN2003</text>
+        <text x="302" y="765.7" class="nm">18650</text>
+        <text x="363" y="763.7" class="nm">módulo 5 V</text>
+        <text x="251" y="671.7" class="nm">manete</text>
+        <text x="306" y="799.7" class="nm">fita neon</text>
+        <line x1="36" y1="821" x2="36" y2="843.5" class="ext"/><line x1="446" y1="821" x2="446" y2="843.5" class="ext"/>
+        <line x1="36" y1="839" x2="446" y2="839" class="dim"/><text x="241" y="854.6" class="dt">410</text>
+        <line x1="13.5" y1="466" x2="36" y2="466" class="ext"/><line x1="13.5" y1="821" x2="36" y2="821" class="ext"/>
+        <line x1="18" y1="466" x2="18" y2="821" class="dim"/><text x="12.6" y="643.5" class="dt" transform="rotate(-90 12.6 643.5)">355</text>
+        <text x="36" y="893" class="lb">FECHADA (frente)</text>
+        <image href="3D/img/vistas_frente_PARTEfechada.png" x="36" y="905" width="410" height="135"/>
+        <line x1="36" y1="1040" x2="36" y2="1062.5" class="ext"/><line x1="446" y1="1040" x2="446" y2="1062.5" class="ext"/>
+        <line x1="36" y1="1058" x2="446" y2="1058" class="dim"/><text x="241" y="1073.6" class="dt">410</text>
+        <line x1="13.5" y1="905" x2="36" y2="905" class="ext"/><line x1="13.5" y1="1040" x2="36" y2="1040" class="ext"/>
+        <line x1="18" y1="905" x2="18" y2="1040" class="dim"/><text x="12.6" y="972.5" class="dt" transform="rotate(-90 12.6 972.5)">135</text>
+      </svg>
+      <div class="cap">Maleta preta de 410 × 310 × 135 com tampa coyote (emblema e nome BLACK BIRD, a única marca do projeto) e a tela de 7″ na tampa. No painel coyote, da esquerda: o mini teclado no rebaixo, as entradas USB e a área do RFID; no meio, a <b>manete</b> (IDLE perto de você, MIL para trás); à direita, os 4 botões arcade <b>APU · ENG 1 · ENG 2 · START</b> e as 3 alavancas com capa vermelha <b>BAT · MASTER ARM · NEON</b>. Atrás, o display de 4 dígitos da partida, os LEDs de status e a ventilação do Pi. Na frente, a <b>barra de glitch</b> vazada, com a fita de LED RGB por baixo: magenta e ciano, estilo DedSec. Todos os comandos têm o nome gravado em letra de estêncil.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Arquitetura</h2>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 430">
+        <rect x="20" y="30" width="170" height="70" rx="8" class="blk"/><text x="105" y="22" class="ttl c">18650 + módulo 5 V</text><text x="105" y="70" class="pt c" style="font-size:11px">sempre ligado (aviônica)</text>
+        <rect x="260" y="20" width="220" height="230" rx="8" class="brd"/><text x="370" y="12" class="ttl c">ESP32-C3 (partida)</text>
+        <g class="pt" style="font-size:11px"><text x="270" y="50">GPIO2 ← BAT (acorda)</text><text x="270" y="74">GPIO8/9 ↔ MCP23017</text><text x="270" y="98">GPIO6/7 → display TM1637</text><text x="270" y="122">GPIO5 → fita WS2812</text><text x="270" y="146">GPIO3 → buzzer (BC547)</text><text x="270" y="170">GPIO4 → relé do Pi</text><text x="270" y="194">GPIO20/21 ↔ serial do Pi</text></g>
+        <rect x="540" y="20" width="160" height="110" rx="8" class="blk"/><text x="620" y="12" class="ttl c">MCP23017</text>
+        <g class="pt" style="font-size:10px"><text x="550" y="42">GPA0 MASTER ARM</text><text x="550" y="58">GPA1 NEON · GPA2 APU</text><text x="550" y="74">GPA3 ENG1 · GPA4 ENG2</text><text x="550" y="90">GPA5 MANETE · GPA6 START</text><text x="550" y="110">GPB0-3 → ULN2003 → LEDs</text></g>
+        <rect x="740" y="20" width="145" height="110" rx="8" class="blk"/><text x="812" y="12" class="ttl c">Botões arcade</text><text x="812" y="70" class="pt c" style="font-size:11px">LEDs 5 V</text>
+        <rect x="20" y="290" width="170" height="70" rx="8" class="blk"/><text x="105" y="282" class="ttl c">Power bank 20.000 mAh</text><text x="105" y="330" class="pt c" style="font-size:11px">65 W · 2 saídas USB-C</text>
+        <rect x="260" y="300" width="100" height="50" rx="8" class="blk"/><text x="310" y="330" class="pt c" style="font-size:11px">RELÉ</text>
+        <rect x="430" y="280" width="200" height="110" rx="8" class="brd"/><text x="530" y="272" class="ttl c">Raspberry Pi 4</text>
+        <g class="pt" style="font-size:11px"><text x="440" y="306">GPIO14/15 ↔ serial C3</text><text x="440" y="330">painel_servico.py</text><text x="440" y="354">menu.py + jogos/</text><text x="440" y="378">GPIO17/27/22 → LEDs</text></g>
+        <rect x="700" y="280" width="185" height="50" rx="8" class="blk"/><text x="792" y="310" class="pt c" style="font-size:11px">Monitor 15,6″ (mini HDMI)</text>
+        <rect x="700" y="345" width="185" height="45" rx="8" class="blk"/><text x="792" y="372" class="pt c" style="font-size:11px">mini teclado (USB)</text>
+        <path class="wr" stroke="#e5533f" d="M190,65 H260"/><path class="wr" stroke="#e5533f" d="M190,325 H260 M360,325 H430"/>
+        <path class="wr" stroke="#ffd84a" d="M370,250 V275 H310 V300"/><path class="wr" stroke="#ff7ad9" d="M480,194 H500 V300 H430"/>
+        <path class="wr" stroke="#5fd17a" d="M480,74 H540"/><path class="wr" stroke="#4fa3ff" d="M700,110 H740"/>
+        <path class="wr" stroke="#8a959b" d="M630,305 H700 M630,367 H700"/>
+        <text x="20" y="415" class="pt" style="font-size:11px;fill:#8a959b">O relé corta o +5 V dos 2 cabos USB-C (Pi e monitor) que saem do power bank: os dois ligam e desligam juntos.</text>
+      </svg>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Ligações</h2>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>18650 → módulo 5 V</td><td>C3 5V, MCP23017 (3V3 do C3), relé, ULN2003, fita WS2812, buzzer</td><td>A aviônica tem bateria própria (o power bank desliga sozinho com pouca carga)</td></tr>
+      <tr><td>Alavanca BAT</td><td>GPIO2 e GND + 100 kΩ do GPIO2 para o 3V3</td><td>Fecha = ligada; acorda a placa</td></tr>
+      <tr><td>MASTER ARM, NEON, APU, ENG1, ENG2, MANETE (microchave KW11, contato NA), START</td><td>MCP23017 GPA0…GPA6 e GND</td><td>Pull-up interno do MCP</td></tr>
+      <tr><td>MCP23017 GPB0…GPB3</td><td>ULN2003 IN1…IN4 → LEDs dos botões APU, ENG1, ENG2, START</td><td>LED (+) no 5 V, (−) na saída do ULN2003</td></tr>
+      <tr><td>MCP23017 SDA/SCL</td><td>GPIO8 / GPIO9 do C3</td><td>Endereço 0x20 (A0–A2 no GND)</td></tr>
+      <tr><td>TM1637 CLK/DIO</td><td>GPIO6 / GPIO7</td><td>VCC no 3V3</td></tr>
+      <tr><td>Fita WS2812 (15 LEDs)</td><td>GPIO5 por 330 Ω</td><td>5 V do módulo; capacitor de 470 µF na entrada da fita</td></tr>
+      <tr><td>Buzzer ativo</td><td>GPIO3 → 1 kΩ → BC547</td><td>Igual ao da bomba</td></tr>
+      <tr><td>Relé (IN)</td><td>GPIO4</td><td>COM/NO nos fios +5 V dos 2 cabos USB-C (Pi e monitor); o GND passa direto</td></tr>
+      <tr><td>C3 GPIO21 (TX) / GPIO20 (RX)</td><td>Pi GPIO15 (RX) / GPIO14 (TX)</td><td>GND junto. Os dois trabalham em 3,3 V</td></tr>
+      <tr><td>LEDs de status (3 mm)</td><td>Pi GPIO17, 27, 22 por 330 Ω</td><td>Para os jogos</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Software</h2>
+    <div class="tw"><table>
+      <tr><th>Arquivo</th><th>Onde roda</th><th>O que faz</th></tr>
+      <tr><td><code>PARTIDA/PARTIDA.ino</code></td><td>ESP32-C3</td><td>A sequência de partida e de desligar, display, neon, relé, alarme de ABORT, e a ponte do painel para o Pi</td></tr>
+      <tr><td><code>pi/painel_servico.py</code></td><td>Pi (serviço)</td><td>Avisa "PRONTO", faz o desligamento seguro quando o painel pede, repassa botões e comandos</td></tr>
+      <tr><td><code>pi/painel.py</code></td><td>Pi (biblioteca)</td><td>Para os jogos: <code>eventos()</code>, <code>led()</code>, <code>beep()</code>, <code>neon()</code>, <code>display()</code>. No PC, o teclado simula o painel</td></tr>
+      <tr><td><code>pi/menu.py</code></td><td>Pi (abre sozinho)</td><td>Abertura glitch DedSec (caveira própria + BLACK BIRD) e o menu "SELEÇÃO DE MISSÃO" com tudo o que estiver em <code>pi/jogos/</code></td></tr>
+      <tr><td><code>pi/jogos/teste_painel.py</code></td><td>Pi</td><td>Teste de cada controle (fase 4); os 5 jogos de hackeamento entram nesta pasta</td></tr>
+      <tr><td><code>pi/instalar.sh</code></td><td>Pi</td><td>Instala pygame e pyserial, liga a serial, cria o serviço e o menu automático</td></tr>
+    </table></div>
+    <div class="note">Para um jogo aparecer no menu, basta colocar o <code>.py</code> em <code>pi/jogos/</code> com as linhas <code># NOME:</code> e <code># DESCRICAO:</code> no começo. Os 5 jogos de hackeamento (Terminal ctOS, Senha com tempo, Desarme em sequência, Dominação e Quebra de firewall) continuam planejados, agora como missões do menu.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas, nas cores de impressão (<b style="color:#c9b08d">coyote</b>, preto e o vermelho das capas). Lista completa no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do cyberdeck" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Novas neste redesenho: a base e a alavanca da manete (com a microchave), os 2 trilhos da fita neon e o suporte do display TM1637. O painel ganhou o rasgo da manete, a barra de glitch e os nomes dos comandos gravados.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Lista de materiais</h2>
+    <div class="tw"><table>
+      <tr><th>Qtd</th><th>Componente</th><th>Função</th></tr>
+      <tr><td>1</td><td><b>Kit</b> Raspberry Pi 4 (placa, case, microSD 32 GB, cabo micro-HDMI, fonte)</td><td>O computador</td></tr>
+      <tr><td>1</td><td>Monitor portátil 15,6″ Full HD (mini HDMI + USB-C) · mini teclado sem fio com touchpad · power bank 20.000 mAh 65 W com 2 USB-C</td><td>Tela, teclado e energia do Pi e do monitor</td></tr>
+      <tr><td>1</td><td>ESP32-C3 SuperMini (sobra do 2º kit de C3)</td><td>A aviônica da partida</td></tr>
+      <tr><td>1</td><td>Módulo MCP23017 (16 entradas/saídas I2C)</td><td>Lê os 7 controles e acende os LEDs dos botões</td></tr>
+      <tr><td>1</td><td>Display TM1637 de 4 dígitos (vermelho)</td><td>Mensagens da partida</td></tr>
+      <tr><td>1</td><td>Fita WS2812 60 LEDs/m (usa 25 cm, 15 LEDs) + capacitor 470 µF + resistor 330 Ω</td><td>Neon DedSec</td></tr>
+      <tr><td>1</td><td>Módulo relé 1 canal 5 V (do kit Uno)</td><td>Liga/desliga o Pi</td></tr>
+      <tr><td>1</td><td>Microchave KW11 (fim de curso, com alavanca)</td><td>Manete em MIL</td></tr>
+      <tr><td>4 · 3</td><td>Botões arcade 30 mm com LED (amarelo, azul, verde, vermelho) · chaves alavanca MTS-102</td><td>APU, ENG 1, ENG 2, START · BAT, MASTER ARM, NEON</td></tr>
+      <tr><td>1</td><td>Bateria 18650 + suporte + módulo 18650 com saída 5 V</td><td>Energia da aviônica</td></tr>
+      <tr><td>1</td><td>Cabo USB-A → USB-C 3 A (cortado para passar pelo relé)</td><td>Energia do Pi</td></tr>
+      <tr><td>—</td><td>ULN2003, buzzer ativo, BC547, 3 LEDs 3 mm, resistores, extensões USB de painel, espuma</td><td>Como antes</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">09</span>Custo de produção</h2>
+    <p class="hint">Valores de out/2026, sem frete, só produtos novos (links com o filtro "Novo"). Os itens novos deste redesenho são <b>estimativas</b>; os da maleta vêm da pesquisa anterior. Peças impressas não entram.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td><b>Conjunto:</b> kit Raspberry Pi 4 completo (veja a nota: o de 4 GB às vezes sai mais barato)</td><td><a href="https://lista.mercadolivre.com.br/kit-raspberry-pi-4-2gb_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 1.100,00</td><td class="r">R$ 1.300,00</td></tr>
+      <tr><td>Monitor portátil 15,6″ Full HD (USB-C + mini HDMI); achei de R$ 346 a R$ 386 em out/2026</td><td><a href="https://lista.mercadolivre.com.br/monitor-portatil-15.6_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 346,00</td><td class="r">R$ 450,00</td></tr>
+      <tr><td>Mini teclado sem fio com touchpad</td><td><a href="https://lista.mercadolivre.com.br/mini-teclado-touchpad-sem-fio-usb_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 26,78</td><td class="r">R$ 79,00</td></tr>
+      <tr><td>Power bank 20.000 mAh 65 W com 2 USB-C (estimativa; o de 22,5 W não aguenta Pi + monitor)</td><td><a href="https://lista.mercadolivre.com.br/power-bank-20000-mah-65w_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 150,00</td><td class="r">R$ 250,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 4 botões arcade 30 mm com LED</td><td><a href="https://lista.mercadolivre.com.br/botoes-arcade-led_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 70,00</td><td class="r">R$ 70,00</td></tr>
+      <tr><td>Chaves MTS-102 (do kit do ANPEQ, 06)</td><td>kit do 06</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr><td>Módulo MCP23017</td><td><a href="https://lista.mercadolivre.com.br/mcp23017_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td>Display TM1637 4 dígitos</td><td><a href="https://lista.mercadolivre.com.br/display-tm1637_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 10,00</td><td class="r">R$ 15,00</td></tr>
+      <tr><td>Fita WS2812 60 LEDs/m (1 m)</td><td><a href="https://lista.mercadolivre.com.br/fita-led-ws2812b-60_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 25,00</td><td class="r">R$ 45,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit microchaves KW11 (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/micro-switch-kw11_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 8,00</td><td class="r">R$ 15,00</td></tr>
+      <tr><td>Módulo 18650 com saída 5 V + bateria 18650 + suporte</td><td><a href="https://lista.mercadolivre.com.br/modulo-carregador-18650-saida-5v_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 45,00</td><td class="r">R$ 75,00</td></tr>
+      <tr><td>2 cabos USB-C 3 A (para cortar e passar pelo relé)</td><td><a href="https://lista.mercadolivre.com.br/cabo-usb-c-3a_ITEM*CONDITION_2230284">Mercado Livre</a></td><td class="r">R$ 10,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td>ULN2003, extensões USB, parafusos, espuma</td><td>veja a pesquisa anterior</td><td class="r">R$ 87,00</td><td class="r">R$ 154,00</td></tr>
+      <tr><td>ESP32-C3, relé, buzzer, BC547, LEDs, resistores</td><td>kits do 01 e do 04</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="tot"><td colspan="2">Total (peças impressas não entram)</td><td class="r">≈ R$ 1.921</td><td class="r">≈ R$ 2.552</td></tr>
+    </table></div>
+    <div class="note"><b>Confira o kit do Pi:</b> o certo traz placa + case + ventoinha + microSD + cabo micro-HDMI + fonte. Pegue o kit completo mais barato, de 2 ou de 4 GB: o software é o mesmo.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">10</span>Fases do projeto</h2>
+    <div>
+      <div class="phase"><b class="n">1</b><div><b>Visão geral do cyberdeck</b><br><span class="hint">partida de caça, arquitetura de 2 placas, visual militar + DedSec (esta prévia + README)</span></div><span class="st now">feita</span></div>
+      <div class="phase"><b class="n">2</b><div><b>Aviônica na bancada</b><br><span class="hint">PARTIDA.ino na ESP32-C3 com o painel na protoboard, sem o Pi (o relé só "clica")</span></div><span class="st now">código pronto</span></div>
+      <div class="phase"><b class="n">3</b><div><b>Preparação do Raspberry Pi</b><br><span class="hint">sistema, tela, <code>instalar.sh</code>, serial e desligamento seguro</span></div><span class="st now">código pronto</span></div>
+      <div class="phase"><b class="n">4</b><div><b>Testes de hardware</b><br><span class="hint"><code>jogos/teste_painel.py</code>: cada controle, LED, neon e display</span></div><span class="st now">código pronto</span></div>
+      <div class="phase"><b class="n">5</b><div><b>Menu de missões</b><br><span class="hint"><code>menu.py</code> com a abertura glitch</span></div><span class="st now">código pronto</span></div>
+      <div class="phase"><b class="n">6</b><div><b>Os 5 jogos de hackeamento</b><br><span class="hint">ctOS adaptado + 4 jogos, usando o <code>painel.py</code></span></div><span class="st next">próxima</span></div>
+      <div class="phase"><b class="n">7</b><div><b>Impressão e montagem</b><br><span class="hint">maleta em quartos, painel, manete, trilhos neon, cabos</span></div><span class="st next">pendente</span></div>
+      <div class="phase"><b class="n">8</b><div><b>Checklist de campo</b><br><span class="hint">carga das 2 baterias, partida, problemas comuns</span></div><span class="st next">pendente</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">11</span>Pontos de atenção</h2>
+    <div class="note">O monitor de 15,6″ gasta uns 8–10 W: por isso o power bank precisa ser de <b>65 W com 2 saídas USB-C</b> (um para o Pi, um para o monitor). Confira as medidas do seu monitor e ajuste <code>MON_W</code>, <code>MON_H</code> e <code>MON_T</code> no <code>3D/pecas.scad</code>.</div>
+    <div class="note">São <b>duas baterias</b>: o power bank (Pi) e a 18650 da aviônica. Carregue as duas. Dormindo, a aviônica gasta pouco, mas o módulo de 5 V da 18650 gasta alguns mA: a 18650 dura semanas parada, não meses.</div>
+    <div class="note">Os códigos não foram testados aqui: a ESP32-C3 não foi compilada (não há Arduino neste PC) e o menu não rodou (falta o pygame). Os arquivos Python passaram na conferência de sintaxe. Se der erro, me mande a mensagem.</div>
+    <div class="note">A caveira da abertura é desenhada para o projeto (estilo "glitch" inspirado no DedSec de Watch Dogs), sem copiar o logo do jogo.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+
+  // ---------- simulador da partida (mesma lógica do PARTIDA.ino) ----------
+  var d7=$('#d7'), log=$('#log'), tela=$('#tela'), neonEl=$('#neon');
+  for(var i=0;i<15;i++){neonEl.appendChild(document.createElement('i'));}
+  var leds=neonEl.querySelectorAll('i');
+  var sw={BAT:false,ARM:false,NEON:true}, cap={BAT:false,ARM:false,NEON:false}, mil=false;
+  var est='OFF', rpm=0, t0=0, timer=null, startDown=0;
+  function disp(t){d7.textContent=t;}
+  function msg(t){log.textContent=t;}
+  function arc(b,on){var e=document.querySelector('.arc[data-b="'+b+'"]'); e.classList.toggle('aceso',!!on);}
+  function arcs(on){['APU','ENG1','ENG2','START'].forEach(function(b){arc(b,on)});}
+  function neon(fn){for(var i=0;i<15;i++){leds[i].style.background=sw.NEON?fn(i):'#1a1a1a';leds[i].style.boxShadow=sw.NEON&&fn(i)!=='#1a1a1a'?'0 0 6px '+fn(i):'none';}}
+  function bip(){try{var c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.frequency.value=2400;g.gain.value=.04;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.05);}catch(e){}}
+  function telaOff(){tela.classList.remove('treme');tela.innerHTML='<div class="ln" style="color:#333">[ tela apagada: o Raspberry Pi está sem energia ]</div>';}
+  function abort(){est='ABORT';rpm=0;arcs(false);disp('Abrt');msg('ABORT: fora de ordem. Desligue o MASTER ARM para recomeçar.');bip();setTimeout(bip,200);setTimeout(bip,400);}
+  function ir(e,d,m){est=e;t0=Date.now();if(d)disp(d);if(m)msg(m);}
+  function boot(){
+    tela.classList.add('treme');
+    tela.innerHTML='<div class="gl" style="text-align:center;margin-top:40px">BLACK BIRD</div><div class="ln" style="text-align:center;color:#22e8ff">// DEDSEC OPS · CYBERDECK BB-11</div>';
+    var linhas=['> painel de partida ......... OK','> link serial ............... OK','> módulos de missão ......... OK'];
+    linhas.forEach(function(l,i){setTimeout(function(){if(est!=='BOOT'&&est!=='ON')return;var d=document.createElement('div');d.className='ln';d.style.textAlign='center';d.textContent=l;tela.appendChild(d);},900+i*700);});
+    setTimeout(function(){
+      if(est!=='BOOT')return; tela.classList.remove('treme'); ir('ON',' on ','Ligado: o painel agora controla os jogos. Para desligar: MANETE em IDLE → MASTER ARM.');
+      tela.innerHTML='<div style="color:#e2b04a;font-weight:700">SELEÇÃO DE MISSÃO <span style="float:right;color:#ff3df2">BB-11 // DEDSEC OPS</span></div>'+
+        ['01  TERMINAL ctOS','02  SENHA COM TEMPO','03  DESARME EM SEQUÊNCIA','04  DOMINAÇÃO','05  QUEBRA DE FIREWALL','06  TESTE DO PAINEL'].map(function(n,i){return '<div class="ln" style="'+(i===0?'background:#003c28;border:1px solid #5aff8c;':'')+'padding:4px 8px;margin-top:6px">'+(i===0?'&gt; ':'')+n+'</div>';}).join('')+
+        '<div class="ln" style="color:#8a959b;margin-top:10px">ENG 1/ENG 2: escolher · START: iniciar</div>';
+    },3400);
+  }
+  function tick(){
+    var dt=Date.now()-t0;
+    if(est==='APU'||est==='E1'||est==='E2'){
+      var alvo=est==='APU'?100:60, dur=est==='APU'?3000:2500, b=est==='APU'?'APU':est==='E1'?'ENG1':'ENG2', l=est==='APU'?'A':est==='E1'?'1':'2';
+      rpm=Math.min(alvo,Math.round(alvo*dt/dur)); disp(l+String(rpm).padStart(3,' ')); arc(b,Math.floor(dt/150)%2);
+      if(dt>=dur){arc(b,true);bip(); if(est==='APU')ir('W_E1',null,'APU pronto. Agora ENG 1.'); else if(est==='E1')ir('W_E2',null,'Motor 1 em 60%. Agora ENG 2.'); else ir('W_MAN','thr ','Motores prontos. Empurre a MANETE para MIL.');}
+    }
+    if(est==='W_START'){arc('START',Math.floor(Date.now()/250)%2); if(startDown&&Date.now()-startDown>1000){startDown=0;arc('START',true);bip();ir('BOOT','boot','START! Relé ligado: o Raspberry Pi está iniciando...');boot();}}
+    if(est==='SHDN'){var f=Math.max(0,25-Math.floor(dt/1000*5)); disp('SH'+String(f).padStart(2,' ')); if(f===0){ir('DESL','OFF ','Pi desligado com segurança. Desligue a BAT.');arcs(false);telaOff();}}
+    var t=Date.now();
+    neon(function(i){
+      if(est==='OFF')return '#1a1a1a';
+      if(est==='ABORT')return Math.floor(t/120)%2?'#d01010':'#1a1a1a';
+      if(est==='BOOT'){var k=Math.random();return k<.4?'#ff00c8':k<.8?'#00dcff':k<.9?'#ffffff':'#1a1a1a';}
+      if(est==='ON'){var f=(1+Math.sin(i*.5+t/400))/2;return 'rgb('+Math.round(180*f)+','+Math.round(200*(1-f))+',220)';}
+      if(est==='W_ARM'){var v=Math.round(40+90*(1+Math.sin(t/600))/2);return 'rgb(0,'+v+','+v+')';}
+      if(est==='SHDN')return '#7a0a7a'; if(est==='DESL')return '#1a1a1a';
+      return i<Math.round(15*rpm/100)?'#ff00b4':'#0a1418';
+    });
+  }
+  timer=setInterval(tick,40);
+  function trocar(nome,v){
+    if(nome==='NEON'){sw.NEON=v;return;}
+    if(nome==='BAT'){
+      if(v){arcs(true);disp('8888');bip();setTimeout(function(){arcs(false);disp('bAt ');ir(sw.ARM?'ABORT':'W_ARM',null,sw.ARM?'Já estava armado: desligue o MASTER ARM.':'BAT ligada. Agora levante a capa e ligue o MASTER ARM.');},900);est='TESTE';}
+      else{ if(est==='ON'||est==='BOOT'){ir('SHDN','SH25','BAT desligada com o Pi ligado: desligamento seguro...');} else {est='OFF';rpm=0;arcs(false);disp('----');telaOff();msg('painel desligado: comece pela BAT');} }
+      return;
+    }
+    if(est==='OFF'||est==='TESTE'||est==='SHDN')return;
+    if(est==='ON'||est==='BOOT'){
+      if(nome==='ARM'&&!v){ if(mil){disp('IdLE');msg('Primeiro a MANETE em IDLE.');} else ir('SHDN','SH25','Pedindo para o Pi desligar sozinho...'); }
+      if(nome==='MAN'&&!v&&!sw.ARM)ir('SHDN','SH25','Pedindo para o Pi desligar sozinho...');
+      return;
+    }
+    if(nome==='ARM'&&!v){arcs(false);rpm=0;ir('W_ARM','bAt ','Desarmado: recomece pelo MASTER ARM.');return;}
+    if(est==='ABORT')return;
+    var ok=false;
+    if((est==='W_ARM'||est==='DESL')&&nome==='ARM'&&v){ok=true;ir('W_APU','Arn ','Armado. Aperte o APU (amarelo).');bip();}
+    else if(est==='W_APU'&&nome==='APU'&&v){ok=true;ir('APU',null,'APU girando...');}
+    else if(est==='W_E1'&&nome==='ENG1'&&v){ok=true;ir('E1',null,'Motor 1 girando...');}
+    else if(est==='W_E2'&&nome==='ENG2'&&v){ok=true;ir('E2',null,'Motor 2 girando...');}
+    else if(est==='W_MAN'&&nome==='MAN'&&v){ok=true;rpm=100;ir('W_START','PUSH','Manete em MIL. Segure o START (vermelho) 1 s.');bip();}
+    else if(est==='W_START'&&nome==='MAN'&&!v){ok=true;rpm=60;ir('W_MAN','thr ','Manete voltou: empurre para MIL de novo.');}
+    else if(est==='W_START'&&nome==='START'){ok=true;}
+    if(!ok&&v)abort();
+  }
+  document.querySelectorAll('.sw').forEach(function(e){
+    e.onclick=function(){var n=e.getAttribute('data-s');
+      if(!cap[n]&&!sw[n]){cap[n]=true;e.classList.add('aberta');return;}      // 1º clique: levanta a capa
+      sw[n]=!sw[n];e.classList.toggle('on',sw[n]);
+      if(!sw[n]){cap[n]=false;e.classList.remove('aberta');}                   // desligou: a capa fecha
+      trocar(n,sw[n]);
+    };
+  });
+  document.querySelectorAll('.sw[data-s="NEON"]').forEach(function(e){e.classList.add('on','aberta');cap.NEON=true;});
+  $('#man').onclick=function(){mil=!mil;this.classList.toggle('mil',mil);trocar('MAN',mil);};
+  document.querySelectorAll('.arc').forEach(function(e){
+    var b=e.getAttribute('data-b');
+    e.onmousedown=e.ontouchstart=function(ev){ev.preventDefault();if(b==='START'){startDown=Date.now();if(est!=='W_START')trocar('START',true);}else trocar(b,true);};
+    e.onmouseup=e.onmouseleave=e.ontouchend=function(){if(b==='START')startDown=0;};
+  });
+})();
+</script>
+</body>
+</html>

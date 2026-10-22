@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Powerbank dos Tablets</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:100%;max-width:420px}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.duas{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-top:12px}
+.duas img{width:100%;height:auto;display:block;border-radius:8px;background:#f8f8f8}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243a;stroke:#4f79b0;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}.pt.c,.ttl.c{text-anchor:middle}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-gnd{stroke:#8a959b}.w-usb{stroke:#4fa3ff}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | GAMES · PROJETO 02 · INICIANTE</div>
+    <h1>Powerbank dos Tablets</h1>
+    <p class="sub">Caixa tática presa no poste ou na árvore, embaixo do tablet da missão, com <b>3 baterias 18650 num cartucho que troca inteiro</b> (como um carregador de munição) e <b>2 saídas USB</b>: uma para o tablet e outra para o rádio do amplificador de rede (05). Dá para o jogo inteiro sem medo de a tela apagar. Sem código: só montar e soldar 4 fios. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>100 × 64 × 114</b><span>largura × fundo × altura, com os túneis das fitas e os botões da tampa</span></div>
+      <div class="tile"><b>≈ 5 h</b><span>só com o powerbank (tablet de 10″ com a tela sempre ligada + rádio ≈ 4,5 W); somando a bateria do tablet, 8 h ou mais</span></div>
+      <div class="tile"><b>2 × USB 5 V</b><span>tablet (2,1 A) + rádio do amplificador 05 (1 A)</span></div>
+      <div class="tile"><b>≈ 20 s</b><span>para trocar o cartucho de 3 baterias no meio do jogo</span></div>
+      <div class="tile"><b>R$ 125–204</b><span>o 1º (comprando os kits); os outros saem por R$ 72–113 cada</span></div>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Por que iniciante:</b> não tem placa programável nem código. A placa de power bank já faz tudo (carrega as baterias, eleva para 5 V, mostra a carga e protege). Você só imprime, solda 4 fios e monta.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="tw"><table>
+      <tr><th>Parte</th><th>O que faz</th></tr>
+      <tr><td><b>Cartucho</b></td><td>3 suportes de bateria 18650 ligados <b>em paralelo</b> (todos os + juntos e todos os − juntos) num berço impresso, presos por 2 fitas de velcro. Sai da caixa por cima, puxando pela alça, e se liga pelo conector <b>XT30</b> (vermelho = +). 3 × 2600 mAh = 7800 mAh</td></tr>
+      <tr><td><b>Placa de power bank</b></td><td>Fica em pé na frente da caixa, com as saídas viradas para <b>baixo</b> (a chuva não entra). Eleva os 3,7 V das baterias para 5 V nas 2 saídas USB, carrega o cartucho pela entrada USB-C e mostra a carga na telinha, que aparece pela grade da frente</td></tr>
+      <tr><td><b>Caixa</b></td><td>Presa no poste ou na árvore por <b>2 fitas de velcro de 25 mm</b> que passam nos 2 túneis de trás; as nervuras em V centralizam num poste redondo. A tampa coyote fecha com <b>2 botões de aperto</b> (sem ferramenta)</td></tr>
+      <tr><td><b>No campo</b></td><td>Cabo 1 → tablet. Cabo 2 → rádio do amplificador de rede (05), mais alto no mesmo poste. Bateria acabando? Abra a tampa, desligue o XT30, puxe o cartucho e ponha um cartucho carregado</td></tr>
+    </table></div>
+    <div class="note ok"><b>Conta da autonomia:</b> 3 baterias de 2600 mAh × 3,7 V ≈ 29 Wh; a placa perde uns 15% para elevar a 5 V, sobram ≈ 24 Wh. O tablet de 10″ com a tela sempre ligada gasta ≈ 3,5–4 W e o rádio ≈ 0,5 W: <b>24 ÷ 4,5 ≈ 5 h</b>. Como o tablet também tem a bateria dele (≈ 5000 mAh), as 4 horas ficam garantidas com folga. Com um cartucho reserva, o jogo pode durar o dia todo.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>O aparelho</h2>
+    <div class="fig">
+      <svg viewBox="0 0 333.55 267.47" data-mm="333.55" data-zoom="2.82" class="vistas3d vvistas92afb2">
+        <style>.vvistas92afb2 .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vvistas92afb2 .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vvistas92afb2 .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vvistas92afb2 .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vvistas92afb2 .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">DE FRENTE (tela de carga)</text>
+        <image href="3D/img/vistas_frente.png" x="12" y="9" width="99.6" height="153.5"/>
+        <text x="61.8" y="100.4" class="nm">tela de carga</text>
+        <text x="61.8" y="148.4" class="nm">cabos USB</text>
+        <line x1="12" y1="122.5" x2="12" y2="170" class="ext"/><line x1="111.6" y1="122.5" x2="111.6" y2="170" class="ext"/>
+        <line x1="12" y1="168.5" x2="111.6" y2="168.5" class="dim"/><text x="61.8" y="173.7" class="dt">100</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="122.5" x2="12" y2="122.5" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="122.5" class="dim"/><text x="4.2" y="65.75" class="dt" transform="rotate(-90 4.2 65.75)">114</text>
+        <text x="135.6" y="5" class="lb">LADO DIREITO (encosta no poste)</text>
+        <image href="3D/img/vistas_direita.png" x="135.6" y="9" width="63.97" height="153.5"/>
+        <text x="194.59" y="97.4" class="nm">túnel da fita</text>
+        <text x="194.59" y="47.4" class="nm">túnel da fita</text>
+        <line x1="135.6" y1="122.5" x2="135.6" y2="170" class="ext"/><line x1="199.57" y1="122.5" x2="199.57" y2="170" class="ext"/>
+        <line x1="135.6" y1="168.5" x2="199.57" y2="168.5" class="dim"/><text x="167.59" y="173.7" class="dt">64</text>
+        <line x1="128.1" y1="9" x2="135.6" y2="9" class="ext"/><line x1="128.1" y1="122.5" x2="135.6" y2="122.5" class="ext"/>
+        <line x1="129.6" y1="9" x2="129.6" y2="122.5" class="dim"/><text x="127.8" y="65.75" class="dt" transform="rotate(-90 127.8 65.75)">114</text>
+        <text x="223.57" y="5" class="lb">DE CIMA, SEM A TAMPA</text>
+        <image href="3D/img/vistas_topo_SEM_TAMPAtrue.png" x="223.57" y="9" width="97.98" height="63.97"/>
+        <text x="272.56" y="57.88" class="nm">placa</text>
+        <text x="272.56" y="37.88" class="nm">cartucho 3 × 18650</text>
+        <line x1="223.57" y1="72.97" x2="223.57" y2="80.47" class="ext"/><line x1="321.55" y1="72.97" x2="321.55" y2="80.47" class="ext"/>
+        <line x1="223.57" y1="78.97" x2="321.55" y2="78.97" class="dim"/><text x="272.56" y="84.17" class="dt">98</text>
+        <line x1="216.07" y1="9" x2="223.57" y2="9" class="ext"/><line x1="216.07" y1="72.97" x2="223.57" y2="72.97" class="ext"/>
+        <line x1="217.57" y1="9" x2="217.57" y2="72.97" class="dim"/><text x="215.77" y="40.99" class="dt" transform="rotate(-90 215.77 40.99)">64</text>
+        <text x="12" y="186.5" class="lb">DE BAIXO (saídas USB)</text>
+        <image href="3D/img/vistas_baixo.png" x="12" y="190.5" width="99.6" height="63.97"/>
+        <text x="61.8" y="203.39" class="nm">USB</text>
+        <line x1="12" y1="254.47" x2="12" y2="261.97" class="ext"/><line x1="111.6" y1="254.47" x2="111.6" y2="261.97" class="ext"/>
+        <line x1="12" y1="260.47" x2="111.6" y2="260.47" class="dim"/><text x="61.8" y="265.67" class="dt">100</text>
+        <line x1="4.5" y1="190.5" x2="12" y2="190.5" class="ext"/><line x1="4.5" y1="254.47" x2="12" y2="254.47" class="ext"/>
+        <line x1="6" y1="190.5" x2="6" y2="254.47" class="dim"/><text x="4.2" y="222.49" class="dt" transform="rotate(-90 4.2 222.49)">64</text>
+      </svg>
+      <div class="cap">Caixa preta de 96 × 50 × 102 (+ tampa de 4) com tampa coyote (emblema e nome BLACK BIRD, a única marca do projeto) e painéis hexagonais na frente e dos lados. <b>Embaixo, na frente:</b> a placa de power bank em pé, presa em 2 guias, com as saídas USB para baixo e a tela de carga atrás da grade de favos (a BB de 6 mm não passa). 2 calços em cima da placa não deixam ela subir quando você liga o cabo. <b>Atrás:</b> o cartucho com as 3 baterias, entre a divisória e a parede de trás. <b>Nas costas:</b> 2 túneis para as fitas de velcro e as nervuras em V.</div>
+    </div>
+    <div class="duas">
+      <div class="fig" style="padding:8px;margin:0"><img src="3D/img/pb_3d.png" alt="Powerbank montado"><div class="cap">Montado: tampa com os 2 botões de aperto e os cabos USB saindo por baixo.</div></div>
+      <div class="fig" style="padding:8px;margin:0"><img src="3D/img/poste_3d.png" alt="Tablet, powerbank e rádio presos num poste"><div class="cap">No poste: powerbank embaixo, tablet no meio e o rádio do amplificador de rede (05) em cima, com a antena.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. Arquivos em <b>3D/stl</b>; quantidades, ferragens e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do powerbank em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Caixa, cartucho e 2 calços pretos; tampa e 2 botões de aperto coyote. Imprima <b>2 cartuchos por powerbank</b> (um no aparelho e um carregado de reserva).</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Componentes (por powerbank)</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>Placa de power bank 18650 com tela de carga e <b>2 saídas USB-A</b> (5 V 2,1 A + 1 A), com <b>todas as entradas e saídas na mesma borda</b></td><td class="mm">≈ 57 × 28 (confira)</td><td>Carrega o cartucho, eleva para 5 V, protege as baterias e mostra a carga</td></tr>
+      <tr><td>3 baterias 18650 de 2600 mAh (marca conhecida, novas, <b>iguais</b>)</td><td class="mm">Ø 18,5 × 65</td><td>A energia (≈ 29 Wh)</td></tr>
+      <tr><td>3 suportes de 1 bateria 18650 (com fios)</td><td class="mm">≈ 77 × 21 × 20</td><td>Seguram as baterias no cartucho</td></tr>
+      <tr><td>1 par de conectores XT30 (macho + fêmea)</td><td class="mm">—</td><td>Liga e desliga o cartucho sem inverter o + e o −</td></tr>
+      <tr><td>2 cabos USB-A → USB-C curtos (30–100 cm)</td><td class="mm">—</td><td>Para o tablet e para o rádio (05). Se o tablet for micro-USB, um dos cabos é USB-A → micro-USB</td></tr>
+      <tr><td>Fita de velcro 25 mm (dupla face, que gruda nela mesma)</td><td class="mm">≈ 1,7 m</td><td>2 tiras de 60 cm no poste + 2 de 22 cm no cartucho</td></tr>
+      <tr><td>2 parafusos M3 × 16 Allen</td><td class="mm">—</td><td>Presos nos botões de aperto, fecham a tampa</td></tr>
+      <tr><td>Peças impressas (pasta <code>3D</code>)</td><td class="mm">—</td><td>caixa, tampa, cartucho, 2 calços, 2 botões de aperto</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Ligação elétrica</h2>
+    <p class="hint">Sem escala. Só 4 soldas: os 3 suportes em paralelo no XT30 fêmea (cartucho) e o XT30 macho no B+ e no B− da placa (caixa).</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 330">
+        <text x="150" y="28" class="ttl c">Cartucho</text>
+        <rect x="30" y="40" width="240" height="210" rx="10" class="blk"/>
+        <g>
+          <rect x="50" y="62" width="150" height="36" rx="6" fill="#2c64b5" stroke="#59636a"/><text x="125" y="85" class="pt c">18650 nº 1</text>
+          <rect x="50" y="122" width="150" height="36" rx="6" fill="#2c64b5" stroke="#59636a"/><text x="125" y="145" class="pt c">18650 nº 2</text>
+          <rect x="50" y="182" width="150" height="36" rx="6" fill="#2c64b5" stroke="#59636a"/><text x="125" y="205" class="pt c">18650 nº 3</text>
+        </g>
+        <text x="44" y="84" class="pt e" style="font-size:11px">−</text><text x="44" y="144" class="pt e" style="font-size:11px">−</text><text x="44" y="204" class="pt e" style="font-size:11px">−</text>
+        <text x="206" y="84" class="pt" style="font-size:11px">+</text><text x="206" y="144" class="pt" style="font-size:11px">+</text><text x="206" y="204" class="pt" style="font-size:11px">+</text>
+        <path class="wr w-pwr" d="M200,80 H235 V200 H200 M200,140 H235 M235,140 H330"/>
+        <path class="wr w-gnd" d="M50,80 H40 V235 H250 V170 H330 M50,140 H40 M50,200 H40"/>
+        <rect x="330" y="125" width="60" height="60" rx="6" fill="#e8c21a" stroke="#59636a"/><text x="360" y="160" class="pt c" style="fill:#111">XT30</text>
+        <text x="360" y="118" class="pt c" style="font-size:10px;fill:#8a959b">fêmea | macho</text>
+        <path class="wr w-pwr" d="M390,140 H520"/><path class="wr w-gnd" d="M390,170 H520"/>
+        <text x="600" y="58" class="ttl c">Placa de power bank</text>
+        <rect x="520" y="70" width="160" height="200" rx="8" class="brd"/>
+        <text x="530" y="144" class="pt">B+</text><text x="530" y="174" class="pt">B−</text>
+        <text x="600" y="110" class="pt c" style="font-size:11px">tela de carga</text>
+        <text x="670" y="214" class="pt e">USB-A 1</text><text x="670" y="238" class="pt e">USB-A 2</text><text x="670" y="262" class="pt e">USB-C (carga)</text>
+        <path class="wr w-usb" d="M680,210 H800"/><path class="wr w-usb" d="M680,234 H760 V300 H800"/><path class="wr w-usb" d="M680,258 H720 V316 H600"/>
+        <rect x="800" y="185" width="90" height="50" rx="6" class="blk"/><text x="845" y="207" class="pt c">TABLET</text><text x="845" y="224" class="pt c" style="font-size:10px;fill:#8a959b">2,1 A</text>
+        <rect x="800" y="278" width="90" height="44" rx="6" class="blk"/><text x="845" y="298" class="pt c" style="font-size:11px">RÁDIO 05</text><text x="845" y="314" class="pt c" style="font-size:10px;fill:#8a959b">1 A</text>
+        <text x="595" y="320" class="pt e" style="font-size:10px;fill:#8a959b">carregador de celular (para recarregar)</text>
+        <g class="pin"><circle cx="200" cy="80" r="4"/><circle cx="200" cy="140" r="4"/><circle cx="200" cy="200" r="4"/><circle cx="50" cy="80" r="4"/><circle cx="50" cy="140" r="4"/><circle cx="50" cy="200" r="4"/><circle cx="520" cy="140" r="4"/><circle cx="520" cy="170" r="4"/></g>
+        <circle cx="235" cy="140" r="5" fill="#b9c2c7"/><circle cx="40" cy="140" r="5" fill="#b9c2c7"/>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>Fio vermelho (+) dos 3 suportes</td><td>XT30 <b>fêmea</b>, pino + (lado marcado)</td><td>Os 3 vermelhos juntos: é o "em paralelo"</td></tr>
+      <tr><td>Fio preto (−) dos 3 suportes</td><td>XT30 fêmea, pino −</td><td>Os 3 pretos juntos</td></tr>
+      <tr><td>XT30 <b>macho</b> + (fio vermelho, 15 cm)</td><td>Placa <b>B+</b> (ou BAT+)</td><td>O macho fica na caixa</td></tr>
+      <tr><td>XT30 macho − (fio preto, 15 cm)</td><td>Placa <b>B−</b> (ou BAT−)</td><td>—</td></tr>
+      <tr><td>USB-A 1 e USB-A 2</td><td>Tablet e rádio do 05</td><td>Pelos cabos, por baixo da caixa</td></tr>
+    </table></div>
+    <div class="note">Use fio de silicone 20–22 AWG (a corrente chega a ≈ 3 A nas baterias) e termorretrátil em cada solda do XT30.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Confira a placa</b> antes de imprimir: meça comprimento e altura e veja se as saídas e a entrada estão na mesma borda. Se as medidas forem diferentes, mude <code>PLACA</code>, <code>PORTAS</code> e <code>TELA_Z</code> no topo do <code>3D/pecas.scad</code>.</li>
+      <li><b>Imprima</b> seguindo o <code>3D/LEIA-ME.txt</code> (PETG; a caixa leva ≈ 3 h). Imprima 2 cartuchos.</li>
+      <li><b>Teste a placa</b> fora da caixa: ligue 1 bateria no B+/B− (vermelho no +) e veja a tela acender e um celular carregar no USB.</li>
+      <li><b>Cartucho:</b> encaixe os 3 suportes nos berços, passe os fios pelos rasgos da ponta da alça e solde os 3 vermelhos no + do XT30 fêmea e os 3 pretos no −. Ponha as 3 baterias (<b>todas com a mesma carga</b>, veja a atenção) e prenda com as 2 tiras de velcro de 22 cm nos rebaixos.</li>
+      <li><b>Caixa:</b> solde o XT30 macho (15 cm de fio) no B+ e no B− da placa. Desça a placa nas guias com as saídas para baixo e a tela virada para a grade da frente. Desça os 2 calços pelos mesmos rasgos, em cima da placa.</li>
+      <li><b>Botões de aperto:</b> empurre a cabeça de um M3 × 16 em cada botão (aperto justo).</li>
+      <li><b>Feche:</b> ligue o XT30, desça o cartucho (as baterias viradas para trás, a alça em cima), acomode os fios e feche a tampa com os 2 botões.</li>
+      <li><b>Carga:</b> carregue pelo USB-C de baixo com um carregador de celular. Com 2 A leva ≈ 4–5 h; com 1 A, ≈ 8 h. Carregue na noite anterior ao jogo.</li>
+      <li><b>No campo:</b> passe as 2 fitas de 60 cm pelos túneis e abrace o poste ou a árvore, embaixo do tablet. Cabo 1 no tablet, cabo 2 no rádio (05).</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Custo de produção</h2>
+    <p class="hint">Valores de out/2026, sem frete, só produtos novos (os links do Mercado Livre já abrem com o filtro "Novo"). As buscas não mostraram preço exato de todos os itens no Mercado Livre: são <b>estimativas</b> de anúncios comuns; confira antes de comprar. Peças impressas não entram.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>Placa de power bank 18650 com tela e 2 USB (todas as portas numa borda)</td><td><a href="https://lista.mercadolivre.com.br/placa-power-bank-18650-display-2-usb_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 12,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td><b>Conjunto:</b> 2 kits de 2 baterias 18650 2600 mAh (usa 3)</td><td><a href="https://www.mercadolivre.com.br/kit-2-baterias-de-litio-recarregavel-modelo-18650-2600mah-37v-elgin/p/MLB26869470">Mercado Livre</a></td><td>a 4ª vai no próximo powerbank</td><td class="r">R$ 52,00</td><td class="r">R$ 64,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 suportes de 1 bateria 18650 (usa 3)</td><td><a href="https://lista.mercadolivre.com.br/kit-10-suporte-bateria-18650_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>mais 2 cartuchos (reserva ou o 2º powerbank)</td><td class="r">R$ 20,00</td><td class="r">R$ 35,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 5 pares de conectores XT30 (usa 1 par)</td><td><a href="https://lista.mercadolivre.com.br/conector-xt30-par_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>4 powerbanks/cartuchos</td><td class="r">R$ 15,00</td><td class="r">R$ 30,00</td></tr>
+      <tr><td>2 cabos USB-A → USB-C curtos</td><td><a href="https://lista.mercadolivre.com.br/cabo-usb-c-curto-30cm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 16,00</td><td class="r">R$ 30,00</td></tr>
+      <tr><td>Rolo de velcro dupla face 25 mm, 3 m</td><td><a href="https://lista.mercadolivre.com.br/velcro-dupla-face-3-metros_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>sobra ≈ 1,3 m (o rádio 05 usa 60 cm)</td><td class="r">R$ 10,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td>Parafusos M3</td><td>kit sortido que você já tem</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="tot"><td colspan="3">1º powerbank (comprando os kits inteiros)</td><td class="r">≈ R$ 125</td><td class="r">≈ R$ 204</td></tr>
+      <tr class="reuse"><td colspan="3">Cada powerbank a mais (reaproveitando as sobras dos kits)</td><td class="r">≈ R$ 72</td><td class="r">≈ R$ 113</td></tr>
+      <tr class="tot"><td colspan="3">5 powerbanks (5 tablets)</td><td class="r">≈ R$ 430</td><td class="r">≈ R$ 680</td></tr>
+    </table></div>
+    <p class="hint" style="margin-top:8px">Cartucho reserva: + 3 baterias (≈ R$ 39–48) e 3 suportes e 1 XT30 das sobras dos kits.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Pontos de atenção</h2>
+    <div class="note red"><b>Baterias em paralelo: nunca misture carregada com descarregada.</b> As 3 de um cartucho são sempre trocadas e carregadas <b>juntas</b>, dentro do próprio cartucho. Se juntar uma cheia com uma vazia, a cheia descarrega de uma vez na vazia (corrente alta, esquenta). Para montar um cartucho novo, carregue as 3 baterias até o fim, separadas (ou confira no multímetro que estão com a mesma tensão, ± 0,05 V), e só então ponha no cartucho.</div>
+    <div class="note red"><b>Baterias 18650 de verdade:</b> fuja de anúncio com "9800 mAh", "12000 mAh" etc. Não existe 18650 com isso: é bateria falsa, fraca e perigosa. Use as de 2500–3000 mAh de marca conhecida.</div>
+    <div class="note">Algumas placas de power bank desligam sozinhas quando o consumo fica muito baixo. Com o tablet ligado isso não acontece; se acontecer só com o rádio, aperte o botão da placa (abrindo a tampa) ou mantenha o tablet ligado no outro USB.</div>
+    <div class="note">Deixe a caixa à sombra quando der: bateria de lítio no sol forte, dentro de caixa preta, esquenta. A caixa aguenta chuva fraca (saídas para baixo, tampa com aba), mas não fica embaixo d'água.</div>
+    <div class="note">A placa e as medidas dos suportes variam de um anúncio para outro. Meça as suas antes de imprimir (topo do <code>3D/pecas.scad</code>).</div>
+    <div class="note ok">Combina com o amplificador de rede (05): a 2ª saída USB alimenta o rádio que fica ao lado do tablet. Um rádio repetidor (sem tablet) também usa um powerbank destes.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

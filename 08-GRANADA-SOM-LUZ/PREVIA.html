@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Granada de Som e Luz</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-gnd{stroke:#8a959b}.w-sig{stroke:#ff7ad9}.w-ana{stroke:#5fd17a}.w-12{stroke:#ffd84a}.w-led{stroke:#4fa3ff}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+.seq{font-family:Consolas,monospace;color:var(--accent)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | GAMES · PROJETO 08 · INTERMEDIÁRIO</div>
+    <h1>Granada de Som e Luz</h1>
+    <p class="sub">Granada reutilizável para o jogo: você puxa o pino, ela conta 3 segundos e estoura com sirene de 110 dB e estrobo branco de 4 LEDs de 1 W. Recarrega pelo USB-C e arma de novo recolocando o pino. Tem também o modo "mina", para usar com fio de tropeço. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>Ø 58 × 116</b><span>corpo octogonal, de face a face × altura (146 com a argola)</span></div>
+      <div class="tile"><b>≈ 280 g</b><span>com bateria (estimativa, PETG 40–50%)</span></div>
+      <div class="tile"><b>110 dB + 4 W</b><span>sirene piezo 12 V e estrobo de 4 LEDs de 1 W</span></div>
+      <div class="tile"><b>≈ 300 estouros</b><span>por carga da LiPo de 1000 mAh (estimativa)</span></div>
+      <div class="tile"><b>R$ 128–230</b><span>reaproveitando os kits do 04; do zero, R$ 242–387</span></div>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Por que intermediário:</b> a eletrônica é simples (uma placa que dorme, 2 MOSFETs que ligam a sirene e os LEDs, um elevador de tensão), mas é o primeiro projeto com corrente alta (≈ 2 A nos picos) e o corpo precisa aguentar ser jogado no chão.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="tw"><table>
+      <tr><th>Ação</th><th>Resultado</th></tr>
+      <tr><td>Pino no lugar</td><td>O ímã na ponta do pino fecha o sensor magnético (reed). A granada fica <b>armada e dormindo</b>, gastando quase nada</td></tr>
+      <tr><td>Puxar o pino</td><td>Acorda, conta o tempo do modo e <b>estoura</b>: 2,5 s de sirene contínua + estrobo; depois a sirene pulsa até completar 6 s</td></tr>
+      <tr><td>Recolocar o pino durante a contagem</td><td>Cancela: não estoura e continua armada</td></tr>
+      <tr><td>Depois de estourar</td><td>Volta a dormir e espera o pino. Recolocou o pino: 1 piscada curta = armada de novo</td></tr>
+      <tr><td>Botão <b>MODO</b>, toque curto (pino no lugar)</td><td>Troca o modo e mostra com piscadas: <span class="seq">1 = 3 s</span> · <span class="seq">2 = 5 s</span> · <span class="seq">3 = MINA (0 s)</span>. Fica salvo</td></tr>
+      <tr><td>Botão <b>MODO</b>, segurar 2 s</td><td>Mostra a bateria: 1 a 4 piscadas longas (4 = cheia)</td></tr>
+      <tr><td>Modo MINA</td><td>Amarre um fio de pesca na argola e prenda a granada no chão ou numa árvore: quem tropeçar puxa o pino e ela estoura na hora</td></tr>
+      <tr><td>Ligar a chave com o pino fora</td><td>Não estoura (segurança). Ela só arma quando você colocar o pino</td></tr>
+    </table></div>
+    <div class="note">O pino tem uma haste de 24 mm que entra numa guia dentro do topo. O sensor (reed) fica numa canaleta ao lado da guia, e o ímã de 4 × 2 mm vai preso <b>dentro</b> da ponta da haste (é colocado com uma pausa na impressão, sem cola).</div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>O aparelho</h2>
+    <div class="fig">
+      <svg viewBox="0 0 257.45 342" data-mm="257.45" data-zoom="3.65" class="vistas3d vvistasd2a71f">
+        <style>.vvistasd2a71f .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vvistasd2a71f .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vvistasd2a71f .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vvistasd2a71f .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vvistasd2a71f .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">LATERAL (janela do estrobo)</text>
+        <image href="3D/img/vistas_direita.png" x="12" y="9" width="63.49" height="146"/>
+        <line x1="12" y1="155" x2="12" y2="162.5" class="ext"/><line x1="73.48" y1="155" x2="73.48" y2="162.5" class="ext"/>
+        <line x1="12" y1="161" x2="73.48" y2="161" class="dim"/><text x="42.74" y="166.2" class="dt">61</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="155" x2="12" y2="155" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="155" class="dim"/><text x="4.2" y="82" class="dt" transform="rotate(-90 4.2 82)">146</text>
+        <text x="99.49" y="5" class="lb">FRENTE (USB-C e chave)</text>
+        <image href="3D/img/vistas_frente.png" x="99.49" y="9" width="60.98" height="146"/>
+        <line x1="99.49" y1="155" x2="99.49" y2="162.5" class="ext"/><line x1="160.47" y1="155" x2="160.47" y2="162.5" class="ext"/>
+        <line x1="99.49" y1="161" x2="160.47" y2="161" class="dim"/><text x="129.98" y="166.2" class="dt">61</text>
+        <line x1="91.99" y1="9" x2="99.49" y2="9" class="ext"/><line x1="91.99" y1="155" x2="99.49" y2="155" class="ext"/>
+        <line x1="93.49" y1="9" x2="93.49" y2="155" class="dim"/><text x="91.69" y="82" class="dt" transform="rotate(-90 91.69 82)">146</text>
+        <text x="184.47" y="5" class="lb">CORTE PELA FRENTE</text>
+        <image href="3D/img/vistas_frente_CORTEfrente.png" x="184.47" y="9" width="60.98" height="146"/>
+        <text x="214.96" y="103.9" class="nm">ESP32-C3</text>
+        <text x="214.96" y="71.9" class="nm">MT3608 (12 V)</text>
+        <text x="214.96" y="118.9" class="nm">TP4056 USB-C</text>
+        <text x="214.96" y="137.9" class="nm">sirene 110 dB</text>
+        <text x="234.96" y="46.9" class="nm">topo + pino</text>
+        <line x1="184.47" y1="155" x2="184.47" y2="162.5" class="ext"/><line x1="245.45" y1="155" x2="245.45" y2="162.5" class="ext"/>
+        <line x1="184.47" y1="161" x2="245.45" y2="161" class="dim"/><text x="214.96" y="166.2" class="dt">61</text>
+        <line x1="176.97" y1="9" x2="184.47" y2="9" class="ext"/><line x1="176.97" y1="155" x2="184.47" y2="155" class="ext"/>
+        <line x1="178.47" y1="9" x2="178.47" y2="155" class="dim"/><text x="176.67" y="82" class="dt" transform="rotate(-90 176.67 82)">146</text>
+        <text x="12" y="179" class="lb">CORTE POR TRÁS</text>
+        <image href="3D/img/vistas_tras_CORTEtras.png" x="12" y="183" width="60.98" height="146"/>
+        <text x="42.49" y="268.9" class="nm">LiPo 1000 mAh</text>
+        <text x="50.49" y="235.9" class="nm">MOSFETs</text>
+        <text x="42.49" y="311.9" class="nm">sirene 110 dB</text>
+        <text x="20.49" y="259.9" class="nm">LED 1 W</text>
+        <text x="30.49" y="227.9" class="nm">reed</text>
+        <line x1="12" y1="329" x2="12" y2="336.5" class="ext"/><line x1="72.98" y1="329" x2="72.98" y2="336.5" class="ext"/>
+        <line x1="12" y1="335" x2="72.98" y2="335" class="dim"/><text x="42.49" y="340.2" class="dt">61</text>
+        <line x1="4.5" y1="183" x2="12" y2="183" class="ext"/><line x1="4.5" y1="329" x2="12" y2="329" class="ext"/>
+        <line x1="6" y1="183" x2="6" y2="329" class="dim"/><text x="4.2" y="256" class="dt" transform="rotate(-90 4.2 256)">146</text>
+      </svg>
+      <div class="cap">Corpo octogonal de Ø 58 mm (de face a face) e 100 mm de altura, base embaixo e topo coyote em cima: 116 mm no total, 146 com a argola em pé. Nas 4 faces retas ficam as janelas de favo do estrobo; nas 4 diagonais, as grelhas por onde a sirene também sai, além da grade de favos da base. <b>Por dentro, de baixo para cima:</b> a sirene no berço da base; o <b>chassi</b> (piso + placa em pé) apoiado na sirene e apertado pelo topo; no piso, o TP4056 com o USB-C na face da frente; na frente da placa em pé, a ESP32-C3 e o elevador MT3608; atrás, a LiPo e a plaquinha dos 2 MOSFETs; os 4 LEDs em suportes parafusados atrás das janelas; o reed no topo, ao lado da guia do pino. Botão MODO numa face reta (com moldura) e chave liga/desliga numa diagonal.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. Arquivos em <b>3D/stl</b>; quantidades, ferragens e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D da granada em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Corpo preto com molduras facetadas nas janelas, favos que protegem os LEDs de BB e pancada, e grelhas da sirene; base preta com grade de favos; topo coyote facetado com o emblema e o nome BLACK BIRD (a única marca do projeto) e o furo do pino; pino coyote com argola; chassi, suportes de LED e presilhas pretos. Tudo preso com M3, sem cola.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>ESP32-C3 SuperMini (do kit do cronógrafo, 04)</td><td class="mm">22,5 × 18</td><td>Conta o tempo, liga a sirene e o estrobo e dorme entre um uso e outro</td></tr>
+      <tr><td>Sirene piezo 12 V 110 dB (com oscilador embutido)</td><td class="mm">Ø 42 × 26 (confira)</td><td>O "estouro". Precisa de 12 V: por isso o elevador</td></tr>
+      <tr><td>Módulo elevador MT3608 (step-up)</td><td class="mm">36 × 17</td><td>Transforma os 3,7 V da bateria em 12 V para a sirene</td></tr>
+      <tr><td>4 LEDs de 1 W branco frio em estrela de 20 mm</td><td class="mm">Ø 20</td><td>Estrobo. Cada um com resistor de 2,2 Ω 1 W</td></tr>
+      <tr><td>2 MOSFETs IRLZ44N + 2 resistores 100 Ω + 2 resistores 10 kΩ, numa plaquinha perfurada de 20 × 18</td><td class="mm">TO-220</td><td>Ligam a sirene e os LEDs (a placa sozinha não aguenta essa corrente)</td></tr>
+      <tr><td>Reed switch 2 × 14 mm + ímã de neodímio 4 × 2 mm</td><td class="mm">2 × 14 · Ø 4 × 2</td><td>Sentem se o pino está no lugar</td></tr>
+      <tr><td>LiPo 802540 3,7 V 1000 mAh</td><td class="mm">8 × 25 × 40</td><td>Bateria (aguenta os picos de ≈ 2 A)</td></tr>
+      <tr><td>Carregador TP4056 USB-C com proteção (do kit do 04)</td><td class="mm">28 × 17</td><td>Carrega a LiPo pelo USB-C da face da frente</td></tr>
+      <tr><td>Botão de painel 7 mm (pulso) + chave gangorra mini KCD11</td><td class="mm">furo 7 · rasgo 10 × 15</td><td>MODO e liga/desliga</td></tr>
+      <tr><td>Resistores 100 kΩ (4)</td><td class="mm">—</td><td>Pull-ups do reed e do botão (funcionam com a placa dormindo) e divisor da bateria</td></tr>
+      <tr><td>Peças impressas (pasta <code>3D</code>)</td><td class="mm">—</td><td>corpo, base, topo, pino, chassi, 4 suportes de LED, 4 presilhas, 2 presilhas da LiPo</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Ligação elétrica</h2>
+    <p class="hint">Sem escala. O TP4056 fica ligado direto na bateria (carrega mesmo com a chave desligada); a chave corta a saída. Os MOSFETs ligam o <b>GND</b> da sirene e dos LEDs.</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 470">
+        <rect x="200" y="182" width="100" height="62" rx="8" class="blk"/><text x="258" y="210" class="ttl c">LiPo</text><text x="258" y="228" class="pt c" style="font-size:10px">1000 mAh</text><g class="pt" style="font-size:11px"><text x="206" y="204">+</text><text x="206" y="229">−</text></g>
+        <rect x="12" y="195" width="10" height="40" rx="3" fill="#5a6268"/><rect x="20" y="160" width="150" height="110" rx="8" class="blk"/><text x="95" y="152" class="ttl c">TP4056</text><text x="30" y="219" class="pt" style="font-size:10px;fill:#8a959b">USB-C</text><g class="pt e" style="font-size:11px"><text x="162" y="179">OUT+</text><text x="162" y="204">B+</text><text x="162" y="229">B−</text><text x="162" y="259">OUT−</text></g>
+        <rect x="210" y="120" width="80" height="34" rx="6" class="blk"/><text x="250" y="142" class="pt c" style="font-size:11px">chave</text>
+        <rect x="350" y="40" width="170" height="320" rx="8" class="brd"/><text x="435" y="200" class="ttl c">ESP32-C3</text><text x="435" y="218" class="ttl c">SuperMini</text>
+        <g class="pt"><text x="358" y="210">5V</text><text x="358" y="250">GND</text><text x="358" y="300">GPIO1</text></g>
+        <g class="pt e"><text x="512" y="74">GPIO2</text><text x="512" y="124">GPIO3</text><text x="512" y="204">GPIO4</text><text x="512" y="304">GPIO5</text></g>
+        <rect x="600" y="50" width="120" height="34" rx="6" class="blk"/><text x="660" y="72" class="pt c" style="font-size:11px">reed → GND</text>
+        <rect x="600" y="100" width="120" height="34" rx="6" class="blk"/><text x="660" y="122" class="pt c" style="font-size:11px">MODO → GND</text>
+        <rect x="600" y="180" width="110" height="50" rx="6" class="blk"/><text x="655" y="202" class="pt c" style="font-size:11px">IRLZ44N</text><text x="655" y="220" class="pt c" style="font-size:10px;fill:#8a959b">Q1 sirene</text>
+        <rect x="750" y="160" width="130" height="40" rx="6" class="brd"/><text x="815" y="185" class="pt c" style="font-size:11px">MT3608 → 12 V</text>
+        <rect x="750" y="225" width="130" height="34" rx="6" class="blk"/><text x="815" y="247" class="pt c" style="font-size:11px">sirene 110 dB</text>
+        <rect x="600" y="280" width="110" height="50" rx="6" class="blk"/><text x="655" y="302" class="pt c" style="font-size:11px">IRLZ44N</text><text x="655" y="320" class="pt c" style="font-size:10px;fill:#8a959b">Q2 estrobo</text>
+        <rect x="750" y="280" width="130" height="50" rx="6" class="blk"/><text x="815" y="302" class="pt c" style="font-size:11px">4 LEDs 1 W</text><text x="815" y="320" class="pt c" style="font-size:10px;fill:#8a959b">cada um com 2,2 Ω</text>
+        <path class="wr w-pwr" d="M170,200 H200"/><path class="wr w-gnd" d="M170,225 H200"/>
+        <path class="wr w-pwr" d="M170,175 H185 V137 H210 M290,137 H320 V207 H350"/><path class="wr w-pwr" d="M320,207 V20 H815 V160"/><path class="wr w-pwr" d="M815,20 H890 V290 H880"/>
+        <path class="wr w-gnd" d="M170,255 H330 V245 H350"/>
+        <path class="wr w-sig" d="M520,70 H600 M520,120 H600 M520,200 H600 M520,300 H600"/>
+        <path class="wr w-gnd" d="M710,205 H735 V190 H750"/><path class="wr w-12" d="M815,200 V225"/>
+        <path class="wr w-led" d="M710,305 H750"/>
+        <path class="wr w-ana" d="M300,300 H350"/><text x="20" y="300" class="pt" style="font-size:10px;fill:#8a959b">BAT+ → 100k → GPIO1 → 100k → GND</text>
+        <g class="pin"><circle cx="170" cy="175" r="4"/><circle cx="170" cy="200" r="4"/><circle cx="170" cy="225" r="4"/><circle cx="170" cy="255" r="4"/><circle cx="350" cy="207" r="4"/><circle cx="350" cy="245" r="4"/><circle cx="350" cy="300" r="4"/><circle cx="520" cy="70" r="4"/><circle cx="520" cy="120" r="4"/><circle cx="520" cy="200" r="4"/><circle cx="520" cy="300" r="4"/></g>
+        <text x="20" y="395" class="pt" style="font-size:11px;fill:#8a959b">Reed e MODO: cada um com 100 kΩ do GPIO para o 3V3 (pull-up que funciona com a placa dormindo).</text>
+        <text x="20" y="415" class="pt" style="font-size:11px;fill:#8a959b">Cada MOSFET: GPIO → 100 Ω → gate; 10 kΩ do gate para o GND; source no GND; dreno no "−" da carga.</text>
+        <text x="20" y="435" class="pt" style="font-size:11px;fill:#8a959b">MT3608: IN+ no BAT+ (depois da chave), IN− no dreno de Q1. A sirene vai em OUT+ e OUT−.</text>
+        <text x="20" y="455" class="pt" style="font-size:11px;fill:#8a959b">LEDs: BAT+ → 2,2 Ω → LED (+), todos os LED (−) juntos no dreno de Q2.</text>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>LiPo +/−</td><td>TP4056 B+/B−</td><td>Direto, sem chave (carrega desligada)</td></tr>
+      <tr><td>TP4056 OUT+</td><td>Chave KCD11 → "BAT+"</td><td>Tudo o que segue usa o BAT+ depois da chave</td></tr>
+      <tr><td>TP4056 OUT−</td><td>GND comum</td><td>GND da placa, sources dos MOSFETs, reed e botão</td></tr>
+      <tr><td>BAT+</td><td>C3 pino 5V</td><td>O regulador da placa faz os 3,3 V</td></tr>
+      <tr><td>GPIO2</td><td>reed → GND · 100 kΩ → 3V3</td><td>LOW = pino no lugar</td></tr>
+      <tr><td>GPIO3</td><td>botão MODO → GND · 100 kΩ → 3V3</td><td>LOW = apertado</td></tr>
+      <tr><td>GPIO4</td><td>100 Ω → gate de Q1</td><td>Q1 liga o GND do MT3608 (sirene)</td></tr>
+      <tr><td>GPIO5</td><td>100 Ω → gate de Q2</td><td>Q2 liga o GND dos 4 LEDs (estrobo)</td></tr>
+      <tr><td>GPIO1</td><td>meio do divisor 100k/100k entre BAT+ e GND</td><td>Mede a bateria</td></tr>
+      <tr><td>MT3608 OUT+/OUT−</td><td>Sirene + / −</td><td><b>Antes</b>, regule o trimpot do MT3608 para 12 V com o multímetro</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Imprima</b> seguindo o <code>3D/LEIA-ME.txt</code>. No pino, a impressora para na altura de 4,6 mm: coloque o ímã de 4 × 2 no bolso e continue.</li>
+      <li><b>Regule o MT3608</b> antes de tudo: ligue na bateria, meça a saída com o multímetro e gire o trimpot até 12 V. Só depois ligue a sirene.</li>
+      <li><b>Teste na protoboard:</b> C3 + reed + ímã + 1 LED com resistor + MOSFET. Grave <code>GRANADA/GRANADA.ino</code> e veja: coloque o ímã encostado no reed (arma, 1 piscada), afaste (3 s depois o LED pisca). Depois ponha a sirene com o MT3608.</li>
+      <li><b>Plaquinha dos MOSFETs:</b> 2 IRLZ44N, resistores de 100 Ω e 10 kΩ numa perfurada de 20 × 18, com 2 furos de 3 mm nos cantos (vai parafusada nos pinos do chassi).</li>
+      <li><b>LEDs:</b> solde o resistor de 2,2 Ω e os fios em cada estrela, encaixe a estrela no bolso do suporte (LED virado para a janela) e parafuse o suporte nos 2 pinos atrás da janela com M3 × 8.</li>
+      <li><b>Chassi:</b> ESP32-C3 e MT3608 na frente da placa em pé, LiPo atrás, cada uma presa pela sua presilha (2 M3 × 8). O TP4056 vai no piso, com o USB-C encostado na face da frente, preso pela presilha do piso.</li>
+      <li><b>Sirene e base:</b> encaixe a sirene no berço da base e parafuse a base no corpo (4 M3 × 10). Desça o chassi por cima da sirene, passando os fios dela pelos furos do piso.</li>
+      <li><b>Topo:</b> o reed entra na canaleta ao lado da guia do pino (fios para baixo). Feche o topo com 4 M3 × 12: ele aperta o chassi contra a sirene. Botão MODO com a porca por dentro; chave KCD11 de pressão.</li>
+      <li><b>Teste final:</b> pino no lugar, chave ligada (1 piscada), puxe o pino longe do rosto e com protetor de ouvido.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Custo de produção</h2>
+    <p class="hint">Valores de out/2026, sem frete, só produtos novos (os links do Mercado Livre já abrem com o filtro "Novo"). Não achei os preços exatos desses itens nas buscas: os valores são <b>estimativas</b> de anúncios comuns; confira antes de comprar. Peças impressas não entram. "Kits do 04" = cronógrafo.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td>Sirene piezo 12 V 110 dB (confira o diâmetro: até 42 mm)</td><td><a href="https://lista.mercadolivre.com.br/sirene-piezo-12v_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 15,00</td><td class="r">R$ 30,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 LEDs 1 W branco frio em estrela (usa 4)</td><td><a href="https://lista.mercadolivre.com.br/led-1w-branco-frio-estrela-20mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>reserva (uma 2ª granada)</td><td class="r">R$ 15,00</td><td class="r">R$ 30,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 5 MT3608 (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/mt3608_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>reserva</td><td class="r">R$ 15,00</td><td class="r">R$ 25,00</td></tr>
+      <tr><td>2 MOSFETs IRLZ44N</td><td><a href="https://lista.mercadolivre.com.br/irlz44n_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>10, 14</td><td class="r">R$ 8,00</td><td class="r">R$ 16,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 reed switch (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/reed-switch_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 10,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit ímãs de neodímio 4 × 2 (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/ima-neodimio-4x2mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 10,00</td><td class="r">R$ 18,00</td></tr>
+      <tr><td>LiPo 802540 3,7 V 1000 mAh</td><td><a href="https://lista.mercadolivre.com.br/bateria-802540_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 30,00</td><td class="r">R$ 45,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 botões de painel 7 mm (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/chave-push-button-7mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>reserva</td><td class="r">R$ 10,00</td><td class="r">R$ 18,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 chaves gangorra KCD11 (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/chave-gangorra-kcd11_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>reserva</td><td class="r">R$ 10,00</td><td class="r">R$ 18,00</td></tr>
+      <tr><td>4 resistores 2,2 Ω 1 W + perfurada pequena</td><td><a href="https://lista.mercadolivre.com.br/resistor-2r2-1w_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 5,00</td><td class="r">R$ 10,00</td></tr>
+      <tr><td>ESP32-C3, TP4056, resistores 100 Ω / 10 kΩ / 100 kΩ</td><td>kits do 04 e kit de resistores</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="reuse"><td colspan="3">Total reaproveitando os kits do 04</td><td class="r">≈ R$ 128</td><td class="r">≈ R$ 230</td></tr>
+      <tr class="tot"><td colspan="3">Total do zero (comprando também o kit 5 ESP32-C3 e o kit 10 TP4056)</td><td class="r">≈ R$ 242</td><td class="r">≈ R$ 387</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Pontos de atenção</h2>
+    <div class="note red"><b>Audição:</b> 110 dB a 1 m machuca o ouvido de perto. Nunca puxe o pino com a granada perto do rosto, e teste em casa com protetor de ouvido ou com a sirene tapada.</div>
+    <div class="note red"><b>Regras do campo:</b> confirme com o campo (e avise os jogadores no briefing) antes de usar. Granada eletrônica não substitui regra de "eliminado por granada": combine o raio (ex.: 3 m em ambiente fechado).</div>
+    <div class="note">Os picos chegam a ≈ 2 A (sirene + 4 LEDs). Use LiPo de boa marca, com proteção, e fios de pelo menos 22 AWG na bateria, na sirene e nos LEDs.</div>
+    <div class="note">Com a chave ligada e a placa dormindo, o LED vermelho de energia da ESP32-C3 continua aceso e gasta 1–2 mA: desligue a chave fora do jogo (ou tire o LED da placa com o ferro para ela durar semanas armada).</div>
+    <div class="note">A medida da sirene muda de anúncio para anúncio. Antes de imprimir, meça a sua e ajuste <code>SIRENE_D</code> e <code>SIRENE_H</code> no <code>pecas.scad</code>.</div>
+    <div class="note ok">O código não foi compilado aqui (não há Arduino neste PC). Se der erro ao gravar, me mande a mensagem que eu corrijo.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>

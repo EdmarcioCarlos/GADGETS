@@ -1,0 +1,51 @@
+==========================================================
+ 08 - GRANADA DE SOM E LUZ · PEÇAS 3D
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+ montagem.scad = tudo montado (só para ver e para os desenhos).
+
+ CONFIGURAÇÃO (Creality K1C, PETG, aguenta ser jogada)
+   Camada 0,2 mm · 5 paredes · 5 camadas em cima e embaixo
+   Preenchimento 40% giroide (corpo e topo: 50%) · bico 240 °C
+   mesa 75-80 °C
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: corpo, base, chassi, suporte_led, presilha, presilha_lipo
+   COYOTE: topo (com o emblema e o nome BLACK BIRD, a única marca
+           do projeto) e pino
+
+ PEÇA             QTD  SUPORTE  OBSERVAÇÃO
+ corpo             1   não      em pé. Os favos das janelas e as
+                                grelhas saem sem suporte. ~7 h
+ base              1   não      de cara na mesa (grade de favos
+                                para baixo)
+ topo              1   não      de cara na mesa (face com a marca
+                                para baixo); a guia do pino fica
+                                para cima
+ pino              1   não      deitado. PAUSA NA ALTURA 4,6 mm:
+                                coloque o ímã 4 x 2 no bolso e
+                                continue (fica preso por dentro,
+                                sem cola)
+ chassi            1   não      em pé, piso na mesa
+ suporte_led       4   não      bolso da estrela para cima
+ presilha          4   não      face lisa na mesa (C3, MT3608 x2,
+                                TP4056)
+ presilha_lipo     2   não      segura a LiPo no chassi
+
+ FERRAGENS (tudo M3 Allen, padrão do projeto):
+   4 M3 x 10  base → corpo (cabeça embutida na base)
+   4 M3 x 12  topo → corpo
+   8 M3 x 8   suportes dos LEDs (2 por suporte)
+  14 M3 x 8   6 presilhas (2 cada) + plaquinha dos MOSFETs (2)
+   O botão de modo vem com porca (painel de 7 mm) e a chave KCD11
+   entra de pressão. Nada de cola quente.
+
+ MEDIDAS PARA CONFERIR ANTES DE IMPRIMIR (no pecas.scad):
+   SIRENE_D / SIRENE_H  sirene que você comprou (usei Ø 42 x 26).
+     Se for mais baixa, ponha arruelas impressas embaixo do piso
+     do chassi: ele precisa ficar apertado entre a sirene e o topo.
+   GAP_LIPO / H_LIPO    LiPo 802540 (25 x 40 x 8).
+   PINO_FURO            se o pino ficar solto, diminua 0,2 mm.
+
+ Depois de imprimir cada peça, me diga ou some no ESTOQUE.js.

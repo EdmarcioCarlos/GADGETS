@@ -1,0 +1,31 @@
+==========================================================
+ 04 - CRONÓGRAFO · PEÇAS 3D
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+
+ CONFIGURAÇÃO (Creality K1C, PETG, resistente a BB a 10 m+)
+   Camada 0,2 mm · 5 paredes · 5 camadas em cima e embaixo
+   Preenchimento 40% giroide · bico 240 °C · mesa 75-80 °C
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: tunel, tampa_inferior, adaptador_boca · COYOTE: visor
+   Os parafusos do adaptador de boca agora ficam a 14 mm do centro
+   (28 mm entre eles), fora dos cantos chanfrados.
+   Imprima o túnel em PETG PRETO: luz de fora atrapalha os
+   sensores infravermelhos.
+
+ PEÇA             QTD  SUPORTE  OBSERVAÇÃO
+ tunel             1   não      160 x 44 x 66. O furo da BB tem
+                                ponta em cima (gota) e não
+                                precisa de suporte.
+ visor             1   não      tela inclinada a 60° no topo
+ tampa_inferior    1   não      fecha a baia da eletrônica
+ adaptador_boca    1   não      prende no quebra-chamas
+
+ FERRAGENS: 4 parafusos M2 x 6 (OLED no visor) · M3 Allen: M3 x 8 (tampa) · 2 M3 x 8 (visor) ·
+ 2 M3 x 10 (adaptador) · policarbonato 1 mm de 18 x 28 mm
+ na janela da tela.
+
+ ANTES DE IMPRIMIR: meça o diâmetro do quebra-chamas e ajuste
+ QUEBRA_CHAMA_D no pecas.scad. Depois some no ESTOQUE.js.

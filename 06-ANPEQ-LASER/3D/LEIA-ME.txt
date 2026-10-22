@@ -1,0 +1,55 @@
+==========================================================
+ 06 - ANPEQ (LASER VERDE COM AJUSTE) · PEÇAS 3D
+==========================================================
+ Arquivos: stl\*.stl prontos para o fatiador (já na posição
+ de impressão). pecas.scad = desenho editável no OpenSCAD.
+ montagem.scad = tudo montado (só para ver e para os desenhos).
+
+ CONFIGURAÇÃO (Creality K1C, PETG, resistente a BB a 10 m+)
+   Camada 0,2 mm · 5 paredes · 5 camadas em cima e embaixo
+   Preenchimento 40% giroide · bico 240 °C · mesa 75-80 °C
+   Botões das torres e berço: camada 0,12 mm (ranhuras e pivô
+   mais lisos = clique mais firme e zero que não anda).
+
+ ESTILO TÁTICO FACETADO · CORES (cada peça de uma cor só):
+   PRETO: caixa, berco, trava_pivo
+   COYOTE: tampa (com o emblema e o nome BLACK BIRD, a única marca
+           do projeto), botao_torre (2), mandibula (2) e protecao_bb
+
+ PEÇA          QTD  SUPORTE      OBSERVAÇÃO
+ caixa          1   SIM (só      110 x 46 x 33 com 2 garras
+                    tocando a    embaixo; suporte só embaixo do
+                    mesa)        fundo, entre as garras
+ tampa          1   não          face de fora na mesa
+ berco          1   não          em pé, a frente na mesa
+ trava_pivo     1   não          deitada
+ botao_torre    2   não          a tampa do botão na mesa
+ mandibula      2   não          igual à do anti-cant
+ protecao_bb    1   não          proteção anti-BB da frente: grade de
+                                 favos na mesa. Atrás da grade cabe um
+                                 disco de policarbonato Ø 20 x 1 mm
+                                 (opcional, segura poeira)
+
+ ANTES DE IMPRIMIR, CONFIRA:
+   LASER_D / LASER_L  o seu módulo laser (usei Ø 12 x 45 mm). O
+   berço tem 3 frisos que apertam o laser: ele entra empurrando.
+
+ FERRAGENS (tudo M3 Allen, padrão do projeto):
+   4 M3 x 10  tampa → caixa
+   2 M3 x 12  proteção anti-BB → frente da caixa
+   2 M3 x 30  garras (atravessados, porca na mandíbula); confira
+              no trilho, igual ao anti-cant
+   2 M3 x 12  trava do pivô → bloco de trás
+   1 M3 x 12  torre de cima (elevação)
+   1 M3 x 16  torre do lado (deriva)
+   4 porcas M3: 2 dentro dos botões + 2 contraporcas nos parafusos
+   2 BBs de 6 mm (as de airsoft mesmo) + 2 molinhas (corte de mola
+   de caneta, ~8 mm) = os cliques
+   1 mola de caneta (~12 mm) = mola diagonal que segura o berço
+
+ CONTRAPORCA (importante): rosqueie a porca no parafuso até encostar
+ na cabeça e aperte as duas uma contra a outra com 2 chaves. É essa
+ porca que corre no canal sextavado e impede o parafuso de girar
+ junto com o botão. Sem ela a torre não anda.
+
+ Depois de imprimir cada peça, me diga ou some no ESTOQUE.js.

@@ -1,0 +1,38 @@
+VISÃO NOTURNA (14) · COMO GRAVAR E AJUSTAR
+==========================================
+
+GRAVAR
+1. Arduino IDE > Placas > instale "esp32" (Espressif). Escolha a placa "AI Thinker ESP32-CAM".
+2. Ferramentas > PSRAM: Enabled.
+3. Gerenciador de Bibliotecas: instale "LovyanGFX".
+4. Encaixe a ESP32-CAM na base ESP32-CAM-MB, ligue no USB e clique em Carregar.
+   (o código ainda não foi compilado aqui no PC; se der erro, me mande a mensagem)
+
+BOTÕES
+- IR (clique) .............. LEDs infravermelhos: desligado > baixo > médio > alto
+- TELA (clique) ............ brilho (5 níveis)
+- TELA (segurar 1 s) ....... cor: verde > branco > vermelho
+- IR + TELA por 3 s ........ entra/sai do AJUSTE (ao sair, salva)
+Não segure o botão IR enquanto liga a chave.
+
+AJUSTE (faça de dia, uma vez)
+Aparece uma cruz laranja no meio da tela.
+1. TAMANHO (1x): olhe pela luneta no zoom mínimo com a visão noturna na frente e compare com o
+   mundo de verdade (abra o outro olho). IR = imagem menor · TELA = imagem maior. Os objetos têm
+   que ficar do MESMO tamanho com e sem a visão noturna.
+2. Segure TELA 1 s > LADO: mire num ponto a ~25 m. Vire a unidade para o lado e veja onde o
+   retículo da luneta está; volte a unidade e mova a imagem (IR / TELA) até o mesmo ponto ficar
+   embaixo do retículo.
+3. Segure TELA 1 s > ALTURA: igual, para cima e para baixo.
+4. Segure IR + TELA 3 s para salvar.
+
+FOCO
+A tela tem que ficar a 45 mm da lente (foco da lente Cardboard). Solte os 2 parafusos do suporte
+da tela e deslize nos rasgos até a imagem ficar nítida na luneta com o foco no infinito.
+
+LIGAÇÃO
+Tela ST7789 (7 pinos): GND > GND · VCC > 3V3 · SCL > IO14 · SDA > IO13 · RES > 3V3 · DC > IO2 · BLK > 3V3
+Botão IR: IO12 e GND · Botão TELA: IO3 (U0R) e GND
+LEDs IR (4, em paralelo): 5 V > resistor 68 Ω (um por LED) > LED (+) ; LED (−) > dreno do MOSFET IRLZ44N ; fonte > GND
+        porta do MOSFET > resistor 220 Ω > IO1 (U0T) ; resistor 100 kΩ entre porta e GND
+O LED branco da placa (IO4) fica sempre apagado pelo código.

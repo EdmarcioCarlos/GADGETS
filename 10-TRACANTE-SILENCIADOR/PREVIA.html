@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Traçante no Silenciador</title>
+<style>
+:root{--bg:#0e1113;--panel:#161a1d;--line:#262c30;--text:#d6dcdf;--muted:#8a959b;--accent:#9cc35a;--amber:#e2b04a;--red:#e5533f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 "Segoe UI",system-ui,sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding:28px 16px 60px}
+.tag{color:var(--accent);font:600 12px/1 Consolas,monospace;letter-spacing:.18em}
+h1{margin:.4em 0 .15em;font-size:28px}
+.sub{color:var(--muted);margin:0}
+.bar{position:sticky;top:0;z-index:5;background:rgba(14,17,19,.94);border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 0;margin:18px 0 8px}
+button{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+button.on{border-color:var(--accent);color:var(--accent)}
+.hint{color:var(--muted);font-size:12.5px}
+#calib{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+#calib.show{display:block}
+#card{border:2px dashed var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:12px;margin:12px 0}
+input[type=range]{width:min(420px,100%)}
+section{margin-top:36px}
+h2{font-size:18px;margin:0 0 4px;display:flex;gap:10px;align-items:baseline}
+h2 .n{color:var(--accent);font:600 12px Consolas,monospace}
+p{margin:.3em 0}
+.fig{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto;margin-top:12px}
+.fig svg{display:block;margin:0 auto;height:auto}
+.cap{color:var(--muted);font-size:13px;margin-top:8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font:600 19px Consolas,monospace}
+.tile span{color:var(--muted);font-size:12.5px}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:12px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+td.mm{font-family:Consolas,monospace;white-space:nowrap;color:var(--amber)}
+td.r{font-family:Consolas,monospace;white-space:nowrap;text-align:right}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.reuse td{color:var(--accent);font-weight:700}
+code{font-family:Consolas,monospace;color:var(--amber);font-size:13px}
+a{color:var(--accent)}
+.diag{display:block;width:100%;max-width:940px;margin:0 auto;height:auto}
+.blk{fill:#1d2226;stroke:#59636a;stroke-width:1.5}
+.brd{fill:#14243d;stroke:#4c78b8;stroke-width:1.5}
+.pt{font:600 12px Consolas,monospace;fill:#cfd6da}
+.pt.e{text-anchor:end}
+.ttl{font:600 13px "Segoe UI",system-ui,sans-serif;fill:#d6dcdf}
+.ttl.c,.pt.c{text-anchor:middle}
+.wr{fill:none;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round}
+.w-pwr{stroke:#e5533f}.w-gnd{stroke:#8a959b}.w-sig{stroke:#ff7ad9}.w-ana{stroke:#5fd17a}.w-uv{stroke:#8a5cff}
+.pin{fill:#e2b04a}
+ol.steps li{margin:.45em 0}
+ol.steps b{color:var(--accent)}
+.note{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:10px}
+.note.red{border-color:var(--red)}
+.note.ok{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="2.8" markerHeight="2.8" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="#e2b04a"/></marker>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="tag">BLACK BIRD | DMR · PROJETO 10 · INTERMEDIÁRIO</div>
+    <h1>Traçante dentro do Silenciador</h1>
+    <p class="sub">Um cartucho impresso que entra no tubo do <b>seu</b> silenciador, no lugar da espuma. Quando a BB passa, 6 LEDs ultravioleta piscam e a BB traçante (fosforescente) sai brilhando: à noite você vê para onde ela foi e corrige o tiro. Por fora o rifle fica igual. Medidas em milímetros.</p>
+  </header>
+
+  <div class="bar">
+    <button id="bZoom" class="on">Ampliado</button>
+    <button id="bReal">Tamanho real</button>
+    <button id="bCal">Calibrar tela</button>
+    <span class="hint">No modo "tamanho real", 1 mm do desenho = 1 mm na sua tela (depois de calibrar).</span>
+  </div>
+  <div id="calib">
+    <p>Encoste um cartão de crédito/débito na tela e mova o controle até o retângulo ter exatamente o mesmo tamanho (85,6 × 54 mm).</p>
+    <input id="ppm" type="range" min="2" max="8" step="0.01"> <span class="hint"><span id="ppmv"></span> px/mm</span>
+    <div id="card">cartão 85,6 × 54 mm</div>
+  </div>
+
+  <div class="note red" style="margin-top:18px"><b>Preciso de 2 medidas do seu silenciador</b> (tire as tampas e a espuma): o <b>diâmetro de dentro</b> do tubo e o <b>comprimento livre</b> por dentro. O desenho usa Ø 32 × 150 mm; com as suas medidas eu ajusto o <code>pecas.scad</code> (ou você muda <code>SIL_DI</code> e <code>SIL_LI</code> no começo do arquivo).</div>
+
+  <section>
+    <h2><span class="n">01</span>Visão geral</h2>
+    <div class="tiles">
+      <div class="tile"><b>Ø 31,4 × 130</b><span>cartucho (cabe num tubo de Ø 32 por dentro)</span></div>
+      <div class="tile"><b>≈ 40 g</b><span>com a bateria (estimativa)</span></div>
+      <div class="tile"><b>6 LEDs UV</b><span>395 nm, 2 ms de luz forte por BB</span></div>
+      <div class="tile"><b>≈ 5 h ligado</b><span>LiPo de 200 mAh; dorme sozinho e acorda no tiro</span></div>
+      <div class="tile"><b>R$ 92–178</b><span>reaproveitando os kits do 04 (com 1 pote de BB traçante); do zero, R$ 237–390</span></div>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Por que intermediário:</b> o sensor é o mesmo do cronógrafo (04), mas o UV precisa acender no mesmo instante em que a BB passa (ela anda 14 cm por milésimo de segundo a 450 fps) e tudo tem de caber num tubo de 32 mm.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span>Como funciona</h2>
+    <div class="tw"><table>
+      <tr><th>Situação</th><th>O que acontece</th></tr>
+      <tr><td>BB passa pelo tubo do cartucho</td><td>Corta o feixe infravermelho logo na entrada; a placa acende os 6 LEDs UV por 2 ms. Eles ficam em volta do tubo, de 50 a 70 mm à frente do sensor</td></tr>
+      <tr><td>BB traçante</td><td>É uma BB fosforescente (verde ou vermelha): carrega com o UV e brilha por 1–2 s no voo. <b>Só funciona com BB traçante</b>; BB comum passa normal</td></tr>
+      <tr><td>Rajada</td><td>Ignora o sensor por 15 ms depois de cada BB (até ~60 BB/s): cada BB ganha o seu pulso</td></tr>
+      <tr><td>5 min sem atirar</td><td>Apaga o feixe e dorme. O <b>sensor de vibração</b> acorda a placa no próximo tiro (esse primeiro tiro não brilha: dê 1 tiro "de acordar")</td></tr>
+      <tr><td>Ao acordar</td><td>O LED da frente pisca a bateria: 3 = cheia, 2 = média, 1 = carregue</td></tr>
+      <tr><td>Bateria fraca</td><td>1 piscada longa a cada 5 s no LED da frente</td></tr>
+      <tr><td>Carregar</td><td>Tire a tampa da frente do silenciador: o USB-C do cartucho fica ali, ao lado do furo da BB</td></tr>
+    </table></div>
+    <div class="note ok"><b>Teste e ajuste:</b> com a tampa do silenciador fora, o LED da frente dá uma piscada curta a cada BB detectada. Regule o trimpot do LM393 até piscar em todo tiro (igual ao cronógrafo).</div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span>O cartucho</h2>
+    <div class="fig">
+      <svg viewBox="0 0 308 117.4" data-mm="308" data-zoom="3.05" class="vistas3d vvistas60db73">
+        <style>.vvistas60db73 .lb{font:3.4px 'Segoe UI',system-ui,sans-serif;fill:#cfd6da}.vvistas60db73 .dt{font:600 3.4px Consolas,monospace;fill:#e2b04a;text-anchor:middle}.vvistas60db73 .dim{stroke:#e2b04a;stroke-width:0.25;fill:none;marker-start:url(#arr);marker-end:url(#arr)}.vvistas60db73 .ext{stroke:#e2b04a;stroke-width:0.15;opacity:.55}.vvistas60db73 .nm{font:600 2.5px 'Segoe UI',system-ui,sans-serif;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#000;stroke-width:0.7px;stroke-linejoin:round}</style>
+        <text x="12" y="5" class="lb">DE CIMA (placas)</text>
+        <image href="3D/img/vistas_topo.png" x="12" y="9" width="130" height="31.4"/>
+        <text x="33" y="16.6" class="nm">ESP32-C3</text>
+        <text x="70" y="17.6" class="nm">LiPo 200 mAh</text>
+        <text x="124" y="25.6" class="nm">TP4056 USB-C</text>
+        <text x="15" y="25.6" class="nm">fundo</text>
+        <line x1="12" y1="40.4" x2="12" y2="47.9" class="ext"/><line x1="142" y1="40.4" x2="142" y2="47.9" class="ext"/>
+        <line x1="12" y1="46.4" x2="142" y2="46.4" class="dim"/><text x="77" y="51.6" class="dt">130</text>
+        <line x1="4.5" y1="9" x2="12" y2="9" class="ext"/><line x1="4.5" y1="40.4" x2="12" y2="40.4" class="ext"/>
+        <line x1="6" y1="9" x2="6" y2="40.4" class="dim"/><text x="4.2" y="24.7" class="dt" transform="rotate(-90 4.2 24.7)">31</text>
+        <text x="166" y="5" class="lb">LADO (LEDs UV e barreira IR)</text>
+        <image href="3D/img/vistas_frente.png" x="166" y="9" width="130" height="31.4"/>
+        <text x="226" y="18.6" class="nm">6 LEDs UV 395 nm</text>
+        <text x="172" y="18.6" class="nm">barreira IR</text>
+        <text x="263" y="40.6" class="nm">sinal: LM393 + MOSFET</text>
+        <line x1="166" y1="40.4" x2="166" y2="47.9" class="ext"/><line x1="296" y1="40.4" x2="296" y2="47.9" class="ext"/>
+        <line x1="166" y1="46.4" x2="296" y2="46.4" class="dim"/><text x="231" y="51.6" class="dt">130</text>
+        <line x1="158.5" y1="9" x2="166" y2="9" class="ext"/><line x1="158.5" y1="40.4" x2="166" y2="40.4" class="ext"/>
+        <line x1="160" y1="9" x2="160" y2="40.4" class="dim"/><text x="158.2" y="24.7" class="dt" transform="rotate(-90 158.2 24.7)">31</text>
+        <text x="12" y="64.4" class="lb">FRENTE (tire a tampa do silenciador)</text>
+        <image href="3D/img/vistas_direita_EXTRASfalse.png" x="12" y="68.4" width="31.4" height="31.4"/>
+        <line x1="12" y1="99.8" x2="12" y2="107.3" class="ext"/><line x1="43.4" y1="99.8" x2="43.4" y2="107.3" class="ext"/>
+        <line x1="12" y1="105.8" x2="43.4" y2="105.8" class="dim"/><text x="27.7" y="111" class="dt">31</text>
+        <line x1="4.5" y1="68.4" x2="12" y2="68.4" class="ext"/><line x1="4.5" y1="99.8" x2="12" y2="99.8" class="ext"/>
+        <line x1="6" y1="68.4" x2="6" y2="99.8" class="dim"/><text x="4.2" y="84.1" class="dt" transform="rotate(-90 4.2 84.1)">31</text>
+        <text x="67.4" y="64.4" class="lb">DENTRO DO SILENCIADOR (corte)</text>
+        <image href="3D/img/vistas_tras_SILENCIADORtrue.png" x="67.4" y="68.4" width="174" height="36"/>
+        <text x="164.4" y="65.3" class="nm">tubo do seu silenciador</text>
+        <text x="199.4" y="93.3" class="nm">BB traçante</text>
+        <text x="101.4" y="107.3" class="nm">frente coyote</text>
+        <line x1="99.4" y1="102.1" x2="99.4" y2="111.9" class="ext"/><line x1="229.4" y1="102.1" x2="229.4" y2="111.9" class="ext"/>
+        <line x1="99.4" y1="110.4" x2="229.4" y2="110.4" class="dim"/><text x="164.4" y="115.6" class="dt">130</text>
+        <line x1="59.9" y1="70.7" x2="99.4" y2="70.7" class="ext"/><line x1="59.9" y1="102.1" x2="99.4" y2="102.1" class="ext"/>
+        <line x1="61.4" y1="70.7" x2="61.4" y2="102.1" class="dim"/><text x="59.6" y="86.4" class="dt" transform="rotate(-90 59.6 86.4)">31</text>
+      </svg>
+      <div class="cap">O <b>chassi</b> preto é um tubo central de 10 mm (por onde a BB passa) com um disco atrás, um anel na frente e duas plataformas. <b>Em cima</b>, da traseira para a frente: ESP32-C3, LiPo de 200 mAh e o carregador TP4056 com o USB-C passando pelo anel da frente. Cada placa é presa por uma presilha com parafuso M2. <b>Dos lados do tubo</b>: a barreira infravermelha logo na entrada (LED IR de um lado, fototransistor do outro) e os 6 LEDs UV em 3 pares. <b>Embaixo</b>: a plaquinha de sinal (comparador LM393, trimpot, MOSFET dos LEDs UV e o sensor de vibração). Na frente, a tampa <b>coyote</b> com o emblema e o nome BLACK BIRD (a única marca do projeto), o USB-C e o LED de estado. O cartucho entra justo no tubo (0,3 mm de folga) e as tampas do silenciador seguram ele no lugar.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">3D</span>Peças 3D · estilo tático facetado</h2>
+    <p class="hint">Todas as peças impressas, nas cores de impressão (<b style="color:#c9b08d">coyote</b> e preto); cada peça sai de uma cor só. Arquivos em <b>3D/stl</b>; quantidades, ferragens e configuração no <b>3D/LEIA-ME.txt</b>.</p>
+    <div class="fig" style="padding:8px"><img src="3D/img/pecas.png" alt="Peças 3D do traçante em preto e coyote" style="width:100%;height:auto;display:block;border-radius:8px;background:#fff"></div>
+    <div class="cap">Chassi preto (impresso em pé, sem suporte), 3 presilhas pretas e a frente coyote com borda chanfrada e marcas facetadas.</div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span>Componentes</h2>
+    <div class="tw"><table>
+      <tr><th>Componente</th><th>Medidas (mm)</th><th>Função</th></tr>
+      <tr><td>ESP32-C3 SuperMini (do kit do 04)</td><td class="mm">22,5 × 18</td><td>Vê a BB, acende o UV e dorme</td></tr>
+      <tr><td>6 LEDs UV 5 mm 395 nm + 6 resistores 6,8 Ω</td><td class="mm">Ø 5</td><td>Carregam a BB traçante (pulso de ≈ 120 mA cada, por 2 ms)</td></tr>
+      <tr><td>Par LED IR + fototransistor 5 mm, LM393 e trimpot 10 kΩ (do kit do 04)</td><td class="mm">Ø 5</td><td>Barreira que vê a BB, igual ao cronógrafo</td></tr>
+      <tr><td>MOSFET IRLZ44N + 100 Ω + 10 kΩ</td><td class="mm">TO-220 deitado</td><td>Liga os 6 LEDs UV juntos</td></tr>
+      <tr><td>Sensor de vibração SW-18010P + 100 kΩ</td><td class="mm">Ø 4 × 7</td><td>Acorda a placa no tiro</td></tr>
+      <tr><td>LiPo 402030 3,7 V ≈ 200 mAh, com conector</td><td class="mm">4 × 20 × 30</td><td>Bateria (≈ 5 h ligado; desconecte para guardar)</td></tr>
+      <tr><td>TP4056 USB-C (do kit do 04)</td><td class="mm">28 × 17</td><td>Carrega pela frente</td></tr>
+      <tr><td>LED 3 mm verde + 330 Ω</td><td class="mm">Ø 3</td><td>Estado: bateria e cada BB detectada</td></tr>
+      <tr><td>Perfurada 26 × 16 (plaquinha de sinal)</td><td class="mm">26 × 16</td><td>LM393, trimpot, MOSFET, sensor de vibração e resistores</td></tr>
+      <tr><td>BB traçante 0,25 g (verde)</td><td class="mm">Ø 6</td><td>A BB que brilha (vende em pote)</td></tr>
+      <tr><td>Peças impressas (pasta <code>3D</code>)</td><td class="mm">—</td><td>chassi, frente, 3 presilhas</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span>Ligação elétrica</h2>
+    <p class="hint">Sem escala. Todos os GND juntos. Não tem chave: a placa dorme sozinha. A barreira é a mesma de uma barreira do cronógrafo (04).</p>
+    <div class="fig">
+      <svg class="diag" viewBox="0 0 900 430">
+        <rect x="190" y="155" width="100" height="56" rx="8" class="blk"/><text x="246" y="179" class="ttl c">LiPo</text><text x="246" y="197" class="pt c" style="font-size:10px">200 mAh · plugue</text><g class="pt" style="font-size:11px"><text x="196" y="174">+</text><text x="196" y="199">−</text></g>
+        <rect x="12" y="166" width="10" height="40" rx="3" fill="#5a6268"/><rect x="20" y="130" width="140" height="110" rx="8" class="blk"/><text x="90" y="122" class="ttl c">TP4056</text><text x="30" y="190" class="pt" style="font-size:10px;fill:#8a959b">USB-C</text><g class="pt e" style="font-size:11px"><text x="152" y="149">OUT+</text><text x="152" y="174">B+</text><text x="152" y="199">B−</text><text x="152" y="232">OUT−</text></g>
+        <rect x="330" y="40" width="170" height="320" rx="8" class="brd"/><text x="415" y="200" class="ttl c">ESP32-C3</text><text x="415" y="218" class="ttl c">SuperMini</text>
+        <g class="pt"><text x="338" y="184">5V</text><text x="338" y="234">GND</text><text x="338" y="300">GPIO1</text><text x="338" y="84">3V3</text></g>
+        <g class="pt e"><text x="492" y="74">GPIO10</text><text x="492" y="124">GPIO3</text><text x="492" y="184">GPIO4</text><text x="492" y="244">GPIO2</text><text x="492" y="304">GPIO5</text></g>
+        <rect x="580" y="50" width="140" height="34" rx="6" class="blk"/><text x="650" y="72" class="pt c" style="font-size:11px">150 Ω → LED IR</text>
+        <rect x="580" y="100" width="140" height="44" rx="6" class="blk"/><text x="650" y="120" class="pt c" style="font-size:11px">LM393 OUT</text><text x="650" y="136" class="pt c" style="font-size:10px;fill:#8a959b">foto + trimpot</text>
+        <rect x="580" y="160" width="140" height="44" rx="6" class="blk"/><text x="650" y="180" class="pt c" style="font-size:11px">IRLZ44N</text><text x="650" y="196" class="pt c" style="font-size:10px;fill:#8a959b">100 Ω · 10 kΩ</text>
+        <rect x="760" y="150" width="125" height="64" rx="6" class="blk"/><text x="822" y="176" class="pt c" style="font-size:11px">6 LEDs UV</text><text x="822" y="194" class="pt c" style="font-size:10px;fill:#8a959b">cada um 6,8 Ω</text>
+        <rect x="580" y="225" width="140" height="34" rx="6" class="blk"/><text x="650" y="247" class="pt c" style="font-size:11px">vibração → GND</text>
+        <rect x="580" y="285" width="140" height="34" rx="6" class="blk"/><text x="650" y="307" class="pt c" style="font-size:11px">330 Ω → LED 3 mm</text>
+        <path class="wr w-pwr" d="M160,170 H190"/><path class="wr w-gnd" d="M160,195 H190"/>
+        <path class="wr w-pwr" d="M160,145 H300 V180 H330"/><path class="wr w-pwr" d="M300,145 V20 H822 V150"/>
+        <path class="wr w-gnd" d="M160,228 H310 V230 H330"/>
+        <path class="wr w-sig" d="M500,70 H580 M500,120 H580 M500,180 H580 M500,240 H580 M500,300 H580"/>
+        <path class="wr w-uv" d="M720,182 H760"/>
+        <path class="wr w-ana" d="M260,296 H330"/>
+        <g class="pin"><circle cx="160" cy="145" r="4"/><circle cx="160" cy="170" r="4"/><circle cx="160" cy="195" r="4"/><circle cx="160" cy="228" r="4"/><circle cx="330" cy="180" r="4"/><circle cx="330" cy="230" r="4"/><circle cx="330" cy="296" r="4"/><circle cx="500" cy="70" r="4"/><circle cx="500" cy="120" r="4"/><circle cx="500" cy="180" r="4"/><circle cx="500" cy="240" r="4"/><circle cx="500" cy="300" r="4"/></g>
+        <text x="20" y="390" class="pt" style="font-size:11px;fill:#8a959b">GPIO1: BAT+ → 100k → GPIO1 → 100k → GND. GPIO2: sensor de vibração para o GND + 100 kΩ para o 3V3.</text>
+        <text x="20" y="410" class="pt" style="font-size:11px;fill:#8a959b">LEDs UV: BAT+ → 6,8 Ω → LED (+); todos os LED (−) juntos no dreno do IRLZ44N; source no GND.</text>
+      </svg>
+    </div>
+    <div class="tw"><table>
+      <tr><th>De</th><th>Para</th><th>Observação</th></tr>
+      <tr><td>LiPo +/−</td><td>TP4056 B+/B−</td><td>Pelo conector: desconecte para guardar por mais de uma semana</td></tr>
+      <tr><td>TP4056 OUT+ / OUT−</td><td>C3 5V / GND · "BAT+" dos LEDs UV e do divisor</td><td>Sem chave (a placa dorme sozinha)</td></tr>
+      <tr><td>GPIO10</td><td>150 Ω → LED IR (anodo); catodo no GND</td><td>Feixe (desliga quando dorme)</td></tr>
+      <tr><td>Fototransistor (coletor)</td><td>10 kΩ → 3V3 e LM393 IN−; emissor no GND</td><td>Trimpot de 10 kΩ entre 3V3 e GND, meio no IN+</td></tr>
+      <tr><td>LM393 OUT</td><td>GPIO3 (+ 10 kΩ para o 3V3)</td><td>Se não detectar, troque <code>BB_BORDA</code> para <code>RISING</code></td></tr>
+      <tr><td>GPIO4</td><td>100 Ω → gate do IRLZ44N; 10 kΩ do gate para o GND</td><td>Liga os 6 LEDs UV</td></tr>
+      <tr><td>GPIO2</td><td>sensor de vibração → GND; 100 kΩ → 3V3</td><td>Acorda a placa</td></tr>
+      <tr><td>GPIO5</td><td>330 Ω → LED 3 mm → GND</td><td>LED de estado (na frente)</td></tr>
+      <tr><td>GPIO1</td><td>meio do divisor 100k/100k entre BAT+ e GND</td><td>Mede a bateria</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span>Montagem passo a passo</h2>
+    <ol class="steps">
+      <li><b>Meça o silenciador</b> (diâmetro de dentro e comprimento livre, sem a espuma) e mude <code>SIL_DI</code> e <code>SIL_LI</code> no <code>3D/pecas.scad</code>. Imprima o chassi em pé, apoiado no disco de trás.</li>
+      <li><b>Teste na protoboard:</b> C3 + barreira (como no cronógrafo) + 1 LED UV com resistor e MOSFET. Grave <code>TRACANTE/TRACANTE.ino</code> e passe um palito pelo feixe: o LED UV deve piscar.</li>
+      <li><b>LEDs:</b> encaixe os 6 LEDs UV e o par IR de fora para dentro nos ressaltos (a ponta fica rente ao furo; a perna longa do LED UV no "+").</li>
+      <li><b>Plaquinha de sinal</b> (26 × 16): LM393, trimpot, IRLZ44N deitado, sensor de vibração e resistores. Fure 2 cantos com 2 mm e prenda embaixo do chassi com 2 M2 × 6.</li>
+      <li><b>Em cima:</b> C3, LiPo e TP4056 na plataforma, cada um com a sua presilha (M2 × 6). O USB-C do TP4056 passa pelo anel da frente.</li>
+      <li><b>Frente coyote:</b> passe o LED de estado pelo furo e aparafuse a frente no anel com 2 M3 × 10.</li>
+      <li><b>No silenciador:</b> tire as tampas e a espuma, empurre o cartucho com o disco de trás para dentro e feche. Se ficar folga no comprimento, ponha um anel de espuma atrás.</li>
+      <li><b>Teste:</b> com a tampa da frente fora, atire BB comum e veja o LED da frente piscar em todo tiro (ajuste o trimpot). Depois, à noite, BB traçante.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2><span class="n">07</span>Custo de produção</h2>
+    <p class="hint">Valores de out/2026, sem frete, só produtos novos (os links do Mercado Livre já abrem com o filtro "Novo"). Não achei os preços exatos nas buscas: são <b>estimativas</b> de anúncios comuns; confira antes de comprar. Peças impressas não entram. "Kits do 04" = cronógrafo.</p>
+    <div class="tw"><table>
+      <tr><th>Item</th><th>Onde</th><th>Fica para</th><th style="text-align:right">Menor</th><th style="text-align:right">Maior</th></tr>
+      <tr><td><b>Conjunto:</b> kit 10 LEDs UV 5 mm 395 nm (usa 6)</td><td><a href="https://lista.mercadolivre.com.br/led-uv-395nm-5mm_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>reserva</td><td class="r">R$ 10,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td>LiPo 402030 3,7 V ≈ 200 mAh com conector</td><td><a href="https://lista.mercadolivre.com.br/bateria-402030_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 20,00</td><td class="r">R$ 35,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit 10 sensores de vibração SW-18010P (usa 1)</td><td><a href="https://lista.mercadolivre.com.br/sensor-vibracao-sw-18010p_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>reserva</td><td class="r">R$ 8,00</td><td class="r">R$ 15,00</td></tr>
+      <tr><td>MOSFET IRLZ44N</td><td><a href="https://lista.mercadolivre.com.br/irlz44n_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>08, 14</td><td class="r">R$ 4,00</td><td class="r">R$ 8,00</td></tr>
+      <tr><td><b>Conjunto:</b> kit parafusos M2 (usa 7)</td><td><a href="https://lista.mercadolivre.com.br/kit-parafuso-m2_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>04, 11</td><td class="r">R$ 10,00</td><td class="r">R$ 20,00</td></tr>
+      <tr><td>BB traçante 0,25 g (pote)</td><td><a href="https://lista.mercadolivre.com.br/bb-tracer-airsoft-0.25_ITEM*CONDITION_2230284">Mercado Livre</a></td><td>—</td><td class="r">R$ 40,00</td><td class="r">R$ 80,00</td></tr>
+      <tr><td>ESP32-C3, par IR, LM393, trimpot, TP4056, LED 3 mm, resistores</td><td>kits do 04 e do 01</td><td>—</td><td class="r">R$ 0,00</td><td class="r">R$ 0,00</td></tr>
+      <tr class="reuse"><td colspan="3">Total reaproveitando os kits do 01 e do 04</td><td class="r">≈ R$ 92</td><td class="r">≈ R$ 178</td></tr>
+      <tr class="tot"><td colspan="3">Total do zero (comprando também os kits de C3, TP4056, par IR, LM393 e trimpot)</td><td class="r">≈ R$ 237</td><td class="r">≈ R$ 390</td></tr>
+    </table></div>
+  </section>
+
+  <section>
+    <h2><span class="n">08</span>Pontos de atenção</h2>
+    <div class="note"><b>Sem a espuma, o silenciador abafa menos.</b> O cartucho ocupa o lugar dela. Se o barulho incomodar, corte um anel de espuma fino para pôr atrás do cartucho.</div>
+    <div class="note">O furo do cartucho é de 10 mm: a BB não encosta em nada. Confira se o furo das tampas do seu silenciador é alinhado com o centro (quase todos são).</div>
+    <div class="note">BB traçante é mais cara e um pouco mais leve/transparente que BB comum: o hop-up pode precisar de um ajuste fino. Use a mesma gramatura (0,25 g) que você já usa.</div>
+    <div class="note">O traçante só aparece bem à noite ou em lugar escuro. De dia o brilho some.</div>
+    <div class="note">Com a placa dormindo, o LED vermelho de energia da ESP32-C3 continua aceso e gasta ≈ 1 mA: a bateria aguenta ≈ 1 semana parada. Para guardar mais tempo, desconecte a bateria (ou tire o LED da placa com o ferro).</div>
+    <div class="note red">Confira as regras do campo: alguns proíbem traçante ou exigem avisar no briefing.</div>
+    <div class="note ok">O código não foi compilado aqui (não há Arduino neste PC). Se der erro ao gravar, me mande a mensagem que eu corrijo.</div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var KEY='blackbird-ppm', ppm=96/25.4, real=false;
+  try{var v=parseFloat(localStorage.getItem(KEY)); if(v>1) ppm=v;}catch(e){}
+  var $=function(s){return document.querySelector(s)};
+  function apply(){
+    document.querySelectorAll('svg[data-mm]').forEach(function(s){
+      var mm=+s.getAttribute('data-mm');
+      s.style.width=(real?mm*ppm:mm*(+s.getAttribute('data-zoom')))+'px';
+      s.style.maxWidth=real?'none':'100%';
+    });
+    $('#card').style.width=85.6*ppm+'px'; $('#card').style.height=53.98*ppm+'px';
+    $('#ppmv').textContent=ppm.toFixed(2); $('#ppm').value=ppm;
+    $('#bZoom').classList.toggle('on',!real); $('#bReal').classList.toggle('on',real);
+  }
+  $('#bZoom').onclick=function(){real=false;apply()};
+  $('#bReal').onclick=function(){real=true;apply()};
+  $('#bCal').onclick=function(){$('#calib').classList.toggle('show')};
+  $('#ppm').oninput=function(e){ppm=+e.target.value; try{localStorage.setItem(KEY,ppm)}catch(err){} apply()};
+  apply();
+})();
+</script>
+</body>
+</html>
